@@ -371,7 +371,7 @@ void R_BindFont(const char *name, GLint *cw, GLint *ch) {
     name = "medium";
   }
 
-  const bool upscale = r_context.display_mode->pixel_density > 1.f || r_draw_scale->value > 1.f;
+  const bool upscale = r_context.display_mode->pixel_density > 1.f;
 
   int32_t i;
   for (i = 0; i < r_draw_2d.num_fonts; i++) {
