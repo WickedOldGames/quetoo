@@ -13,8 +13,7 @@
  * Deathmatch, Team DM, Capture the Flag, Instagib and Rocket Arena gameplay modes
  * High quality remakes of id Software's legendary _Quake_ series deathmatch levels, as well as many originals
  * Realtime lighting with soft shadowmapping
- * Bump mapping with parallax occlusion mapping and self-shadowing
- * Volumetric fog
+ * Steep parallax occlusion mapping with self-shadowing
  * Dramatically improved artwork pipeline with in-game editor for level artists
  * TrenchBroom support
  * 100% free to download, play and modify. See our <a href="http://quetoo.org/books/documentation/licensing">licensing</a> page.

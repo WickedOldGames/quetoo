@@ -31,6 +31,9 @@
     <Filter Include="src\default\ui\teams">
       <UniqueIdentifier>{ee9ce366-f7a4-492f-92fd-bedd14bee051}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\default\ui\editor">
+      <UniqueIdentifier>{825DF178-E13C-4326-8DCD-514DF5CA7EC9}</UniqueIdentifier>
+    </Filter>
     <Filter Include="deps">
       <UniqueIdentifier>{9e2ae0cc-2c49-4d2e-b1b2-b8a73235e595}</UniqueIdentifier>
     </Filter>
@@ -63,8 +66,23 @@
     <ClInclude Include="..\src\cgame\default\cg_entity_event.h">
       <Filter>src\default</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\cgame\default\cg_editor.h">
+      <Filter>src\default</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\cgame\default\cg_entity_trail.h">
       <Filter>src\default</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\cgame\default\ui\editor\EditorViewController.h">
+      <Filter>src\default\ui\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\cgame\default\ui\editor\EntityView.h">
+      <Filter>src\default\ui\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\cgame\default\ui\editor\EntityViewController.h">
+      <Filter>src\default\ui\editor</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\cgame\default\ui\editor\MaterialViewController.h">
+      <Filter>src\default\ui\editor</Filter>
     </ClInclude>
     <ClInclude Include="..\src\cgame\default\cg_hud.h">
       <Filter>src\default</Filter>
@@ -236,8 +254,23 @@
     <ClCompile Include="..\src\cgame\default\cg_entity_event.c">
       <Filter>src\default</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\cgame\default\cg_editor.c">
+      <Filter>src\default</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\cgame\default\cg_entity_trail.c">
       <Filter>src\default</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cgame\default\ui\editor\EditorViewController.c">
+      <Filter>src\default\ui\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cgame\default\ui\editor\EntityView.c">
+      <Filter>src\default\ui\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cgame\default\ui\editor\EntityViewController.c">
+      <Filter>src\default\ui\editor</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\cgame\default\ui\editor\MaterialViewController.c">
+      <Filter>src\default\ui\editor</Filter>
     </ClCompile>
     <ClCompile Include="..\src\cgame\default\cg_hud.c">
       <Filter>src\default</Filter>

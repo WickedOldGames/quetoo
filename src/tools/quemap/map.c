@@ -422,8 +422,6 @@ static void SetMaterialFlags(brush_side_t *side) {
     side->contents |= CONTENTS_PLAYER_CLIP;
   } else if (!g_strcmp0(side->texture, "common/dust")) {
     side->contents |= CONTENTS_ATMOSPHERIC;
-  } else if (!g_strcmp0(side->texture, "common/fog")) {
-    side->contents |= CONTENTS_ATMOSPHERIC;
   } else if (!g_strcmp0(side->texture, "common/hint")) {
     side->surface |= SURF_HINT;
   } else if (!g_strcmp0(side->texture, "common/ladder")) {
@@ -599,7 +597,7 @@ static brush_t *ParseBrush(parser_t *parser, entity_t *entity) {
       side->contents |= CONTENTS_DETAIL;
     }
 
-    // and the same goes for atmospherics like dust and fog
+    // and the same goes for atmospherics like dust
     if (side->contents & CONTENTS_ATMOSPHERIC) {
       side->contents |= CONTENTS_DETAIL;
     }
@@ -834,7 +832,6 @@ static entity_t *ParseEntity(parser_t *parser) {
     // associated with them will still be available.
     const char *classname = ValueForKey(entity, "classname", NULL);
     if (!g_strcmp0(classname, "func_group") ||
-      !g_strcmp0(classname, "misc_fog") ||
       !g_strcmp0(classname, "misc_dust") ||
       !g_strcmp0(classname, "misc_sprite") ||
       !g_strcmp0(classname, "misc_weather")) {

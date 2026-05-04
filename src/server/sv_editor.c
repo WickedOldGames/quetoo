@@ -61,6 +61,19 @@ void Sv_SpawnEditorEntity(int32_t number, cm_entity_t *def) {
   if (*model == '*') {
     const cm_bsp_model_t *mod = Cm_Model(model);
     ent->bounds = mod->bounds;
+  } else {
+    // entity may have brushes without an inline model (e.g. misc_dust, brushes merged into worldspawn)
+    // brush->entity always points to the original Cm_Bsp() entity; def may be a re-parsed copy after edits
+    const cm_entity_t *bsp_def = number < Cm_Bsp()->num_entities ? Cm_Bsp()->entities[number] : def;
+    GPtrArray *brushes = Cm_EntityBrushes(bsp_def);
+    if (brushes->len) {
+      ent->bounds = Box3_Null();
+      for (guint j = 0; j < brushes->len; j++) {
+        const cm_bsp_brush_t *brush = g_ptr_array_index(brushes, j);
+        ent->bounds = Box3_Union(ent->bounds, brush->bounds);
+      }
+    }
+    g_ptr_array_free(brushes, true);
   }
 
   Sv_LinkEntity(ent);
