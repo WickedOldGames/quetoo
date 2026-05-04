@@ -113,34 +113,17 @@ static void viewWillAppear(ViewController *self) {
 
   MaterialViewController *this = (MaterialViewController *) self;
 
-  r_material_t *material = NULL;
-
   const vec3_t start = cgi.view->origin;
   const vec3_t end = Vec3_Fmaf(start, MAX_WORLD_DIST, cgi.view->forward);
 
-  // Use the shared three-phase editor trace; loop to skip fog surfaces.
-  vec3_t pt = start;
-  while (material == NULL) {
+  r_material_t *material = NULL;
 
-    const cg_editor_trace_t tr = Cg_EditorTrace(pt, end);
-
-    if (tr.trace.fraction >= 1.f) {
-      break;
-    }
-
-    if (!tr.trace.material) {
-      break;
-    }
-
-    if (!g_strcmp0(tr.trace.material->name, "common/fog")) {
-      pt = Vec3_Add(tr.trace.end, cgi.view->forward);
-      continue;
-    }
-
+  const cg_editor_trace_t tr = Cg_EditorTrace(start, end);
+  if (tr.trace.fraction < 1.f && tr.trace.material) {
     material = cgi.LoadMaterial(tr.trace.material->name, ASSET_CONTEXT_TEXTURES);
   }
 
-  // Mesh entities: check bounds and prefer any hit closer than the BSP brush hit.
+  // Mesh entities: prefer any hit closer than the BSP brush hit.
   if (material == NULL) {
 
     float distance = MAX_WORLD_DIST;
@@ -165,10 +148,10 @@ static void viewWillAppear(ViewController *self) {
       }
 
       const int32_t head_node = cgi.SetBoxHull(e->abs_model_bounds, CONTENTS_SOLID);
-      const cm_trace_t tr = cgi.BoxTrace(start, end, Box3_Zero(), head_node, CONTENTS_SOLID);
-      if (tr.fraction < 1.f) {
+      const cm_trace_t mesh_tr = cgi.BoxTrace(start, end, Box3_Zero(), head_node, CONTENTS_SOLID);
+      if (mesh_tr.fraction < 1.f) {
 
-        const float dist = Vec3_Distance(start, tr.end);
+        const float dist = Vec3_Distance(start, mesh_tr.end);
         if (dist < distance) {
           material = e->model->mesh->faces->material;
           distance = dist;
