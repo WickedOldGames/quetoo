@@ -143,11 +143,13 @@ void R_CompileAtlas(r_atlas_t *atlas) {
 
   atlas->image->target = GL_TEXTURE_2D;
   atlas->image->levels = INT32_MAX;
-  
+
   for (guint i = 0; i < atlas->atlas->nodes->len; i++) {
     const atlas_node_t *node = g_ptr_array_index(atlas->atlas->nodes, i);
     atlas->image->levels = Mini(atlas->image->levels, floorf(log2f(Maxi(node->w, node->h)) + 1));
   }
+
+  atlas->atlas->padding = atlas->image->levels > 1 ? 1 << (atlas->image->levels - 2) : 0;
 
   atlas->image->internal_format = GL_RGBA8;
   atlas->image->format = GL_RGBA;
@@ -164,6 +166,8 @@ void R_CompileAtlas(r_atlas_t *atlas) {
     }
 
     SDL_Surface *surf = SDL_CreateSurface(width, width, SDL_PIXELFORMAT_RGBA32);
+    SDL_FillSurfaceRect(surf, NULL, 0);
+
     if (Atlas_Compile(atlas->atlas, 0, surf) == 0) {
 
       atlas->image->width = width;
@@ -173,33 +177,9 @@ void R_CompileAtlas(r_atlas_t *atlas) {
 
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, atlas->image->levels - 1);
       glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, surf->w, surf->h, GL_RGBA, GL_UNSIGNED_BYTE, surf->pixels);
+      glGenerateMipmap(GL_TEXTURE_2D);
 
-      for (GLsizei i = 1; i < atlas->image->levels; i++) {
-        SDL_Surface *mip_surf = SDL_CreateSurface(width >> i, width >> i, SDL_PIXELFORMAT_RGBA32);
-
-        for (guint l = 0; l < atlas->atlas->nodes->len; l++) {
-          const atlas_node_t *node = g_ptr_array_index(atlas->atlas->nodes, l);
-          const r_atlas_image_t *atlas_image = node->data;
-
-          SDL_BlitSurfaceScaled(surf, &(const SDL_Rect) {
-            .x = node->x, 
-            .y = node->y,
-            .w = atlas_image->image.width,
-            .h = atlas_image->image.height
-          }, mip_surf, &(SDL_Rect) {
-            .x = node->x >> i, 
-            .y = node->y >> i,
-            .w = node->w >> i,
-            .h = node->h >> i
-          }, SDL_SCALEMODE_NEAREST);
-        }
-        
-        glTexSubImage2D(GL_TEXTURE_2D, i, 0, 0, mip_surf->w, mip_surf->h, GL_RGBA, GL_UNSIGNED_BYTE, mip_surf->pixels);
-
-        R_GetError(NULL);
-
-        SDL_DestroySurface(mip_surf);
-      }
+      R_GetError(NULL);
 
       g_ptr_array_foreach(atlas->atlas->nodes, R_CompileAtlas_Node, atlas);
     }

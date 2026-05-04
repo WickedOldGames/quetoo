@@ -169,28 +169,30 @@ int32_t Atlas_Compile(atlas_t *atlas, int32_t start, ...) {
 
   g_ptr_array_sort_values_with_data(atlas->nodes, Atlas_NodeComparator, atlas);
 
+  const int32_t p = atlas->padding;
+
   int32_t x = 0, y = 0, row = 0;
 
   for (int32_t i = start; i < (int32_t) atlas->nodes->len; i++) {
     atlas_node_t *node = g_ptr_array_index(atlas->nodes, i);
 
-    if (node->w > surfaces[0]->w ||
-      node->h > surfaces[0]->h) {
+    if (node->w + 2 * p > surfaces[0]->w ||
+      node->h + 2 * p > surfaces[0]->h) {
       return -1;
     }
 
-    if (x + node->w > surfaces[0]->w) {
+    if (x + node->w + 2 * p > surfaces[0]->w) {
       x = 0;
       y += row;
       row = 0;
     }
 
-    if (y + node->h > surfaces[0]->h) {
+    if (y + node->h + 2 * p > surfaces[0]->h) {
       return i;
     }
 
-    node->x = x;
-    node->y = y;
+    node->x = x + p;
+    node->y = y + p;
     node->tag = atlas->tag;
 
     for (int32_t layer = 0; layer < atlas->layers; layer++) {
@@ -202,11 +204,33 @@ int32_t Atlas_Compile(atlas_t *atlas, int32_t start, ...) {
         atlas->blit(src, dest, &(const SDL_Rect) {
           node->x, node->y, node->w, node->h
         });
+
+        if (p > 0) {
+          const int32_t nx = node->x, ny = node->y;
+          const int32_t nw = node->w, nh = node->h;
+
+          SDL_BlitSurfaceScaled(src, &(SDL_Rect) {0, 0, 1, nh}, dest,
+            &(SDL_Rect) {nx - p, ny, p, nh}, SDL_SCALEMODE_NEAREST);
+          SDL_BlitSurfaceScaled(src, &(SDL_Rect) {nw - 1, 0, 1, nh}, dest,
+            &(SDL_Rect) {nx + nw, ny, p, nh}, SDL_SCALEMODE_NEAREST);
+          SDL_BlitSurfaceScaled(src, &(SDL_Rect) {0, 0, nw, 1}, dest,
+            &(SDL_Rect) {nx, ny - p, nw, p}, SDL_SCALEMODE_NEAREST);
+          SDL_BlitSurfaceScaled(src, &(SDL_Rect) {0, nh - 1, nw, 1}, dest,
+            &(SDL_Rect) {nx, ny + nh, nw, p}, SDL_SCALEMODE_NEAREST);
+          SDL_BlitSurfaceScaled(src, &(SDL_Rect) {0, 0, 1, 1}, dest,
+            &(SDL_Rect) {nx - p, ny - p, p, p}, SDL_SCALEMODE_NEAREST);
+          SDL_BlitSurfaceScaled(src, &(SDL_Rect) {nw - 1, 0, 1, 1}, dest,
+            &(SDL_Rect) {nx + nw, ny - p, p, p}, SDL_SCALEMODE_NEAREST);
+          SDL_BlitSurfaceScaled(src, &(SDL_Rect) {0, nh - 1, 1, 1}, dest,
+            &(SDL_Rect) {nx - p, ny + nh, p, p}, SDL_SCALEMODE_NEAREST);
+          SDL_BlitSurfaceScaled(src, &(SDL_Rect) {nw - 1, nh - 1, 1, 1}, dest,
+            &(SDL_Rect) {nx + nw, ny + nh, p, p}, SDL_SCALEMODE_NEAREST);
+        }
       }
     }
 
-    x += node->w;
-    row = MAX(row, node->h);
+    x += node->w + 2 * p;
+    row = MAX(row, node->h + 2 * p);
   }
 
   return 0;

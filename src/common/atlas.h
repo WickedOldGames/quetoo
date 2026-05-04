@@ -101,6 +101,13 @@ typedef struct atlas_s {
   AtlasBlit blit;
 
   /**
+   * @brief Padding pixels around each node for mipmap edge-replication.
+   * @details When non-zero, each node is surrounded by this many pixels of
+   * edge-replicated content, preventing mip level bleed at tile boundaries.
+   */
+  int32_t padding;
+
+  /**
    * @brief Iteration identifier written to each node as it is compiled.
    */
   int32_t tag;
