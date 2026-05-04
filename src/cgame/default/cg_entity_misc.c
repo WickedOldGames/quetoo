@@ -694,7 +694,7 @@ static void Cg_misc_steam_Think(cg_entity_t *self) {
       .size = RandomRangef(.9f * steam->size, 1.1f * steam->size),
       .size_velocity = 10.f,
       .color = Vec3(.5f, .5f, .5f),
-      .lighting = 1.f,
+      .lighting = 0.5f,
     })) {
       break;
     };

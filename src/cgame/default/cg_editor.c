@@ -167,17 +167,49 @@ void Cg_PopulateEditorScene(const cl_frame_t *frame) {
       }
     }
 
-    cgi.AddEntity(cgi.view, &(const r_entity_t) {
-      .id = edit,
-      .origin = edit->ent->origin,
-      .angles = edit->ent->angles,
-      .scale = cgi.EntityValue(edit->def, "scale")->value ?: 1.f,
-      .bounds = edit->ent->bounds,
-      .abs_bounds = edit->ent->abs_bounds,
-      .color = color,
-      .effects = edit->ent->current.effects,
-      .model = model
-    });
+    // for brush entities (excluding worldspawn), draw per-brush bounds so the user can see exactly
+    // where selection will land; suppress the combined abs_bounds to avoid a redundant outer box
+    GPtrArray *brushes = NULL;
+    if (edit->number < cgi.Bsp()->num_entities && g_strcmp0(classname, "worldspawn")) {
+      brushes = cgi.EntityBrushes(cgi.Bsp()->entities[edit->number]);
+      if (!brushes->len) {
+        g_ptr_array_free(brushes, true);
+        brushes = NULL;
+      }
+    }
+
+    if (brushes) {
+      for (guint j = 0; j < brushes->len; j++) {
+        const cm_bsp_brush_t *brush = g_ptr_array_index(brushes, j);
+        cgi.Draw3DBox(brush->bounds, Color32_Color(edit->ent->current.color), true);
+      }
+      g_ptr_array_free(brushes, true);
+
+      cgi.AddEntity(cgi.view, &(const r_entity_t) {
+        .id = edit,
+        .origin = edit->ent->origin,
+        .angles = edit->ent->angles,
+        .scale = cgi.EntityValue(edit->def, "scale")->value ?: 1.f,
+        .bounds = Box3_Null(),
+        .abs_bounds = Box3_Null(),
+        .color = color,
+        .effects = edit->ent->current.effects,
+        .model = model
+      });
+
+    } else {
+      cgi.AddEntity(cgi.view, &(const r_entity_t) {
+        .id = edit,
+        .origin = edit->ent->origin,
+        .angles = edit->ent->angles,
+        .scale = cgi.EntityValue(edit->def, "scale")->value ?: 1.f,
+        .bounds = edit->ent->bounds,
+        .abs_bounds = edit->ent->abs_bounds,
+        .color = color,
+        .effects = edit->ent->current.effects,
+        .model = model
+      });
+    }
   }
 
   Cg_AddSprites();

@@ -135,6 +135,10 @@ static void R_DrawEntitiesBounds(const r_view_t *view) {
       continue;
     }
 
+    if (Box3_IsNull(e->abs_model_bounds)) {
+      continue;
+    }
+
     if (R_CulludeBox(view, e->abs_model_bounds)) {
       continue;
     }
