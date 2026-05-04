@@ -59,9 +59,29 @@ typedef struct {
 
 extern cg_editor_entity_t cg_editor_entities[MAX_ENTITIES];
 
+/**
+ * @brief The result of a combined editor trace against all BSP models and CONTENTS_EDITOR entities.
+ */
+typedef struct {
+
+  /**
+   * @brief Pointer into `cg_editor_entities[]` for the resolved entity. Always valid; defaults to
+   *   worldspawn (`&cg_editor_entities[0]`) when no more-specific entity was hit.
+   */
+  cg_editor_entity_t *ent;
+
+  /**
+   * @brief The raw BSP trace result. Check `.fraction < 1.f` for a hit; `.material`, `.brush`,
+   *   and `.plane` are set on a BSP brush hit.
+   */
+  cm_trace_t trace;
+
+} cg_editor_trace_t;
+
 int32_t Cg_FindTeamMaster(const char *classname, const char *team);
 void Cg_ParseEditorEntity(int16_t number, const char *info);
 void Cg_LoadEditorEntities(void);
 void Cg_FreeEditorEntities(void);
 void Cg_PopulateEditorScene(const cl_frame_t *frame);
+cg_editor_trace_t Cg_EditorTrace(const vec3_t start, const vec3_t end);
 void Cg_CheckEditor(void);

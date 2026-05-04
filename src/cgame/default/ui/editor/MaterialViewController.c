@@ -115,57 +115,64 @@ static void viewWillAppear(ViewController *self) {
 
   r_material_t *material = NULL;
 
-  float distance = MAX_WORLD_DIST;
+  const vec3_t start = cgi.view->origin;
+  const vec3_t end = Vec3_Fmaf(start, MAX_WORLD_DIST, cgi.view->forward);
 
-  vec3_t start = Vec3_Fmaf(cgi.view->origin, 32.f, cgi.view->forward);
-  vec3_t end = Vec3_Fmaf(start, MAX_WORLD_DIST, cgi.view->forward);
-
+  // Use the shared three-phase editor trace; loop to skip fog surfaces.
+  vec3_t pt = start;
   while (material == NULL) {
 
-    const cm_trace_t tr = cgi.Trace(start, end, Box3_Zero(), NULL, CONTENTS_MASK_VISIBLE);
-    if (!tr.material) {
+    const cg_editor_trace_t tr = Cg_EditorTrace(pt, end);
+
+    if (tr.trace.fraction >= 1.f) {
       break;
     }
 
-    if (!g_strcmp0(tr.material->name, "common/fog")) {
-      start = Vec3_Add(tr.end, cgi.view->forward);
+    if (!tr.trace.material) {
+      break;
+    }
+
+    if (!g_strcmp0(tr.trace.material->name, "common/fog")) {
+      pt = Vec3_Add(tr.trace.end, cgi.view->forward);
       continue;
     }
 
-    material = cgi.LoadMaterial(tr.material->name, ASSET_CONTEXT_TEXTURES);
-
-    distance = Vec3_Distance(cgi.view->origin, tr.end);
+    material = cgi.LoadMaterial(tr.trace.material->name, ASSET_CONTEXT_TEXTURES);
   }
 
-  const r_entity_t *e = cgi.view->entities;
-  for (int32_t i = 0; i < cgi.view->num_entities; i++, e++) {
+  // Mesh entities: check bounds and prefer any hit closer than the BSP brush hit.
+  if (material == NULL) {
 
-    if (e->model == NULL) {
-      continue;
-    }
+    float distance = MAX_WORLD_DIST;
 
-    if (e->model->type != MODEL_MESH) {
-      continue;
-    }
+    const r_entity_t *e = cgi.view->entities;
+    for (int32_t i = 0; i < cgi.view->num_entities; i++, e++) {
 
-    if (e->model->mesh->faces->material == NULL) {
-      continue;
-    }
+      if (e->model == NULL) {
+        continue;
+      }
 
-    if (e->effects & (EF_SELF | EF_WEAPON)) {
-      continue;
-    }
+      if (e->model->type != MODEL_MESH) {
+        continue;
+      }
 
-    const int32_t head_node = cgi.SetBoxHull(e->abs_model_bounds, CONTENTS_SOLID);
+      if (e->model->mesh->faces->material == NULL) {
+        continue;
+      }
 
-    const cm_trace_t tr = cgi.BoxTrace(cgi.view->origin, end, Box3_Zero(), head_node, CONTENTS_SOLID);
-    if (tr.fraction < 1.f) {
+      if (e->effects & (EF_SELF | EF_WEAPON)) {
+        continue;
+      }
 
-      const float dist = Vec3_Distance(cgi.view->origin, tr.end);
-      if (dist < distance) {
-        material = e->model->mesh->faces->material;
+      const int32_t head_node = cgi.SetBoxHull(e->abs_model_bounds, CONTENTS_SOLID);
+      const cm_trace_t tr = cgi.BoxTrace(start, end, Box3_Zero(), head_node, CONTENTS_SOLID);
+      if (tr.fraction < 1.f) {
 
-        distance = dist;
+        const float dist = Vec3_Distance(start, tr.end);
+        if (dist < distance) {
+          material = e->model->mesh->faces->material;
+          distance = dist;
+        }
       }
     }
   }

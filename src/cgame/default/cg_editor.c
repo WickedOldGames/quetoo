@@ -343,6 +343,93 @@ void Cg_FreeEditorEntities(void) {
 }
 
 /**
+ * @brief Traces the view ray against all BSP models and CONTENTS_EDITOR point entity hulls.
+ * @details Phase 1 traces every BSP model head node with `~CONTENTS_EDITOR` to find the closest
+ *   real brush surface hit. Phase 2 traces CONTENTS_EDITOR hulls to find any smaller point entity
+ *   that is nearer to the camera than the BSP hit.
+ * @return A `cg_editor_trace_t` whose `.ent` always points into `cg_editor_entities[]`, defaulting
+ *   to worldspawn. `.trace` carries the raw BSP hit data (.material, .brush, .plane).
+ */
+cg_editor_trace_t Cg_EditorTrace(const vec3_t start, const vec3_t end) {
+
+  cg_editor_trace_t out = {
+    .ent = &cg_editor_entities[0],
+    .trace = { .fraction = 1.f }
+  };
+
+  const cm_bsp_t *bsp = cgi.Bsp();
+
+  // Phase 1: trace every BSP model head node to find the closest real brush hit.
+
+  // Model[0]: worldspawn's merged BSP tree — catches misc_dust, func_group, etc.
+  {
+    const cm_trace_t tr = cgi.BoxTrace(start, end, Box3_Zero(), bsp->models[0].head_node, ~CONTENTS_EDITOR);
+    if (tr.fraction > 0.f && tr.fraction < 1.f) {
+      out.trace = tr;
+      if (tr.brush && tr.brush->entity) {
+        for (int32_t i = 1; i < bsp->num_entities; i++) {
+          if (bsp->entities[i] == tr.brush->entity) {
+            out.ent = &cg_editor_entities[i];
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  // Models[1..N]: inline model entities — trigger_*, func_wall, func_water, etc.
+  for (int32_t i = 1; i < bsp->num_models; i++) {
+    const cm_trace_t tr = cgi.BoxTrace(start, end, Box3_Zero(), bsp->models[i].head_node, ~CONTENTS_EDITOR);
+    if (tr.fraction > 0.f && tr.fraction < out.trace.fraction) {
+      out.trace = tr;
+      out.ent = &cg_editor_entities[0];
+      char model_name[16];
+      g_snprintf(model_name, sizeof(model_name), "*%d", i);
+      for (int32_t j = 1; j < bsp->num_entities; j++) {
+        if (!g_strcmp0(cgi.EntityValue(bsp->entities[j], "model")->string, model_name)) {
+          out.ent = &cg_editor_entities[j];
+          break;
+        }
+      }
+    }
+  }
+
+  const float brush_dist = Vec3_Distance(start, out.trace.end);
+
+  // Phase 2: CONTENTS_EDITOR hull loop — prefer the smallest point entity closer than the BSP hit.
+  cl_entity_t *ent = NULL;
+  vec3_t pt = start;
+  float best_radius = FLT_MAX;
+
+  while (true) {
+
+    const cm_trace_t tr = cgi.Trace(pt, end, Box3_Zero(), ent, CONTENTS_EDITOR);
+    if (tr.fraction == 1.f) {
+      break;
+    }
+
+    pt = Vec3_Add(tr.end, cgi.view->forward);
+    ent = tr.ent;
+
+    if (tr.fraction == 0.f) {
+      continue;
+    }
+
+    if (Vec3_Distance(start, tr.end) > brush_dist) {
+      break;
+    }
+
+    const float radius = Box3_Radius(ent->bounds);
+    if (radius < best_radius) {
+      best_radius = radius;
+      out.ent = &cg_editor_entities[ent->current.number];
+    }
+  }
+
+  return out;
+}
+
+/**
  * @brief Pushes or pops the editor view controller based on the current editor cvar state.
  */
 void Cg_CheckEditor(void) {

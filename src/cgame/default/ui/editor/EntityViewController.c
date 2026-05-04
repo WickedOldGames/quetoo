@@ -306,101 +306,16 @@ static void viewWillAppear(ViewController *self) {
 
   EntityViewController *this = (EntityViewController *) self;
 
-  EditorEntity entity = {
-    .number = 0,
-    .ent = cgi.client->entities,
-    .def = cg_editor_entities[0].def
-  };
-
   const vec3_t start = cgi.view->origin;
   const vec3_t end = Vec3_Fmaf(start, MAX_WORLD_DIST, cgi.view->forward);
-  const cm_bsp_t *bsp = cgi.Bsp();
 
-  // Phase 1: trace against every BSP model to find the closest brush entity hit.
-  // ~CONTENTS_EDITOR hits real brush geometry while ignoring synthetic editor box hulls.
-  cm_trace_t best_bsp_tr = { .fraction = 1.f };
-  int32_t bsp_entity_number = 0;
+  const cg_editor_trace_t tr = Cg_EditorTrace(start, end);
 
-  // Model[0] is worldspawn's merged BSP tree; brush->entity identifies the original entity
-  // (e.g. misc_dust, func_group whose brushes are merged in)
-  {
-    const cm_trace_t tr = cgi.BoxTrace(start, end, Box3_Zero(), bsp->models[0].head_node, ~CONTENTS_EDITOR);
-    if (tr.fraction > 0.f && tr.fraction < 1.f && tr.brush && tr.brush->entity) {
-      for (int32_t i = 1; i < bsp->num_entities; i++) {
-        if (bsp->entities[i] == tr.brush->entity) {
-          best_bsp_tr = tr;
-          bsp_entity_number = i;
-          break;
-        }
-      }
-    }
-  }
-
-  // Models[1..N] are inline model entities (trigger_*, func_wall, func_water, etc.)
-  for (int32_t i = 1; i < bsp->num_models; i++) {
-    const cm_trace_t tr = cgi.BoxTrace(start, end, Box3_Zero(), bsp->models[i].head_node, ~CONTENTS_EDITOR);
-    if (tr.fraction > 0.f && tr.fraction < best_bsp_tr.fraction) {
-      char model_name[16];
-      g_snprintf(model_name, sizeof(model_name), "*%d", i);
-      for (int32_t j = 1; j < bsp->num_entities; j++) {
-        if (!g_strcmp0(cgi.EntityValue(bsp->entities[j], "model")->string, model_name)) {
-          best_bsp_tr = tr;
-          bsp_entity_number = j;
-          break;
-        }
-      }
-    }
-  }
-
-  if (bsp_entity_number > 0) {
-    entity = (EditorEntity) {
-      .number = bsp_entity_number,
-      .ent = &cgi.client->entities[bsp_entity_number],
-      .def = cg_editor_entities[bsp_entity_number].def
-    };
-  }
-
-  const float brush_dist = Vec3_Distance(start, best_bsp_tr.end);
-
-  // Phase 2: CONTENTS_EDITOR loop for point entities (lights, items, etc.); prefer any
-  // that are closer to the camera than the nearest BSP brush hit.
-  cl_entity_t *ent = NULL;
-  vec3_t pt_start = start;
-  float best_radius = FLT_MAX;
-
-  while (true) {
-
-    const cm_trace_t tr = cgi.Trace(pt_start, end, Box3_Zero(), ent, CONTENTS_EDITOR);
-    if (tr.fraction == 1.f) {
-      break;
-    }
-
-    pt_start = Vec3_Add(tr.end, cgi.view->forward);
-    ent = tr.ent;
-
-    // skip any entity whose hull the camera is currently inside
-    if (tr.fraction == 0.f) {
-      continue;
-    }
-
-    // only consider entities closer than the nearest BSP brush hit
-    if (Vec3_Distance(start, tr.end) > brush_dist) {
-      break;
-    }
-
-    const int32_t number = ent->current.number;
-    const float radius = Box3_Radius(ent->bounds);
-    if (radius < best_radius) {
-      best_radius = radius;
-      entity = (EditorEntity) {
-        .number = number,
-        .ent = ent,
-        .def = cg_editor_entities[number].def
-      };
-    }
-  }
-
-  $(this, setEntity, &entity);
+  $(this, setEntity, &(EditorEntity) {
+    .number = tr.ent->number,
+    .ent = (cl_entity_t *) tr.ent->ent,
+    .def = tr.ent->def
+  });
 
   super(ViewController, self, viewWillAppear);
 }
