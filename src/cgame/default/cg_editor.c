@@ -313,6 +313,8 @@ void Cg_LoadEditorEntities(void) {
     return;
   }
 
+  Cg_FreeEditorEntities();
+
   for (int32_t i = 0; i < MAX_ENTITIES; i++) {
     const char *info = cgi.client->config_strings[CS_ENTITIES + i];
     if (!*info) {
@@ -394,7 +396,9 @@ cg_editor_trace_t Cg_EditorTrace(const vec3_t start, const vec3_t end) {
     }
   }
 
-  const float brush_dist = Vec3_Distance(start, out.trace.end);
+  const float brush_dist = out.trace.fraction < 1.f
+    ? Vec3_Distance(start, out.trace.end)
+    : Vec3_Distance(start, end);
 
   // Phase 2: CONTENTS_EDITOR hull loop — prefer the smallest point entity closer than the BSP hit.
   cl_entity_t *ent = NULL;
