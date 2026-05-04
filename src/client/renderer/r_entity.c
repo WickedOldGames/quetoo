@@ -25,12 +25,8 @@
  * @brief Computes and stores the entity's transformed world-space bounds.
  */
 static void R_SetEntityBounds(r_entity_t *e) {
-  if (e->model) {
-    if (Box3_IsNull(e->model->bounds)) {
-      e->abs_model_bounds = Box3_Null();
-    } else {
-      e->abs_model_bounds = Mat4_TransformBounds(e->matrix, e->model->bounds);
-    }
+  if (e->model && !Box3_IsNull(e->model->bounds)) {
+    e->abs_model_bounds = Mat4_TransformBounds(e->matrix, e->model->bounds);
   } else {
     e->abs_model_bounds = e->abs_bounds;
   }
@@ -136,6 +132,10 @@ static void R_DrawEntitiesBounds(const r_view_t *view) {
     }
 
     if (e->effects & (EF_WORLD | EF_SELF | EF_WEAPON)) {
+      continue;
+    }
+
+    if (Box3_IsNull(e->abs_model_bounds)) {
       continue;
     }
 

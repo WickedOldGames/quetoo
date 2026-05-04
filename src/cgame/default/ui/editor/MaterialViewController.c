@@ -19,8 +19,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#include "ui_local.h"
-#include "client.h"
+#include "cg_local.h"
 
 #include "MaterialViewController.h"
 
@@ -51,7 +50,7 @@ static void didSetValue(Slider *slider, double value) {
   } else if (slider == this->alphaTest) {
     this->material->cm->alpha_test = slider->value;
   } else {
-    Com_Debug(DEBUG_UI, "Unknown Slider %p\n", (void *) slider);
+    Cg_Debug("Unknown Slider %p\n", (void *) slider);
     return;
   }
 
@@ -114,59 +113,49 @@ static void viewWillAppear(ViewController *self) {
 
   MaterialViewController *this = (MaterialViewController *) self;
 
+  const vec3_t start = cgi.view->origin;
+  const vec3_t end = Vec3_Fmaf(start, MAX_WORLD_DIST, cgi.view->forward);
+
   r_material_t *material = NULL;
 
-  float distance = MAX_WORLD_DIST;
-
-  vec3_t start = Vec3_Fmaf(cl_view.origin, 32.f, cl_view.forward);
-  vec3_t end = Vec3_Fmaf(start, MAX_WORLD_DIST, cl_view.forward);
-
-  while (material == NULL) {
-
-    const cm_trace_t tr = Cl_Trace(start, end, Box3_Zero(), 0, CONTENTS_MASK_VISIBLE);
-    if (!tr.material) {
-      break;
-    }
-
-    if (!g_strcmp0(tr.material->name, "common/fog")) {
-      start = Vec3_Add(tr.end, cl_view.forward);
-      continue;
-    }
-
-    material = R_LoadMaterial(tr.material->name, ASSET_CONTEXT_TEXTURES);
-
-    distance = Vec3_Distance(cl_view.origin, tr.end);
+  const cg_editor_trace_t tr = Cg_EditorTrace(start, end);
+  if (tr.trace.fraction < 1.f && tr.trace.material) {
+    material = cgi.LoadMaterial(tr.trace.material->name, ASSET_CONTEXT_TEXTURES);
   }
 
-  const r_entity_t *e = cl_view.entities;
-  for (int32_t i = 0; i < cl_view.num_entities; i++, e++) {
+  // Mesh entities: prefer any hit closer than the BSP brush hit.
+  if (material == NULL) {
 
-    if (e->model == NULL) {
-      continue;
-    }
+    float distance = MAX_WORLD_DIST;
 
-    if (e->model->type != MODEL_MESH) {
-      continue;
-    }
+    const r_entity_t *e = cgi.view->entities;
+    for (int32_t i = 0; i < cgi.view->num_entities; i++, e++) {
 
-    if (e->model->mesh->faces->material == NULL) {
-      continue;
-    }
+      if (e->model == NULL) {
+        continue;
+      }
 
-    if (e->effects & (EF_SELF | EF_WEAPON)) {
-      continue;
-    }
+      if (e->model->type != MODEL_MESH) {
+        continue;
+      }
 
-    const int32_t head_node = Cm_SetBoxHull(e->abs_model_bounds, CONTENTS_SOLID);
+      if (e->model->mesh->faces->material == NULL) {
+        continue;
+      }
 
-    const cm_trace_t tr = Cm_BoxTrace(cl_view.origin, end, Box3_Zero(), head_node, CONTENTS_SOLID);
-    if (tr.fraction < 1.f) {
+      if (e->effects & (EF_SELF | EF_WEAPON)) {
+        continue;
+      }
 
-      const float dist = Vec3_Distance(cl_view.origin, tr.end);
-      if (dist < distance) {
-        material = e->model->mesh->faces->material;
+      const int32_t head_node = cgi.SetBoxHull(e->abs_model_bounds, CONTENTS_SOLID);
+      const cm_trace_t mesh_tr = cgi.BoxTrace(start, end, Box3_Zero(), head_node, CONTENTS_SOLID);
+      if (mesh_tr.fraction < 1.f) {
 
-        distance = dist;
+        const float dist = Vec3_Distance(start, mesh_tr.end);
+        if (dist < distance) {
+          material = e->model->mesh->faces->material;
+          distance = dist;
+        }
       }
     }
   }

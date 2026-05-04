@@ -97,7 +97,6 @@ static const g_entity_class_t g_entity_classes[] = {
 
   { "misc_dust", G_FreeEntity },
   { "misc_flame", G_FreeEntity },
-  { "misc_fog", G_FreeEntity },
   { "misc_light", G_FreeEntity },
   { "misc_model", G_FreeEntity },
   { "misc_sound", G_FreeEntity },
