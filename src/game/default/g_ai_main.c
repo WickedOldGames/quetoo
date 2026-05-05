@@ -1775,7 +1775,7 @@ void G_Ai_Frame(void) {
     } else if (active_clients > desired_clients) {
       G_ForEachClient(cl, {
         if (cl->ai) {
-          G_ClientDisconnect(cl);
+          gi.Cbuf(va("kick %d\n", cl->ps.client));
           break;
         }
       });

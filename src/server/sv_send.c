@@ -245,8 +245,6 @@ void Sv_Multicast(const vec3_t origin, multicast_t to) {
   Mem_ClearBuffer(&sv.multicast);
 }
 
-
-
 /**
  * @brief Builds and transmits the current frame packet to the specified client.
  */
