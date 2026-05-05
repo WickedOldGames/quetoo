@@ -60,11 +60,71 @@ typedef struct {
 /**
  * @brief Initializes a misc_dust entity by loading its sprite and computing spawn origins from brushes.
  */
+static const char *cg_dust_preset_default =
+  "\\sprite\\particle"
+  "\\color\\1 1 1"
+  "\\size\\1"
+  "\\lifetime\\10"
+  "\\lighting\\1"
+  "\\density\\1"
+  "\\hz\\10";
+
+static const char *cg_dust_preset_embers =
+  "\\sprite\\particle2"
+  "\\velocity\\0 0 5"
+  "\\acceleration\\8 8 8"
+  "\\acceleration_spread\\8 12 8"
+  "\\color\\1 .25 .0125"
+  "\\end_color\\.125 0 0"
+  "\\size\\2.25"
+  "\\size_velocity\\-.25"
+  "\\lifetime\\2"
+  "\\lighting\\0"
+  "\\density\\.33"
+  "\\hz\\10";
+
+static const char *cg_dust_preset_bubbles =
+  "\\sprite\\bubble"
+  "\\velocity\\0 0 21"
+  "\\acceleration\\0 0 -.2"
+  "\\color\\1 1 1"
+  "\\size\\2"
+  "\\lifetime\\2"
+  "\\lighting\\1"
+  "\\density\\.33"
+  "\\hz\\10";
+
+static const char *cg_dust_preset_fizz =
+  "\\sprite\\ripple_0"
+  "\\velocity\\0 0 10"
+  "\\color\\1 1 1"
+  "\\size\\3"
+  "\\size_velocity\\8"
+  "\\lifetime\\.5"
+  "\\lighting\\1"
+  "\\density\\.1"
+  "\\hz\\10";
+
 static void Cg_misc_dust_Init(cg_entity_t *self) {
 
   cg_dust_t *dust = self->data;
 
-  const char *name = cgi.EntityValue(self->def, "sprite")->nullable_string ?: "particle";
+  const char *type = cgi.EntityValue(self->def, "type")->nullable_string;
+
+  const char *preset_str = cg_dust_preset_default;
+  if (!g_strcmp0(type, "embers")) {
+    preset_str = cg_dust_preset_embers;
+  } else if (!g_strcmp0(type, "bubbles")) {
+    preset_str = cg_dust_preset_bubbles;
+  } else if (!g_strcmp0(type, "fizz")) {
+    preset_str = cg_dust_preset_fizz;
+  }
+
+  cm_entity_t *preset = cgi.EntityFromInfoString(preset_str);
+  cm_entity_t *def = cgi.EntityAssign(self->def, preset);
+  cgi.FreeEntity(preset);
+
+  const char *name = cgi.EntityValue(def, "sprite")->nullable_string ?: "particle";
   dust->sprite.image = cgi.LoadImage(va("sprites/%s", name), IMG_SPRITE);
   if (dust->sprite.image == NULL) {
     dust->sprite.image = cgi.LoadImage("sprites/particle", IMG_SPRITE);
@@ -74,39 +134,26 @@ static void Cg_misc_dust_Init(cg_entity_t *self) {
          name);
   }
 
-  dust->sprite.velocity = cgi.EntityValue(self->def, "velocity")->vec3;
-  dust->sprite.acceleration = cgi.EntityValue(self->def, "acceleration")->vec3;
-  dust->sprite.rotation = cgi.EntityValue(self->def, "rotation")->value;
-  dust->sprite.rotation_velocity = cgi.EntityValue(self->def, "rotation_velocity")->value;
-  dust->sprite.dir = cgi.EntityValue(self->def, "dir")->vec3;
+  dust->sprite.velocity = cgi.EntityValue(def, "velocity")->vec3;
+  dust->sprite.acceleration = cgi.EntityValue(def, "acceleration")->vec3;
+  dust->sprite.rotation = cgi.EntityValue(def, "rotation")->value;
+  dust->sprite.rotation_velocity = cgi.EntityValue(def, "rotation_velocity")->value;
+  dust->sprite.dir = cgi.EntityValue(def, "dir")->vec3;
+  dust->sprite.color = cgi.EntityValue(def, "color")->vec3;
+  dust->sprite.end_color = cgi.EntityValue(def, "end_color")->vec3;
+  dust->sprite.size = cgi.EntityValue(def, "size")->value;
+  dust->sprite.size_velocity = cgi.EntityValue(def, "size_velocity")->value;
+  dust->sprite.size_acceleration = cgi.EntityValue(def, "size_acceleration")->value;
+  dust->sprite.width = cgi.EntityValue(def, "width")->value;
+  dust->sprite.height = cgi.EntityValue(def, "height")->value;
+  dust->sprite.bounce = cgi.EntityValue(def, "bounce")->value;
+  dust->sprite.lifetime = SECONDS_TO_MILLIS(cgi.EntityValue(def, "lifetime")->value);
+  dust->sprite.lighting = cgi.EntityValue(def, "lighting")->value;
+  dust->acceleration_spread = cgi.EntityValue(def, "acceleration_spread")->vec3;
+  dust->density = cgi.EntityValue(def, "density")->value;
+  self->hz = cgi.EntityValue(def, "hz")->value;
 
-  const cm_entity_t *color = cgi.EntityValue(self->def, "color");
-  if (color->parsed & ENTITY_VEC3) {
-    dust->sprite.color = color->vec3;
-  } else {
-    dust->sprite.color = Vec3(1.f, 1.f, 1.f);
-  }
-
-  const cm_entity_t *end_color = cgi.EntityValue(self->def, "end_color");
-  if (end_color->parsed & ENTITY_VEC3) {
-    dust->sprite.end_color = end_color->vec3;
-  } else {
-    dust->sprite.end_color = Vec3(0.f, 0.f, 0.f);
-  }
-
-  dust->sprite.size = cgi.EntityValue(self->def, "size")->value ?: 1.f;
-  dust->sprite.size_velocity = cgi.EntityValue(self->def, "size_velocity")->value;
-  dust->sprite.size_acceleration = cgi.EntityValue(self->def, "size_acceleration")->value;
-  dust->acceleration_spread = cgi.EntityValue(self->def, "acceleration_spread")->vec3;
-  dust->sprite.width = cgi.EntityValue(self->def, "width")->value;
-  dust->sprite.height = cgi.EntityValue(self->def, "height")->value;
-  dust->sprite.bounce = cgi.EntityValue(self->def, "bounce")->value;
-  dust->sprite.lifetime = SECONDS_TO_MILLIS(cgi.EntityValue(self->def, "lifetime")->value ?: 10.f);
-  dust->sprite.lighting = cgi.EntityValue(self->def, "lighting")->value ?: 1.f;
-
-  dust->density = cgi.EntityValue(self->def, "density")->value ?: 1.f;
-
-  self->hz = cgi.EntityValue(self->def, "hz")->value ?: 10.f;
+  cgi.FreeEntity(def);
 
   self->bounds = Box3_Null();
 

@@ -39,6 +39,14 @@ cm_entity_t *Cm_AllocEntity(void);
 cm_entity_t *Cm_CopyEntity(const cm_entity_t *entity);
 
 /**
+ * @brief Returns a new entity list with keys from src assigned into a copy of dst.
+ * @details Keys already present in dst take priority; keys only in src are appended.
+ *   Analogous to JavaScript's Object.assign(dst, src).
+ * @return A newly allocated entity list; the caller must free with Cm_FreeEntity.
+ */
+cm_entity_t *Cm_EntityAssign(const cm_entity_t *dst, const cm_entity_t *src);
+
+/**
  * @brief Parses the string field of an entity pair into its typed fields.
  */
 void Cm_ParseEntity(cm_entity_t *pair);

@@ -240,6 +240,7 @@ void Cl_InitCgame(void) {
   import.Bsp = Cm_Bsp;
   import.Worldspawn = Cm_Worldspawn;
   import.EntityValue = Cm_EntityValue;
+  import.EntityAssign = Cm_EntityAssign;
   import.EntityBrushes = Cm_EntityBrushes;
   import.AllocEntity = Cm_AllocEntity;
   import.FreeEntity = Cm_FreeEntity;
