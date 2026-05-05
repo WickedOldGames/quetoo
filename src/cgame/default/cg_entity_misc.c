@@ -105,6 +105,34 @@ static const char *cg_dust_preset_fizz =
   "\\density\\.1"
   "\\hz\\10";
 
+// Sprite is assigned from cg_sprite_flame (atlas image) — no "sprite" key needed.
+static const char *cg_dust_preset_flame =
+  "\\velocity\\0 0 5"
+  "\\acceleration\\0 0 120"
+  "\\acceleration_spread\\4 4 0"
+  "\\color\\1 .45 .05"
+  "\\end_color\\.6 .05 0"
+  "\\size\\1.5"
+  "\\size_velocity\\14"
+  "\\size_acceleration\\80"
+  "\\lifetime\\.85"
+  "\\lighting\\0"
+  "\\density\\.5"
+  "\\hz\\10";
+
+// Sprite is assigned from cg_sprite_steam (atlas image) — no "sprite" key needed.
+static const char *cg_dust_preset_steam =
+  "\\velocity\\0 0 32"
+  "\\acceleration\\0 0 20"
+  "\\acceleration_spread\\1 1 0"
+  "\\color\\.5 .5 .5"
+  "\\size\\20"
+  "\\size_velocity\\10"
+  "\\lifetime\\1.2"
+  "\\lighting\\.5"
+  "\\density\\.2"
+  "\\hz\\8";
+
 static void Cg_misc_dust_Init(cg_entity_t *self) {
 
   cg_dust_t *dust = self->data;
@@ -118,20 +146,30 @@ static void Cg_misc_dust_Init(cg_entity_t *self) {
     preset_str = cg_dust_preset_bubbles;
   } else if (!g_strcmp0(type, "fizz")) {
     preset_str = cg_dust_preset_fizz;
+  } else if (!g_strcmp0(type, "flame")) {
+    preset_str = cg_dust_preset_flame;
+  } else if (!g_strcmp0(type, "steam")) {
+    preset_str = cg_dust_preset_steam;
   }
 
   cm_entity_t *preset = cgi.EntityFromInfoString(preset_str);
   cm_entity_t *def = cgi.EntityAssign(self->def, preset);
   cgi.FreeEntity(preset);
 
-  const char *name = cgi.EntityValue(def, "sprite")->nullable_string ?: "particle";
-  dust->sprite.image = cgi.LoadImage(va("sprites/%s", name), IMG_SPRITE);
-  if (dust->sprite.image == NULL) {
-    dust->sprite.image = cgi.LoadImage("sprites/particle", IMG_SPRITE);
-    Cg_Warn("%s @ %s failed to load sprite %s\n",
-         self->clazz->classname,
-         vtos(self->origin),
-         name);
+  if (!g_strcmp0(type, "flame")) {
+    dust->sprite.atlas_image = cg_sprite_flame;
+  } else if (!g_strcmp0(type, "steam")) {
+    dust->sprite.atlas_image = cg_sprite_steam;
+  } else {
+    const char *name = cgi.EntityValue(def, "sprite")->nullable_string ?: "particle";
+    dust->sprite.image = cgi.LoadImage(va("sprites/%s", name), IMG_SPRITE);
+    if (dust->sprite.image == NULL) {
+      dust->sprite.image = cgi.LoadImage("sprites/particle", IMG_SPRITE);
+      Cg_Warn("%s @ %s failed to load sprite %s\n",
+           self->clazz->classname,
+           vtos(self->origin),
+           name);
+    }
   }
 
   dust->sprite.velocity = cgi.EntityValue(def, "velocity")->vec3;
