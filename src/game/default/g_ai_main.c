@@ -1748,7 +1748,7 @@ void G_Ai_Frame(void) {
     G_Ai_NodesReady();
   }
 
-  if (g_level.time % 5000 == 0) {
+  if (g_level.time % 1000 == 0) {
 
     int32_t human_clients = 0;
     int32_t ai_clients = 0;

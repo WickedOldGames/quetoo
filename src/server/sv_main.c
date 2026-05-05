@@ -58,13 +58,13 @@ void Sv_DropClient(sv_client_t *client) {
 
     g_client_t *cl = client->gclient;
 
-    if (client->state == SV_CLIENT_ACTIVE) { // after informing the game module
-      svs.game->ClientDisconnect(cl);
-    }
-
     if (!cl->ai) { // bots have no network connection
       Net_WriteByte(&client->net_chan.message, SV_CMD_DROP);
       Netchan_Transmit(&client->net_chan, client->net_chan.message.data, client->net_chan.message.size);
+    }
+
+    if (client->state == SV_CLIENT_ACTIVE) { // inform the game module
+      svs.game->ClientDisconnect(cl);
     }
   }
 

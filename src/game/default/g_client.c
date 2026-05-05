@@ -1331,9 +1331,7 @@ void G_ClientDisconnect(g_client_t *cl) {
   G_TossTech(cl);
   G_HookDetach(cl);
 
-  if (cl->ai) {
-    G_Ai_Disconnect(cl);
-  }
+  cl->in_use = false;
 
   gi.BroadcastPrint(PRINT_HIGH, "%s disconnected\n", cl->persistent.net_name);
 
@@ -1344,14 +1342,6 @@ void G_ClientDisconnect(g_client_t *cl) {
     gi.Multicast(cl->entity->s.origin, MULTICAST_PHS);
   }
 
-  const uint8_t client = cl->ps.client;
-  gi.SetConfigString(CS_CLIENTS + client, "");
-
-  G_FreeEntity(cl->entity);
-
-  memset(cl, 0, sizeof(g_client_t));
-  cl->ps.client = client;
-
   int32_t count = 0;
   G_ForEachClient(cl, {
     if (cl->in_use) {
@@ -1359,7 +1349,18 @@ void G_ClientDisconnect(g_client_t *cl) {
     }
   });
 
+  const uint8_t client = cl->ps.client;
+  gi.SetConfigString(CS_CLIENTS + client, "");
   gi.SetConfigString(CS_NUM_CLIENTS, va("%d", count));
+
+  if (cl->ai) {
+    G_Ai_Disconnect(cl);
+  }
+
+  G_FreeEntity(cl->entity);
+
+  memset(cl, 0, sizeof(g_client_t));
+  cl->ps.client = client;
 }
 
 /**
