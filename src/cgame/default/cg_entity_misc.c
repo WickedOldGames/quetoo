@@ -61,7 +61,7 @@ typedef struct {
  * @brief Initializes a misc_dust entity by loading its sprite and computing spawn origins from brushes.
  */
 static const char *cg_dust_preset_default =
-  "\\sprite\\particle"
+  "sprite\\particle"
   "\\color\\1 1 1"
   "\\size\\1"
   "\\lifetime\\10"
@@ -70,7 +70,7 @@ static const char *cg_dust_preset_default =
   "\\hz\\10";
 
 static const char *cg_dust_preset_embers =
-  "\\sprite\\particle2"
+  "sprite\\particle2"
   "\\velocity\\0 0 5"
   "\\acceleration\\8 8 8"
   "\\acceleration_spread\\8 12 8"
@@ -84,7 +84,7 @@ static const char *cg_dust_preset_embers =
   "\\hz\\10";
 
 static const char *cg_dust_preset_bubbles =
-  "\\sprite\\bubble"
+  "sprite\\bubble"
   "\\velocity\\0 0 21"
   "\\acceleration\\0 0 -.2"
   "\\color\\1 1 1"
@@ -95,7 +95,7 @@ static const char *cg_dust_preset_bubbles =
   "\\hz\\10";
 
 static const char *cg_dust_preset_fizz =
-  "\\sprite\\ripple_0"
+  "sprite\\ripple_0"
   "\\velocity\\0 0 10"
   "\\color\\1 1 1"
   "\\size\\3"
