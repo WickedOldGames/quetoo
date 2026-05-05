@@ -112,6 +112,12 @@ EOF
   done
 fi
 
+# Capture enabled instances now, before the package install stops them.
+INSTANCES=()
+while IFS= read -r unit; do
+  INSTANCES+=("${unit}")
+done < <(systemctl list-unit-files --plain --no-legend 'quetoo-dedicated@*.service' | awk '$2 == "enabled" {print $1}')
+
 # Download and install packages.
 TMPDIR=$(mktemp -d)
 trap 'rm -rf "$TMPDIR"' EXIT
@@ -131,12 +137,12 @@ else
   dnf install -y "$TMPDIR/quetoo.rpm" "$TMPDIR/quetoo-data.rpm"
 fi
 
-# Restart all running instances.
-while IFS= read -r unit; do
+# Restart each enabled instance after the update.
+for unit in "${INSTANCES[@]}"; do
   instance="${unit#quetoo-dedicated@}"
   instance="${instance%.service}"
   echo "Restarting quetoo-dedicated@${instance}..."
   systemctl restart "quetoo-dedicated@${instance}" || true
-done < <(systemctl list-units --state=active --plain --no-legend 'quetoo-dedicated@*.service' | awk '{print $1}')
+done
 
 echo "Quetoo updated to $LATEST (data: $DATA_LATEST)."
