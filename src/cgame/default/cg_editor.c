@@ -444,7 +444,6 @@ void Cg_CheckEditor(void) {
 
   if (editor->value) {
     if (!instanceof(EditorViewController, cgi.TopViewController())) {
-      Cg_LoadEditorEntities();
       ViewController *vc = (ViewController *) alloc(EditorViewController);
       cgi.PushViewController($(vc, init));
       release(vc);
