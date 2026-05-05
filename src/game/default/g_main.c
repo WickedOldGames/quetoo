@@ -126,6 +126,7 @@ cvar_t *g_weapon_stay;
 
 cvar_t *sv_max_clients;
 cvar_t *sv_max_entities;
+cvar_t *sv_min_clients;
 cvar_t *sv_hostname;
 cvar_t *dedicated;
 cvar_t *editor;
@@ -1127,6 +1128,7 @@ g_export_t *G_LoadGame(g_import_t *import) {
 
   sv_max_clients = gi.GetCvar("sv_max_clients");
   sv_max_entities = gi.GetCvar("sv_max_entities");
+  sv_min_clients = gi.GetCvar("sv_min_clients");
   sv_hostname = gi.GetCvar("sv_hostname");
 
   dedicated = gi.GetCvar("dedicated");

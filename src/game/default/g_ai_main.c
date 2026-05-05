@@ -24,7 +24,6 @@
 
 cvar_t *g_ai_no_target;
 cvar_t *g_ai_node_dev;
-cvar_t *g_ai_clients;
 
 /**
  * @brief Linear interpolation between a and b by fraction t (0.0 to 1.0).
@@ -1745,27 +1744,45 @@ void G_Ai_Frame(void) {
     return;
   }
 
-  if (g_level.time % 1000 == 0) {
+  // Check bot population every 5 seconds
+  static uint32_t last_check = 0;
+  if (g_level.time - last_check >= 5000 || g_level.time == 0) {
+    last_check = g_level.time;
 
     if (g_level.time == 1000) {
       G_Ai_NodesReady();
     }
 
-    int32_t count = 0;
+    const int32_t min_clients = Maxi(0, sv_min_clients->integer);
+    
+    // Count human and AI clients
+    int32_t human_count = 0;
+    int32_t ai_count = 0;
     G_ForEachClient(cl, {
       if (cl->ai) {
-        count++;
+        ai_count++;
+      } else {
+        human_count++;
       }
     });
 
-    const int32_t desired = Maxi(0, g_ai_clients->integer);
+    // Desired total clients: at least min_clients, or current human count if higher
+    const int32_t desired_total = Maxi(human_count, min_clients);
+    
+    // Respect sv_max_clients limit
+    const int32_t max_allowed = sv_max_clients->integer;
+    const int32_t capped_desired = Mini(desired_total, max_allowed);
+    
+    const int32_t current_total = human_count + ai_count;
 
-    if (count < desired) {
+    if (current_total < capped_desired) {
+      // Add a bot
       G_ForEachFreeClient(cl, {
         G_Ai_Connect(cl);
         break;
       });
-    } else if (count > desired) {
+    } else if (current_total > capped_desired) {
+      // Remove a bot
       G_ForEachClient(cl, {
         if (cl->ai) {
           G_ClientDisconnect(cl);
@@ -1851,7 +1868,6 @@ void G_Ai_OffsetNodes_f(void);
  */
 void G_Ai_Init(void) {
 
-  g_ai_clients = gi.AddCvar("g_ai_clients", "0", CVAR_SERVER_INFO, "The number of bots to maintain.");
   g_ai_no_target = gi.AddCvar("g_ai_no_target", "0", CVAR_DEVELOPER, "Disables bots targeting enemies");
   g_ai_node_dev = gi.AddCvar("g_ai_node_dev", "0", CVAR_DEVELOPER | CVAR_LATCH, "Toggles node development mode. '1' is full development mode, '2' is live debug mode.");
   
