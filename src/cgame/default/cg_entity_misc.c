@@ -291,7 +291,7 @@ static void Cg_misc_flame_Init(cg_entity_t *self) {
 
   cg_flame_t *flame = self->data;
 
-  flame->density = cgi.EntityValue(self->def, "density")->value ?: 1.f;
+  flame->density = cgi.EntityValue(self->def, "density")->value ?: .666f;
   flame->radius = cgi.EntityValue(self->def, "radius")->value ?: 16.f;
 
   self->bounds = Box3_FromCenterRadius(self->origin, flame->radius * 16.f);
@@ -334,6 +334,34 @@ static void Cg_misc_flame_Think(cg_entity_t *self) {
         .size_velocity = 16.f,
         .size_acceleration = 150.f * s,
         .color = ColorHSV(hue, sat, RandomRangef(.7f, 1.f)).vec3,
+      })) {
+      break;
+    }
+  }
+
+  // Smoke — rises above the flame column, expanding and drifting upward
+  const int32_t num_smoke = (int32_t) Maxf(1.f, flame->radius * flame->density * .15f);
+  for (int32_t i = 0; i < num_smoke; i++) {
+    r_animation_t *anim = (i & 1) ? cg_sprite_smoke_05 : cg_sprite_smoke_04;
+    const vec3_t smoke_origin = {
+      .x = self->origin.x + RandomRangef(-r * .3f, r * .3f),
+      .y = self->origin.y + RandomRangef(-r * .3f, r * .3f),
+      .z = self->origin.z + r * RandomRangef(1.f, 2.5f),
+    };
+    const float sz = Maxf(4.f, r * RandomRangef(.4f, .8f));
+    if (!Cg_AddSprite(&(cg_sprite_t) {
+        .animation = anim,
+        .origin = smoke_origin,
+        .velocity = Vec3(RandomRangef(-8.f, 8.f) * s,
+                         RandomRangef(-8.f, 8.f) * s,
+                         RandomRangef(20.f, 40.f) * s),
+        .rotation = RandomRadian(),
+        .rotation_velocity = RandomRangef(-.2f, .2f),
+        .lifetime = Cg_AnimationLifetime(anim, RandomRangef(10.f, 20.f)),
+        .size = sz,
+        .size_velocity = sz * .5f,
+        .color = Vec3_Scale(Vec3_One(), RandomRangef(.35f, .65f)),
+        .lighting = 1.f,
       })) {
       break;
     }
