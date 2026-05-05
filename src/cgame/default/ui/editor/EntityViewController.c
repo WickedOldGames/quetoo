@@ -192,6 +192,12 @@ static void respondToKeyEvent(EntityViewController *self, const SDL_Event *event
       cgi.Print("Editor grid size set to %g\n", editor_grid_size->value);
     }
 
+    if (key == SDLK_G) {
+      self->show_func_groups = !self->show_func_groups;
+      cg_editor.show_func_groups = self->show_func_groups;
+      cgi.Print("func_group entities %s\n", self->show_func_groups ? "^2shown" : "^1hidden");
+    }
+
     if (cgi.GetKeyDest() == KEY_UI && e) {
 
       vec3_t move = Vec3_Zero();
@@ -283,7 +289,7 @@ static void respondToEvent(ViewController *self, const SDL_Event *event) {
         const EditorEntity entity = {
           .number = number,
           .ent = &cgi.client->entities[number],
-          .def = cg_editor_entities[number].def
+          .def = cg_editor.entities[number].def
         };
 
         if (number == this->entity.number || number == this->teamEntity.number) {
@@ -355,7 +361,11 @@ static void deleteEntity(EntityViewController *self) {
  * @memberof EntityViewController
  */
 static EntityViewController *init(EntityViewController *self) {
-  return (EntityViewController *) super(ViewController, self, init);
+  self = (EntityViewController *) super(ViewController, self, init);
+  if (self) {
+    self->show_func_groups = true;
+  }
+  return self;
 }
 
 /**
@@ -402,7 +412,7 @@ static void setEntity(EntityViewController *self, const EditorEntity *entity) {
         self->teamEntity = (EditorEntity) {
           .number = teamMaster,
           .ent = &cgi.client->entities[teamMaster],
-          .def = cg_editor_entities[teamMaster].def
+          .def = cg_editor.entities[teamMaster].def
         };
 
         for (cm_entity_t *e = self->teamEntity.def; e; e = e->next) {

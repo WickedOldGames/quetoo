@@ -57,7 +57,25 @@ typedef struct {
 
 } cg_editor_entity_t;
 
-extern cg_editor_entity_t cg_editor_entities[MAX_ENTITIES];
+/**
+ * @brief Encapsulates all mutable editor state.
+ */
+typedef struct {
+
+  /**
+   * @brief Editor entity array, indexed by entity number.
+   */
+  cg_editor_entity_t entities[MAX_ENTITIES];
+
+  /**
+   * @brief When false, func_group entities are excluded from editor traces and scene drawing.
+   * @details Toggled via the 'G' key in the EntityViewController.
+   */
+  bool show_func_groups;
+
+} cg_editor_t;
+
+extern cg_editor_t cg_editor;
 
 /**
  * @brief The result of a combined editor trace against all BSP models and CONTENTS_EDITOR entities.
@@ -65,8 +83,8 @@ extern cg_editor_entity_t cg_editor_entities[MAX_ENTITIES];
 typedef struct {
 
   /**
-   * @brief Pointer into `cg_editor_entities[]` for the resolved entity. Always valid; defaults to
-   *   worldspawn (`&cg_editor_entities[0]`) when no more-specific entity was hit.
+   * @brief Pointer into `cg_editor.entities[]` for the resolved entity. Always valid; defaults to
+   *   worldspawn (`&cg_editor.entities[0]`) when no more-specific entity was hit.
    */
   cg_editor_entity_t *ent;
 

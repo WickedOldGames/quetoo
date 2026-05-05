@@ -24,10 +24,11 @@
 #include "ui/editor/EditorViewController.h"
 
 /**
- * @brief Editor entity array, indexed by entity number.
- * @details Each slot owns its definition, vtable state, and shadow cache flag.
+ * @brief Global editor state.
  */
-cg_editor_entity_t cg_editor_entities[MAX_ENTITIES];
+cg_editor_t cg_editor = {
+  .show_func_groups = true
+};
 
 /**
  * @brief Finds the `team_master` entity for the given classname and team.
@@ -39,7 +40,7 @@ int32_t Cg_FindTeamMaster(const char *classname, const char *team) {
   }
 
   for (int32_t i = 0; i < MAX_ENTITIES; i++) {
-    const cm_entity_t *e = cg_editor_entities[i].def;
+    const cm_entity_t *e = cg_editor.entities[i].def;
     if (!e) {
       continue;
     }
@@ -75,7 +76,7 @@ static vec4_t Cg_AddEditorEntity_Light(cg_editor_entity_t *edit) {
   if (team) {
     const int32_t master = Cg_FindTeamMaster("light", team);
     if (master != -1) {
-      const cm_entity_t *e = cg_editor_entities[master].def;
+      const cm_entity_t *e = cg_editor.entities[master].def;
       light.radius = light.radius ?: cgi.EntityValue(e, "radius")->value;
       light.color = Vec3_Equal(Vec3_Zero(), light.color) ? cgi.EntityValue(e, "color")->vec3 : light.color;
       light.intensity = light.intensity ?: cgi.EntityValue(e, "intensity")->value;
@@ -118,12 +119,13 @@ void Cg_PopulateEditorScene(const cl_frame_t *frame) {
     cgi.Print("^5To select an entity, place your crosshair over it and press ESC\n");
     cgi.Print("^5To move a selected entity, use W, A, S, D, E, C\n");
     cgi.Print("^5Use your normal hotkeys to cut, copy and paste entities\n");
+    cgi.Print("^5To toggle func_group entities, use G\n");
     cgi.Print("^6To select a material, place your crosshair over it and press ESC\n");
 
     did_print_help = true;
   }
 
-  cg_editor_entity_t *edit = cg_editor_entities;
+  cg_editor_entity_t *edit = cg_editor.entities;
   for (int32_t i = 0; i < MAX_ENTITIES; i++, edit++) {
 
     if (!edit->def) {
@@ -144,19 +146,24 @@ void Cg_PopulateEditorScene(const cl_frame_t *frame) {
       continue;
     }
 
+    const char *classname = cgi.EntityValue(edit->def, "classname")->string;
+
+    if (!g_strcmp0(classname, "func_group") && !cg_editor.show_func_groups) {
+      continue;
+    }
+
     vec4_t color = Color32_Vec4(edit->ent->current.color);
 
     const char *mod = cgi.EntityValue(edit->def, "model")->string;
     r_model_t *model = strlen(mod) ? cgi.LoadModel(mod) : NULL;
 
-    const char *classname = cgi.EntityValue(edit->def, "classname")->string;
     if (!g_strcmp0(classname, "light")) {
       color = Cg_AddEditorEntity_Light(edit);
     } else {
 
       // check for a client-side entity like misc_flame
 
-      cg_entity_t *e = &cg_editor_entities[i].misc;
+      cg_entity_t *e = &cg_editor.entities[i].misc;
       if (e->clazz) {
         if (e->next_think <= cgi.client->unclamped_time) {
           e->clazz->Think(e);
@@ -220,7 +227,7 @@ void Cg_PopulateEditorScene(const cl_frame_t *frame) {
  */
 static void Cg_InitEditorEntity(int16_t number) {
 
-  cg_editor_entity_t *edit = &cg_editor_entities[number];
+  cg_editor_entity_t *edit = &cg_editor.entities[number];
   cg_entity_t *e = &edit->misc;
 
   if (!edit->def) {
@@ -276,7 +283,7 @@ static void Cg_InitEditorEntity(int16_t number) {
  */
 void Cg_ParseEditorEntity(int16_t number, const char *info) {
 
-  cg_editor_entity_t *edit = &cg_editor_entities[number];
+  cg_editor_entity_t *edit = &cg_editor.entities[number];
 
   if (edit->misc.clazz && edit->misc.data) {
     if (edit->misc.clazz->Free) {
@@ -293,7 +300,7 @@ void Cg_ParseEditorEntity(int16_t number, const char *info) {
   edit->def = strlen(info) ? cgi.EntityFromInfoString(info) : NULL;
 
   for (int32_t i = 0; i < MAX_ENTITIES; i++) {
-    cg_editor_entities[i].shadow_cached = false;
+    cg_editor.entities[i].shadow_cached = false;
   }
 
   if (*cgi.state == CL_ACTIVE) {
@@ -324,9 +331,9 @@ void Cg_LoadEditorEntities(void) {
       continue;
     }
 
-    cg_editor_entities[i].number = i;
-    cg_editor_entities[i].ent = &cgi.client->entities[i];
-    cg_editor_entities[i].def = cgi.EntityFromInfoString(info);
+    cg_editor.entities[i].number = i;
+    cg_editor.entities[i].ent = &cgi.client->entities[i];
+    cg_editor.entities[i].def = cgi.EntityFromInfoString(info);
     Cg_InitEditorEntity(i);
   }
 }
@@ -337,7 +344,7 @@ void Cg_LoadEditorEntities(void) {
 void Cg_FreeEditorEntities(void) {
 
   for (int32_t i = 0; i < MAX_ENTITIES; i++) {
-    cg_editor_entity_t *edit = &cg_editor_entities[i];
+    cg_editor_entity_t *edit = &cg_editor.entities[i];
     if (edit->misc.clazz && edit->misc.data) {
       if (edit->misc.clazz->Free) {
         edit->misc.clazz->Free(&edit->misc);
@@ -347,7 +354,7 @@ void Cg_FreeEditorEntities(void) {
     cgi.FreeEntity(edit->def);
   }
 
-  memset(cg_editor_entities, 0, sizeof(cg_editor_entities));
+  memset(cg_editor.entities, 0, sizeof(cg_editor.entities));
 }
 
 /**
@@ -355,13 +362,13 @@ void Cg_FreeEditorEntities(void) {
  * @details Phase 1 traces every BSP model head node with `~CONTENTS_EDITOR` to find the closest
  *   real brush surface hit. Phase 2 traces CONTENTS_EDITOR hulls to find any smaller point entity
  *   that is nearer to the camera than the BSP hit.
- * @return A `cg_editor_trace_t` whose `.ent` always points into `cg_editor_entities[]`, defaulting
+ * @return A `cg_editor_trace_t` whose `.ent` always points into `cg_editor.entities[]`, defaulting
  *   to worldspawn. `.trace` carries the raw BSP hit data (.material, .brush, .plane).
  */
 cg_editor_trace_t Cg_EditorTrace(const vec3_t start, const vec3_t end) {
 
   cg_editor_trace_t out = {
-    .ent = &cg_editor_entities[0],
+    .ent = &cg_editor.entities[0],
     .trace = { .fraction = 1.f }
   };
 
@@ -377,7 +384,13 @@ cg_editor_trace_t Cg_EditorTrace(const vec3_t start, const vec3_t end) {
       if (tr.brush && tr.brush->entity) {
         for (int32_t i = 1; i < bsp->num_entities; i++) {
           if (bsp->entities[i] == tr.brush->entity) {
-            out.ent = &cg_editor_entities[i];
+            if (!cg_editor.show_func_groups) {
+              const char *cn = cgi.EntityValue(bsp->entities[i], "classname")->string;
+              if (!g_strcmp0(cn, "func_group")) {
+                break;
+              }
+            }
+            out.ent = &cg_editor.entities[i];
             break;
           }
         }
@@ -390,12 +403,12 @@ cg_editor_trace_t Cg_EditorTrace(const vec3_t start, const vec3_t end) {
     const cm_trace_t tr = cgi.BoxTrace(start, end, Box3_Zero(), bsp->models[i].head_node, ~CONTENTS_EDITOR);
     if (tr.fraction > 0.f && tr.fraction < out.trace.fraction) {
       out.trace = tr;
-      out.ent = &cg_editor_entities[0];
+      out.ent = &cg_editor.entities[0];
       char model_name[16];
       g_snprintf(model_name, sizeof(model_name), "*%d", i);
       for (int32_t j = 1; j < bsp->num_entities; j++) {
         if (!g_strcmp0(cgi.EntityValue(bsp->entities[j], "model")->string, model_name)) {
-          out.ent = &cg_editor_entities[j];
+          out.ent = &cg_editor.entities[j];
           break;
         }
       }
@@ -432,7 +445,7 @@ cg_editor_trace_t Cg_EditorTrace(const vec3_t start, const vec3_t end) {
     const float radius = Box3_Radius(ent->bounds);
     if (radius < best_radius) {
       best_radius = radius;
-      out.ent = &cg_editor_entities[ent->current.number];
+      out.ent = &cg_editor.entities[ent->current.number];
     }
   }
 

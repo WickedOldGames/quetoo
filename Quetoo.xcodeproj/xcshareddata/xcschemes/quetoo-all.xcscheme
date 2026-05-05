@@ -84,6 +84,10 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
+            argument = "+set threads -1"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
             argument = "+set version -1"
             isEnabled = "YES">
          </CommandLineArgument>
@@ -144,7 +148,7 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "+map 2deaths"
+            argument = "+map tokays"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
