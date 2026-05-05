@@ -279,6 +279,9 @@ void Cg_ParseEditorEntity(int16_t number, const char *info) {
   cg_editor_entity_t *edit = &cg_editor_entities[number];
 
   if (edit->misc.clazz && edit->misc.data) {
+    if (edit->misc.clazz->Free) {
+      edit->misc.clazz->Free(&edit->misc);
+    }
     cgi.Free(edit->misc.data);
   }
 
@@ -336,6 +339,9 @@ void Cg_FreeEditorEntities(void) {
   for (int32_t i = 0; i < MAX_ENTITIES; i++) {
     cg_editor_entity_t *edit = &cg_editor_entities[i];
     if (edit->misc.clazz && edit->misc.data) {
+      if (edit->misc.clazz->Free) {
+        edit->misc.clazz->Free(&edit->misc);
+      }
       cgi.Free(edit->misc.data);
     }
     cgi.FreeEntity(edit->def);

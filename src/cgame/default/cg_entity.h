@@ -28,6 +28,7 @@
 typedef struct cg_entity_s cg_entity_t;
 
 typedef void (*EntityInit)(cg_entity_t *self);
+typedef void (*EntityFree)(cg_entity_t *self);
 typedef void (*EntityThink)(cg_entity_t *self);
 
 /**
@@ -44,6 +45,13 @@ typedef struct {
    * @brief The initialization function, called once per level.
    */
   EntityInit Init;
+
+  /**
+   * @brief The free function, called before re-initializing after an in-editor modification.
+   * @details Implementations should release any resources (sprites, sounds, etc.) that
+   *   reference the entity's @c data, as @c data is freed and reallocated immediately after.
+   */
+  EntityFree Free;
 
   /**
    * @brief The think function, called once per client frame.

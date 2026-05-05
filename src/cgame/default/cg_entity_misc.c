@@ -189,6 +189,13 @@ static void Cg_misc_dust_Init(cg_entity_t *self) {
 }
 
 /**
+ * @brief Edit callback that purges all live sprites referencing this entity's data.
+ */
+static void Cg_misc_dust_Free(cg_entity_t *self) {
+  Cg_FreeSpritesByData(self->data);
+}
+
+/**
  * @brief Think callback that fades dust sprites in at birth and decrements the active count at death.
  */
 static void Cg_misc_dust_SpriteThink(cg_sprite_t *sprite, float life, float delta) {
@@ -248,6 +255,7 @@ static void Cg_misc_dust_Think(cg_entity_t *self) {
 const cg_entity_class_t cg_misc_dust = {
   .classname = "misc_dust",
   .Init = Cg_misc_dust_Init,
+  .Free = Cg_misc_dust_Free,
   .Think = Cg_misc_dust_Think,
   .data_size = sizeof(cg_dust_t)
 };

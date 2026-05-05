@@ -115,6 +115,24 @@ cg_sprite_t *Cg_FreeSprite(cg_sprite_t *s) {
 }
 
 /**
+ * @brief Frees all active sprites whose data pointer matches the given pointer.
+ * @details Used to purge sprites that hold a reference to data being freed,
+ *   without disturbing unrelated sprites.
+ */
+void Cg_FreeSpritesByData(const void *data) {
+
+  cg_sprite_t *s = cg_active_sprites;
+  while (s) {
+    if (s->data == data) {
+      s->flags |= SPRITE_DATA_NOFREE;
+      s = Cg_FreeSprite(s);
+    } else {
+      s = s->next;
+    }
+  }
+}
+
+/**
  * @brief Frees all sprites, returning them to the eligible list.
  */
 void Cg_FreeSprites(void) {

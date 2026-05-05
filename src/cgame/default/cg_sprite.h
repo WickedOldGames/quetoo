@@ -260,6 +260,7 @@ static inline uint32_t Cg_AnimationLifetime(const r_animation_t *animation, cons
 
 cg_sprite_t *Cg_AddSprite(const cg_sprite_t *in_s);
 cg_sprite_t *Cg_FreeSprite(cg_sprite_t *p);
+void Cg_FreeSpritesByData(const void *data);
 void Cg_FreeSprites(void);
 void Cg_AddSprites(void);
 #endif /* __CG_LOCAL_H__ */
