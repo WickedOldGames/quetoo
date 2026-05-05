@@ -1744,45 +1744,35 @@ void G_Ai_Frame(void) {
     return;
   }
 
-  // Check bot population every 5 seconds
-  static uint32_t last_check = 0;
-  if (g_level.time - last_check >= 5000 || g_level.time == 0) {
-    last_check = g_level.time;
+  if (g_level.time == 1000) {
+    G_Ai_NodesReady();
+  }
 
-    if (g_level.time == 1000) {
-      G_Ai_NodesReady();
-    }
+  if (g_level.time % 5000 == 0) {
 
-    const int32_t min_clients = Maxi(0, sv_min_clients->integer);
-    
-    // Count human and AI clients
-    int32_t human_count = 0;
-    int32_t ai_count = 0;
+    int32_t human_clients = 0;
+    int32_t ai_clients = 0;
     G_ForEachClient(cl, {
       if (cl->ai) {
-        ai_count++;
+        ai_clients++;
       } else {
-        human_count++;
+        human_clients++;
       }
     });
 
-    // Desired total clients: at least min_clients, or current human count if higher
-    const int32_t desired_total = Maxi(human_count, min_clients);
-    
-    // Respect sv_max_clients limit
-    const int32_t max_allowed = sv_max_clients->integer;
-    const int32_t capped_desired = Mini(desired_total, max_allowed);
-    
-    const int32_t current_total = human_count + ai_count;
+    const int32_t active_clients = human_clients + ai_clients;
 
-    if (current_total < capped_desired) {
-      // Add a bot
+    const int32_t min_clients = Maxi(0, sv_min_clients->integer);
+    const int32_t max_clients = Maxi(0, sv_max_clients->integer);
+
+    const int32_t desired_clients = Mini(min_clients, max_clients);
+
+    if (active_clients < desired_clients) {
       G_ForEachFreeClient(cl, {
         G_Ai_Connect(cl);
         break;
       });
-    } else if (current_total > capped_desired) {
-      // Remove a bot
+    } else if (active_clients > desired_clients) {
       G_ForEachClient(cl, {
         if (cl->ai) {
           G_ClientDisconnect(cl);
@@ -1792,7 +1782,6 @@ void G_Ai_Frame(void) {
     }
   }
 
-  // run AI think functions
   G_ForEachClient(cl, {
     if (cl->ai && cl->entity) {
       G_RunThink(cl->entity);

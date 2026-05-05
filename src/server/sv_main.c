@@ -890,9 +890,9 @@ static void Sv_InitLocal(void) {
   sv_demo_list = Cvar_Add("sv_demo_list", "", CVAR_SERVER_INFO, "A list of demo names to cycle through");
   sv_enforce_time = Cvar_Add("sv_enforce_time", va("%d", CMD_MSEC_MAX_DRIFT_ERRORS), 0, "Prevents the most blatant form of speed cheating, disable at your own risk");
   sv_hostname = Cvar_Add("sv_hostname", "Quetoo", CVAR_SERVER_INFO | CVAR_ARCHIVE, "The server hostname, visible in the server browser");
+  sv_min_clients = Cvar_Add("sv_min_clients", "0", CVAR_SERVER_INFO, "The minimum number of clients the server will allow");
   sv_max_clients = Cvar_Add("sv_max_clients", va("%d", MAX_CLIENTS), CVAR_SERVER_INFO | CVAR_LATCH, "The maximum number of clients the server will allow");
   sv_max_entities = Cvar_Add("sv_max_entities", va("%d", MAX_ENTITIES), CVAR_SERVER_INFO | CVAR_LATCH, "The maximum number of entities the server will allow");
-  sv_min_clients = Cvar_Add("sv_min_clients", "0", CVAR_SERVER_INFO, "Minimum client slots to maintain with bots");
   sv_public = Cvar_Add("sv_public", "0", CVAR_SERVER_INFO, "Set to 1 to to advertise this server via the master server");
   sv_timeout = Cvar_Add("sv_timeout", va("%d", SV_TIMEOUT), 0, "The client connection timeout threshold in seconds");
 
