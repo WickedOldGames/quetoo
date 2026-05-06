@@ -28,9 +28,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - runner: macos-14
+          - runner: macos-15
             arch: arm64
             build: arm64-apple-darwin
+          - runner: macos-15-large
+            arch: x86_64
+            build: x86_64-apple-darwin
 
     runs-on: ${{ matrix.runner }}
 
@@ -142,6 +145,45 @@ jobs:
       with:
         name: quetoo-${{ matrix.build }}
         path: quetoo/quetoo-${{ matrix.build }}.zip
+
+  lipo-macos:
+    needs: build-macos
+    runs-on: macos-15
+
+    steps:
+    - name: Download arm64 artifact
+      uses: actions/download-artifact@v6
+      with:
+        name: quetoo-arm64-apple-darwin
+
+    - name: Download x86_64 artifact
+      uses: actions/download-artifact@v6
+      with:
+        name: quetoo-x86_64-apple-darwin
+
+    - name: Create universal binary
+      run: |
+        mkdir arm64 x86_64
+        unzip quetoo-arm64-apple-darwin.zip -d arm64
+        unzip quetoo-x86_64-apple-darwin.zip -d x86_64
+
+        find arm64/Quetoo.app -type f | while read f; do
+          if ! file "$f" | grep -q "Mach-O"; then
+            continue
+          fi
+          x86="x86_64/${f#arm64/}"
+          if [ -f "$x86" ]; then
+            lipo -create "$f" "$x86" -output "$f"
+          fi
+        done
+
+        cd arm64 && zip -r ../quetoo-universal-apple-darwin.zip Quetoo.app
+
+    - name: Upload universal artifact
+      uses: actions/upload-artifact@v6
+      with:
+        name: quetoo-universal-apple-darwin
+        path: quetoo-universal-apple-darwin.zip
 
   build-linux:
     needs: resolve-deps
@@ -389,7 +431,7 @@ jobs:
         path: quetoo/quetoo-x86_64-pc-windows.zip
 
   release:
-    needs: [build-macos, build-linux, build-windows]
+    needs: [lipo-macos, build-linux, build-windows]
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
 
@@ -427,11 +469,11 @@ jobs:
 
         | Platform | Download |
         |----------|----------|
-        | macOS (Apple Silicon) | quetoo-arm64-apple-darwin.zip |
+        | macOS (Universal) | quetoo-universal-apple-darwin.zip |
         | Linux (x86_64) | quetoo-x86_64-pc-linux.tar.gz |
         | Windows (x86_64) | quetoo-x86_64-pc-windows.zip |" \
           --prerelease \
-          quetoo-arm64-apple-darwin/quetoo-arm64-apple-darwin.zip \
+          quetoo-universal-apple-darwin/quetoo-universal-apple-darwin.zip \
           quetoo-x86_64-pc-linux-archive/quetoo-x86_64-pc-linux.tar.gz \
           quetoo-x86_64-pc-windows/quetoo-x86_64-pc-windows.zip
       env:
