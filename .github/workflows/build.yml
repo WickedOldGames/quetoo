@@ -428,11 +428,11 @@ jobs:
         | Platform | Download |
         |----------|----------|
         | macOS (Apple Silicon) | quetoo-arm64-apple-darwin.zip |
-        | Linux (x86_64 AppImage) | quetoo-x86_64-pc-linux.AppImage |
+        | Linux (x86_64) | quetoo-x86_64-pc-linux.tar.gz |
         | Windows (x86_64) | quetoo-x86_64-pc-windows.zip |" \
           --prerelease \
           quetoo-arm64-apple-darwin/quetoo-arm64-apple-darwin.zip \
-          quetoo-x86_64-pc-linux-appimage/quetoo-x86_64-pc-linux.AppImage \
+          quetoo-x86_64-pc-linux-archive/quetoo-x86_64-pc-linux.tar.gz \
           quetoo-x86_64-pc-windows/quetoo-x86_64-pc-windows.zip
       env:
         GH_TOKEN: ${{ github.token }}
