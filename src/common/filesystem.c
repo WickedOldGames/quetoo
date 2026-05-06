@@ -749,6 +749,13 @@ void Fs_Init(const uint32_t flags) {
       g_snprintf(fs_state.lib_dir, MAX_OS_PATH, "%s/Contents/MacOS/lib/quetoo", fs_state.base_dir);
       g_snprintf(fs_state.data_dir, MAX_OS_PATH, "%s/share", Sys_UserDir());
 
+      // Ensure data_dir/default exists so PhysFS will mount it. On first launch
+      // this directory tree doesn't exist yet, and Fs_AddToSearchPath silently
+      // skips non-existent paths, leaving the installer with nowhere to write.
+      char data_default[MAX_OS_PATH];
+      g_snprintf(data_default, MAX_OS_PATH, "%s/%s", fs_state.data_dir, DEFAULT_GAME);
+      g_mkdir_with_parents(data_default, 0755);
+
       char resources[MAX_OS_PATH];
       g_snprintf(resources, MAX_OS_PATH, "%s/Contents/Resources", fs_state.base_dir);
       Fs_AddToSearchPathv(resources, NULL);
