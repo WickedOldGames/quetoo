@@ -237,6 +237,43 @@ static inline bool __attribute__ ((warn_unused_result)) Box3_Contains(const box3
 }
 
 /**
+ * @return The fraction along the ray [start, end] at which it enters `bounds`, or `1.f` if it
+ *   misses. Returns `1.f` when `start` is inside `bounds` so that callers can trivially skip
+ *   entities whose geometry contains the view origin.
+ */
+static inline float __attribute__ ((warn_unused_result)) Box3_RayFraction(const vec3_t start, const vec3_t end, const box3_t bounds) {
+
+  if (Box3_ContainsPoint(bounds, start)) {
+    return 1.f;
+  }
+
+  float tmin = 0.f, tmax = 1.f;
+
+  for (int32_t i = 0; i < 3; i++) {
+    const float d = end.xyz[i] - start.xyz[i];
+    if (fabsf(d) < __FLT_EPSILON__) {
+      if (start.xyz[i] < bounds.mins.xyz[i] || start.xyz[i] > bounds.maxs.xyz[i]) {
+        return 1.f;
+      }
+    } else {
+      float t1 = (bounds.mins.xyz[i] - start.xyz[i]) / d;
+      float t2 = (bounds.maxs.xyz[i] - start.xyz[i]) / d;
+      if (t1 > t2) {
+        const float tmp = t1; t1 = t2; t2 = tmp;
+      }
+      tmin = Maxf(tmin, t1);
+      tmax = Minf(tmax, t2);
+      if (tmin > tmax) {
+        return 1.f;
+      }
+    }
+  }
+
+  return Minf(tmin, 1.f);
+}
+
+
+/**
  * @return The relative size of all three axis of the bounds. This also works as
  * a vector between the two points of the box.
  */

@@ -36,14 +36,24 @@ typedef struct {
   int16_t number;
 
   /**
+   * @brief The owned entity definition, parsed from configstrings.
+   */
+  cm_entity_t *def;
+
+  /**
    * @brief The client entity.
    */
   const cl_entity_t *ent;
 
   /**
-   * @brief The owned entity definition, parsed from configstrings.
+   * @brief The model, or NULL.
    */
-  cm_entity_t *def;
+  const r_model_t *model;
+
+  /**
+   * @brief The brushes pointer array for BSP model entities, or NULL.
+   */
+  GPtrArray *brushes;
 
   /**
    * @brief Persistent shadow cache flag for shadowmap optimization (light entities only).
@@ -73,6 +83,11 @@ typedef struct {
    */
   bool show_func_groups;
 
+  /**
+   * @brief The entity number of the currently selected entity, or 0 if none.
+   */
+  int16_t selected;
+
 } cg_editor_t;
 
 extern cg_editor_t cg_editor;
@@ -101,5 +116,6 @@ void Cg_ParseEditorEntity(int16_t number, const char *info);
 void Cg_LoadEditorEntities(void);
 void Cg_FreeEditorEntities(void);
 void Cg_PopulateEditorScene(const cl_frame_t *frame);
-cg_editor_trace_t Cg_EditorTrace(const vec3_t start, const vec3_t end);
+cg_editor_trace_t Cg_EntitySelectionTrace(const vec3_t start, const vec3_t end);
+cg_editor_trace_t Cg_MaterialSelectionTrace(const vec3_t start, const vec3_t end);
 void Cg_CheckEditor(void);

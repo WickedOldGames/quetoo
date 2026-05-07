@@ -64,13 +64,13 @@ static void didEditEntity(EntityView *view, cm_entity_t *def) {
       return;
     }
 
-    cgi.SetEntityKeyValue(this->entity.def, def->key, ENTITY_STRING, def->string);
+    cgi.SetEntityKeyValue(this->entity->def, def->key, ENTITY_STRING, def->string);
 
     $(this->add->key, setAttributedText, NULL);
     $(this->add->value, setAttributedText, NULL);
   }
 
-  cgi.WriteEntityInfoCommand(this->entity.number, this->entity.def);
+  cgi.WriteEntityInfoCommand(this->entity->number, this->entity->def);
 }
 
 /**
@@ -86,13 +86,13 @@ static void didEditTeamEntity(EntityView *view, cm_entity_t *def) {
       return;
     }
 
-    cgi.SetEntityKeyValue(this->teamEntity.def, def->key, ENTITY_STRING, def->string);
+    cgi.SetEntityKeyValue(this->teamEntity->def, def->key, ENTITY_STRING, def->string);
 
     $(this->teamAdd->key, setAttributedText, NULL);
     $(this->teamAdd->value, setAttributedText, NULL);
   }
 
-  cgi.WriteEntityInfoCommand(this->teamEntity.number, this->teamEntity.def);
+  cgi.WriteEntityInfoCommand(this->teamEntity->number, this->teamEntity->def);
 }
 
 #pragma mark - Object
@@ -143,7 +143,7 @@ static void loadView(ViewController *self) {
  */
 static void respondToKeyEvent(EntityViewController *self, const SDL_Event *event) {
 
-  cm_entity_t *e = self->entity.def;
+  cm_entity_t *e = self->entity ? self->entity->def : NULL;
 
   const SDL_Keycode key = event->key.key;
   const int32_t mod = event->key.mod;
@@ -260,7 +260,7 @@ static void respondToKeyEvent(EntityViewController *self, const SDL_Event *event
 
         cgi.SetEntityKeyValue(e, "origin", ENTITY_VEC3, &origin);
 
-        cgi.WriteEntityInfoCommand(self->entity.number, e);
+        cgi.WriteEntityInfoCommand(self->entity->number, e);
       }
     }
   }
@@ -286,16 +286,13 @@ static void respondToEvent(ViewController *self, const SDL_Event *event) {
         const int16_t number = (int16_t) (intptr_t) event->user.data1;
         const char *info = cgi.client->config_strings[CS_ENTITIES + number];
 
-        const EditorEntity entity = {
-          .number = number,
-          .ent = &cgi.client->entities[number],
-          .def = cg_editor.entities[number].def
-        };
+        cg_editor_entity_t *entity = &cg_editor.entities[number];
 
-        if (number == this->entity.number || number == this->teamEntity.number) {
-          $(this, setEntity, &entity);
+        if ((this->entity && number == this->entity->number)
+            || (this->teamEntity && number == this->teamEntity->number)) {
+          $(this, setEntity, entity);
         } else if (!g_strcmp0(this->created, info)) {
-          $(this, setEntity, &entity);
+          $(this, setEntity, entity);
         }
       }
         break;
@@ -315,15 +312,18 @@ static void viewWillAppear(ViewController *self) {
   const vec3_t start = cgi.view->origin;
   const vec3_t end = Vec3_Fmaf(start, MAX_WORLD_DIST, cgi.view->forward);
 
-  const cg_editor_trace_t tr = Cg_EditorTrace(start, end);
+  const cg_editor_trace_t tr = Cg_EntitySelectionTrace(start, end);
 
-  $(this, setEntity, &(EditorEntity) {
-    .number = tr.ent->number,
-    .ent = (cl_entity_t *) tr.ent->ent,
-    .def = tr.ent->def
-  });
+  $(this, setEntity, tr.ent);
 
   super(ViewController, self, viewWillAppear);
+}
+
+/**
+ * @see ViewController::viewWillDisappear(ViewController *)
+ */
+static void viewWillDisappear(ViewController *self) {
+  cg_editor.selected = -1;
 }
 
 #pragma mark - EntityViewController
@@ -350,8 +350,8 @@ static void createEntity(EntityViewController *self) {
  */
 static void deleteEntity(EntityViewController *self) {
 
-  if (self->entity.number) {
-    cgi.WriteEntityInfoCommand(self->entity.number, NULL);
+  if (self->entity && self->entity->number) {
+    cgi.WriteEntityInfoCommand(self->entity->number, NULL);
     $(self, setEntity, NULL);
   }
 }
@@ -369,30 +369,26 @@ static EntityViewController *init(EntityViewController *self) {
 }
 
 /**
- * @fn void EntityViewController::setEntity(EntityViewController *, const EditorEntity *)
+ * @fn void EntityViewController::setEntity(EntityViewController *, cg_editor_entity_t *)
  * @memberof EntityViewController
  */
-static void setEntity(EntityViewController *self, const EditorEntity *entity) {
+static void setEntity(EntityViewController *self, cg_editor_entity_t *entity) {
 
   $((View *) self->pairs, removeAllSubviews);
   $((View *) self->teamPairs, removeAllSubviews);
 
   if (entity) {
 
-    self->entity = *entity;
-    self->teamEntity = *entity;
+    self->entity = entity;
+    self->teamEntity = entity;
 
-    for (cm_entity_t *e = self->entity.def; e; e = e->next) {
+    for (cm_entity_t *e = self->entity->def; e; e = e->next) {
 
       if (g_str_has_prefix(e->key, "_tb_")) {
         continue;
       }
 
-      EntityView *view = $(alloc(EntityView), initWithEntity, &(EditorEntity) {
-        .number = self->entity.number,
-        .ent = self->entity.ent,
-        .def = e
-      });
+      EntityView *view = $(alloc(EntityView), initWithEntity, self->entity, e);
 
       view->delegate.self = self;
       view->delegate.didEditEntity = didEditEntity;
@@ -402,20 +398,16 @@ static void setEntity(EntityViewController *self, const EditorEntity *entity) {
       release(view);
     }
 
-    const char *classname = cgi.EntityValue(self->entity.def, "classname")->string;
+    const char *classname = cgi.EntityValue(self->entity->def, "classname")->string;
     if (!g_strcmp0(classname, "light")) {
 
-      const char *team = cgi.EntityValue(self->entity.def, "team")->nullable_string;
+      const char *team = cgi.EntityValue(self->entity->def, "team")->nullable_string;
       const int32_t teamMaster = Cg_FindTeamMaster(classname, team);
-      if (teamMaster != -1 && teamMaster != self->entity.number) {
+      if (teamMaster != -1 && teamMaster != self->entity->number) {
 
-        self->teamEntity = (EditorEntity) {
-          .number = teamMaster,
-          .ent = &cgi.client->entities[teamMaster],
-          .def = cg_editor.entities[teamMaster].def
-        };
+        self->teamEntity = &cg_editor.entities[teamMaster];
 
-        for (cm_entity_t *e = self->teamEntity.def; e; e = e->next) {
+        for (cm_entity_t *e = self->teamEntity->def; e; e = e->next) {
 
           if (g_str_has_prefix(e->key, "_tb_")
               || !g_strcmp0(e->key, "classname")
@@ -425,11 +417,7 @@ static void setEntity(EntityViewController *self, const EditorEntity *entity) {
             continue;
           }
 
-          EntityView *view = $(alloc(EntityView), initWithEntity, &(EditorEntity) {
-            .number = self->teamEntity.number,
-            .ent = self->teamEntity.ent,
-            .def = e
-          });
+          EntityView *view = $(alloc(EntityView), initWithEntity, self->teamEntity, e);
 
           view->delegate.self = self;
           view->delegate.didEditEntity = didEditTeamEntity;
@@ -442,14 +430,11 @@ static void setEntity(EntityViewController *self, const EditorEntity *entity) {
     }
 
   } else {
-    self->entity.number = -1;
-    self->entity.ent = NULL;
-    self->entity.def = NULL;
-
-    self->teamEntity.number = -1;
-    self->teamEntity.ent = NULL;
-    self->teamEntity.def = NULL;
+    self->entity = NULL;
+    self->teamEntity = NULL;
   }
+
+  cg_editor.selected = self->entity ? self->entity->number : -1;
 
   $((View *) self->pairs, sizeToFit);
   $((View *) self->teamPairs, sizeToFit);
@@ -457,7 +442,7 @@ static void setEntity(EntityViewController *self, const EditorEntity *entity) {
   SDL_PushEvent(&(SDL_Event) {
     .user.type = MVC_NOTIFICATION_EVENT,
     .user.code = NOTIFICATION_ENTITY_SELECTED,
-    .user.data1 = (void *) (intptr_t) self->entity.number
+    .user.data1 = (void *) (intptr_t) (self->entity ? self->entity->number : -1)
   });
 }
 
@@ -473,6 +458,7 @@ static void initialize(Class *clazz) {
   ((ViewControllerInterface *) clazz->interface)->loadView = loadView;
   ((ViewControllerInterface *) clazz->interface)->respondToEvent = respondToEvent;
   ((ViewControllerInterface *) clazz->interface)->viewWillAppear = viewWillAppear;
+  ((ViewControllerInterface *) clazz->interface)->viewWillDisappear = viewWillDisappear;
 
   ((EntityViewControllerInterface *) clazz->interface)->createEntity = createEntity;
   ((EntityViewControllerInterface *) clazz->interface)->deleteEntity = deleteEntity;

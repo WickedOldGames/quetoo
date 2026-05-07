@@ -254,8 +254,7 @@ void Cl_InitCgame(void) {
   import.PointInsideBrush = Cm_PointInsideBrush;
   import.Trace = Cl_Trace;
   import.PointLeafnum = Cm_PointLeafnum;
-  import.SetBoxHull = Cm_SetBoxHull;
-  import.BoxTrace = Cm_BoxTrace;
+  import.TraceToBrush = Cm_TraceToBrush;
 
   import.SetKeyDest = Cl_SetKeyDest;
   import.GetKeyDest = Cl_GetKeyDest;

@@ -829,7 +829,8 @@ static entity_t *ParseEntity(parser_t *parser) {
     // jdolan: Some entities have their brushes merged into the world so that they are
     // CSG subtracted and included in the world's BSP tree. However, these brushes will
     // maintain a reference to their entity definition, so that any entity pairs
-    // associated with them will still be available.
+    // associated with them will still be available. Their brushes will point to their
+    // defining cm_entity_t.
     const char *classname = ValueForKey(entity, "classname", NULL);
     if (!g_strcmp0(classname, "func_group") ||
       !g_strcmp0(classname, "misc_dust") ||

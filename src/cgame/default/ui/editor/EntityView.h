@@ -22,6 +22,7 @@
 #pragma once
 
 #include "cgame/cgame.h"
+#include "../../cg_editor.h"
 
 #include <ObjectivelyMVC/StackView.h>
 
@@ -32,27 +33,6 @@ typedef struct EntityViewInterface EntityViewInterface;
  * @file
  * @brief A View for editing `cm_entity_t`.
  */
-
-/**
- * @brief The Editor entity type.
- */
-typedef struct {
-
-  /**
-   * @brief The entity number.
-   */
-  int16_t number;
-
-  /**
-   * @brief The client entity.
-   */
-  cl_entity_t *ent;
-
-  /**
-   * @brief The entity definition.
-   */
-  cm_entity_t *def;
-} EditorEntity;
 
 /**
  * @brief The EntityViewDelegate type.
@@ -92,9 +72,14 @@ struct EntityView {
   EntityViewDelegate delegate;
 
   /**
-   * @brief The entity being edited.
+   * @brief The editor entity. Pointer into the stable `cg_editor.entities[]` array.
    */
-  EditorEntity entity;
+  cg_editor_entity_t *edit;
+
+  /**
+   * @brief The specific key-value pair being edited by this view, or `NULL` for a new pair.
+   */
+  cm_entity_t *pair;
 
   /**
    * @brief The entity key text field.
@@ -118,23 +103,25 @@ struct EntityViewInterface {
   StackViewInterface stackViewInterface;
 
   /**
-   * @fn EntityView *EntityView::init(EntityView *self, cm_entity_t *EditorEntity)
+   * @fn EntityView *EntityView::initWithEntity(EntityView *self, cg_editor_entity_t *edit, cm_entity_t *pair)
    * @brief Initializes this EntityView.
    * @param self The EntityView.
-   * @param entity The entity.
+   * @param edit The editor entity (pointer into `cg_editor.entities[]`).
+   * @param pair The key-value pair being edited, or `NULL` for a new pair.
    * @return The initialized EntityView, or `NULL` on error.
    * @memberof EntityView
    */
-  EntityView *(*initWithEntity)(EntityView *self, EditorEntity *entity);
+  EntityView *(*initWithEntity)(EntityView *self, cg_editor_entity_t *edit, cm_entity_t *pair);
 
   /**
-   * @fn void EntityView::setEntity(EntityView *self, EditorEntity *entity)
-   * @brief Sets the entity to be edited.
+   * @fn void EntityView::setEntity(EntityView *self, cg_editor_entity_t *edit, cm_entity_t *pair)
+   * @brief Sets the entity and key-value pair to be edited.
    * @param self The EntityView.
-   * @param entity The entity.
+   * @param edit The editor entity (pointer into `cg_editor.entities[]`).
+   * @param pair The key-value pair being edited, or `NULL` for a new pair.
    * @memberof EntityView
    */
-  void (*setEntity)(EntityView *self, EditorEntity *entity);
+  void (*setEntity)(EntityView *self, cg_editor_entity_t *edit, cm_entity_t *pair);
 };
 
 /**

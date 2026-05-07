@@ -27,7 +27,8 @@
  * @brief Global editor state.
  */
 cg_editor_t cg_editor = {
-  .show_func_groups = true
+  .show_func_groups = true,
+  .selected = -1
 };
 
 /**
@@ -132,30 +133,14 @@ void Cg_PopulateEditorScene(const cl_frame_t *frame) {
       continue;
     }
 
-    bool in_frame = false;
-    for (int32_t j = 0; j < frame->num_entities; j++) {
-      const uint32_t snum = (frame->entity_state + j) & ENTITY_STATE_MASK;
-      const entity_state_t *s = &cgi.client->entity_states[snum];
-      if (s->number == edit->number) {
-        in_frame = true;
-        break;
-      }
-    }
-
-    if (!in_frame) {
-      continue;
-    }
-
     const char *classname = cgi.EntityValue(edit->def, "classname")->string;
-
     if (!g_strcmp0(classname, "func_group") && !cg_editor.show_func_groups) {
       continue;
     }
 
-    vec4_t color = Color32_Vec4(edit->ent->current.color);
+    const cl_entity_t *ent = edit->ent;
 
-    const char *mod = cgi.EntityValue(edit->def, "model")->string;
-    r_model_t *model = strlen(mod) ? cgi.LoadModel(mod) : NULL;
+    vec4_t color = Color32_Vec4(ent->current.color);
 
     if (!g_strcmp0(classname, "light")) {
       color = Cg_AddEditorEntity_Light(edit);
@@ -163,59 +148,75 @@ void Cg_PopulateEditorScene(const cl_frame_t *frame) {
 
       // check for a client-side entity like misc_flame
 
-      cg_entity_t *e = &cg_editor.entities[i].misc;
-      if (e->clazz) {
-        if (e->next_think <= cgi.client->unclamped_time) {
-          e->clazz->Think(e);
-          if (e->hz) {
-            e->next_think += 1000.f / e->hz + 1000.f * e->drift * Randomf();
+      cg_entity_t *misc = &cg_editor.entities[i].misc;
+      if (misc->clazz) {
+        if (misc->next_think <= cgi.client->unclamped_time) {
+          misc->clazz->Think(misc);
+          if (misc->hz) {
+            misc->next_think += 1000.f / misc->hz + 1000.f * misc->drift * Randomf();
           }
         }
       }
     }
 
-    // for brush entities (excluding worldspawn), draw per-brush bounds so the user can see exactly
-    // where selection will land; suppress the combined abs_bounds to avoid a redundant outer box
-    GPtrArray *brushes = NULL;
-    if (edit->number < cgi.Bsp()->num_entities && g_strcmp0(classname, "worldspawn")) {
-      brushes = cgi.EntityBrushes(cgi.Bsp()->entities[edit->number]);
-      if (!brushes->len) {
-        g_ptr_array_free(brushes, true);
-        brushes = NULL;
-      }
-    }
+    const bool is_selected = cg_editor.selected == edit->number;
 
-    if (brushes) {
-      for (guint j = 0; j < brushes->len; j++) {
-        const cm_bsp_brush_t *brush = g_ptr_array_index(brushes, j);
-        cgi.Draw3DBox(brush->bounds, Color32_Color(edit->ent->current.color), true);
-      }
-      g_ptr_array_free(brushes, true);
-
+    if (edit->brushes) {
       cgi.AddEntity(cgi.view, &(const r_entity_t) {
         .id = edit,
-        .origin = edit->ent->origin,
-        .angles = edit->ent->angles,
+        .origin = ent->origin,
+        .angles = ent->angles,
         .scale = cgi.EntityValue(edit->def, "scale")->value ?: 1.f,
         .bounds = Box3_Null(),
         .abs_bounds = Box3_Null(),
         .color = color,
-        .effects = edit->ent->current.effects,
-        .model = model
+        .effects = ent->current.effects,
+        .model = edit->model
       });
+
+      if (is_selected) {
+        for (guint j = 0; j < edit->brushes->len; j++) {
+          const cm_bsp_brush_t *brush = g_ptr_array_index(edit->brushes, j);
+          cgi.Draw3DBox(brush->bounds, color_red, true);
+        }
+      } else if (g_strcmp0(classname, "worldspawn")) {
+        for (guint j = 0; j < edit->brushes->len; j++) {
+          const cm_bsp_brush_t *brush = g_ptr_array_index(edit->brushes, j);
+          cgi.Draw3DBox(brush->bounds, Color4fv(color), true);
+        }
+      }
 
     } else {
       cgi.AddEntity(cgi.view, &(const r_entity_t) {
         .id = edit,
-        .origin = edit->ent->origin,
-        .angles = edit->ent->angles,
+        .origin = ent->origin,
+        .angles = ent->angles,
         .scale = cgi.EntityValue(edit->def, "scale")->value ?: 1.f,
-        .bounds = edit->ent->bounds,
-        .abs_bounds = edit->ent->abs_bounds,
+        .bounds = ent->bounds,
+        .abs_bounds = ent->abs_bounds,
         .color = color,
-        .effects = edit->ent->current.effects,
-        .model = model
+        .effects = ent->current.effects,
+        .model = edit->model
       });
+
+      if (is_selected) {
+        cgi.Draw3DBox(Box3_Expand(ent->abs_bounds, 2.f), color_red, true);
+      } else {
+        cgi.Draw3DBox(Box3_Expand(ent->abs_bounds, 2.f), Color4fv(color), true);
+      }
+    }
+
+    if (is_selected && g_strcmp0(classname, "worldspawn")) {
+      vec3_t points[2] = { ent->origin };
+
+      points[1] = Vec3_Fmaf(ent->origin, 64.f, Vec3(1.f, 0.f, 0.f));
+      cgi.Draw3DLines(GL_LINES, points, 2, color_red, true);
+
+      points[1] = Vec3_Fmaf(ent->origin, 64.f, Vec3(0.f, 1.f, 0.f));
+      cgi.Draw3DLines(GL_LINES, points, 2, color_green, true);
+
+      points[1] = Vec3_Fmaf(ent->origin, 64.f, Vec3(0.f, 0.f, 1.f));
+      cgi.Draw3DLines(GL_LINES, points, 2, color_blue, true);
     }
   }
 
@@ -223,23 +224,31 @@ void Cg_PopulateEditorScene(const cl_frame_t *frame) {
 }
 
 /**
- * @brief Initializes or re-initializes the vtable entity slot for the given number.
+ * @brief Initializes the `cg_editor_entity_t` for the given entity number.
+ * @details The slot must be zeroed before calling this function.
  */
 static void Cg_InitEditorEntity(int16_t number) {
 
   cg_editor_entity_t *edit = &cg_editor.entities[number];
-  cg_entity_t *e = &edit->misc;
 
-  if (!edit->def) {
-    if (e->clazz) {
-      cgi.Free(e->data);
+  edit->number = number;
+  edit->ent = &cgi.client->entities[number];
+
+  const char *info = cgi.client->config_strings[CS_ENTITIES + number];
+  edit->def = cgi.EntityFromInfoString(info);
+
+  const char *mod = cgi.EntityValue(edit->def, "model")->string;
+  edit->model = strlen(mod) ? cgi.LoadModel(mod) : NULL;
+
+  if (number < cgi.Bsp()->num_entities) {
+    edit->brushes = cgi.EntityBrushes(cgi.Bsp()->entities[number]);
+    if (!edit->brushes->len) {
+      g_ptr_array_free(edit->brushes, true);
+      edit->brushes = NULL;
     }
-    memset(e, 0, sizeof(*e));
-    return;
   }
 
-  const cm_entity_t *def = edit->def;
-  const char *classname = cgi.EntityValue(def, "classname")->string;
+  const char *classname = cgi.EntityValue(edit->def, "classname")->string;
 
   const cg_entity_class_t *clazz = NULL;
   for (size_t j = 0; j < cg_num_entity_classes; j++) {
@@ -250,40 +259,37 @@ static void Cg_InitEditorEntity(int16_t number) {
   }
 
   if (!clazz) {
-    if (e->clazz) {
-      cgi.Free(e->data);
-    }
-    memset(e, 0, sizeof(*e));
     return;
   }
 
-  if (e->clazz != clazz) {
-    cgi.Free(e->data);
-    e->data = cgi.Malloc(clazz->data_size, MEM_TAG_CGAME_LEVEL);
-  } else if (clazz->data_size) {
-    memset(e->data, 0, clazz->data_size);
+  cg_entity_t *misc = &edit->misc;
+  misc->id = number;
+  misc->clazz = clazz;
+  misc->def = edit->def;
+  misc->origin = cgi.EntityValue(edit->def, "origin")->vec3;
+  misc->bounds = Box3_FromCenter(misc->origin);
+  if (clazz->data_size) {
+    misc->data = cgi.Malloc(clazz->data_size, MEM_TAG_CGAME_LEVEL);
   }
-
-  e->id = number;
-  e->clazz = clazz;
-  e->def = def;
-  e->origin = cgi.EntityValue(def, "origin")->vec3;
-  e->bounds = Box3_FromCenter(e->origin);
-  e->target = NULL;
-  e->team = NULL;
-  e->next_think = 0;
-
-  e->clazz->Init(e);
+  misc->clazz->Init(misc);
 }
 
 /**
- * @brief Called by the client when an entity configstring is received.
- * @details Parses the entity definition, populates the cg_edit slot, and (if active)
- *   initializes the vtable entity. Also fires NOTIFICATION_ENTITY_PARSED for the editor UI.
+ * @brief Frees the numbered `cg_editor.entities` slot.
  */
-void Cg_ParseEditorEntity(int16_t number, const char *info) {
+static void Cg_FreeEditorEntity(int16_t number) {
+
+  if (cg_editor.selected == number) {
+    cg_editor.selected = -1;
+  }
 
   cg_editor_entity_t *edit = &cg_editor.entities[number];
+
+  cgi.FreeEntity(edit->def);
+
+  if (edit->brushes) {
+    g_ptr_array_free(edit->brushes, true);
+  }
 
   if (edit->misc.clazz && edit->misc.data) {
     if (edit->misc.clazz->Free) {
@@ -292,18 +298,21 @@ void Cg_ParseEditorEntity(int16_t number, const char *info) {
     cgi.Free(edit->misc.data);
   }
 
-  cgi.FreeEntity(edit->def);
-
   memset(edit, 0, sizeof(*edit));
-  edit->number = number;
-  edit->ent = &cgi.client->entities[number];
-  edit->def = strlen(info) ? cgi.EntityFromInfoString(info) : NULL;
+}
+
+/**
+ * @brief Called by the client when an entity configstring is received.
+ */
+void Cg_ParseEditorEntity(int16_t number, const char *info) {
+
+  Cg_FreeEditorEntity(number);
 
   for (int32_t i = 0; i < MAX_ENTITIES; i++) {
     cg_editor.entities[i].shadow_cached = false;
   }
 
-  if (*cgi.state == CL_ACTIVE) {
+  if (*cgi.state == CL_ACTIVE && strlen(info)) {
     Cg_InitEditorEntity(number);
   }
 
@@ -327,14 +336,9 @@ void Cg_LoadEditorEntities(void) {
 
   for (int32_t i = 0; i < MAX_ENTITIES; i++) {
     const char *info = cgi.client->config_strings[CS_ENTITIES + i];
-    if (!*info) {
-      continue;
+    if (*info) {
+      Cg_InitEditorEntity(i);
     }
-
-    cg_editor.entities[i].number = i;
-    cg_editor.entities[i].ent = &cgi.client->entities[i];
-    cg_editor.entities[i].def = cgi.EntityFromInfoString(info);
-    Cg_InitEditorEntity(i);
   }
 }
 
@@ -344,116 +348,117 @@ void Cg_LoadEditorEntities(void) {
 void Cg_FreeEditorEntities(void) {
 
   for (int32_t i = 0; i < MAX_ENTITIES; i++) {
-    cg_editor_entity_t *edit = &cg_editor.entities[i];
-    if (edit->misc.clazz && edit->misc.data) {
-      if (edit->misc.clazz->Free) {
-        edit->misc.clazz->Free(&edit->misc);
-      }
-      cgi.Free(edit->misc.data);
-    }
-    cgi.FreeEntity(edit->def);
+    Cg_FreeEditorEntity(i);
   }
 
   memset(cg_editor.entities, 0, sizeof(cg_editor.entities));
+
+  cg_editor.selected = -1;
 }
 
 /**
- * @brief Traces the view ray against all BSP models and CONTENTS_EDITOR point entity hulls.
- * @details Phase 1 traces every BSP model head node with `~CONTENTS_EDITOR` to find the closest
- *   real brush surface hit. Phase 2 traces CONTENTS_EDITOR hulls to find any smaller point entity
- *   that is nearer to the camera than the BSP hit.
- * @return A `cg_editor_trace_t` whose `.ent` always points into `cg_editor.entities[]`, defaulting
- *   to worldspawn. `.trace` carries the raw BSP hit data (.material, .brush, .plane).
+ * @brief Traces the view ray against each editor entity's brush list, falling back to a
+ *   ray-AABB slab test for point entities that have no brushes.
  */
-cg_editor_trace_t Cg_EditorTrace(const vec3_t start, const vec3_t end) {
+/**
+ * @brief Traces the view ray for entity selection.
+ * @details Skips worldspawn (it is the default fallback and has many brushes) and includes
+ *   point entities via a ray-AABB slab test.
+ */
+cg_editor_trace_t Cg_EntitySelectionTrace(const vec3_t start, const vec3_t end) {
 
   cg_editor_trace_t out = {
-    .ent = &cg_editor.entities[0],
+    .ent = NULL,
     .trace = { .fraction = 1.f }
   };
 
-  const cm_bsp_t *bsp = cgi.Bsp();
+  cg_editor_entity_t *edit = cg_editor.entities;
+  for (int32_t i = 1; i < MAX_ENTITIES; i++, edit++) {
 
-  // Phase 1: trace every BSP model head node to find the closest real brush hit.
-
-  // Model[0]: worldspawn's merged BSP tree — catches misc_dust, func_group, etc.
-  {
-    const cm_trace_t tr = cgi.BoxTrace(start, end, Box3_Zero(), bsp->models[0].head_node, ~CONTENTS_EDITOR);
-    if (tr.fraction > 0.f && tr.fraction < 1.f) {
-      out.trace = tr;
-      if (tr.brush && tr.brush->entity) {
-        for (int32_t i = 1; i < bsp->num_entities; i++) {
-          if (bsp->entities[i] == tr.brush->entity) {
-            if (!cg_editor.show_func_groups) {
-              const char *cn = cgi.EntityValue(bsp->entities[i], "classname")->string;
-              if (!g_strcmp0(cn, "func_group")) {
-                break;
-              }
-            }
-            out.ent = &cg_editor.entities[i];
-            break;
-          }
-        }
-      }
-    }
-  }
-
-  // Models[1..N]: inline model entities — trigger_*, func_wall, func_water, etc.
-  for (int32_t i = 1; i < bsp->num_models; i++) {
-    if (Box3_ContainsPoint(bsp->models[i].bounds, start)) {
-      continue; // skip models the view origin occupies — they cut off brush_dist
-    }
-    const cm_trace_t tr = cgi.BoxTrace(start, end, Box3_Zero(), bsp->models[i].head_node, ~CONTENTS_EDITOR);
-    if (tr.fraction > 0.f && tr.fraction < out.trace.fraction) {
-      out.trace = tr;
-      out.ent = &cg_editor.entities[0];
-      char model_name[16];
-      g_snprintf(model_name, sizeof(model_name), "*%d", i);
-      for (int32_t j = 1; j < bsp->num_entities; j++) {
-        if (!g_strcmp0(cgi.EntityValue(bsp->entities[j], "model")->string, model_name)) {
-          out.ent = &cg_editor.entities[j];
-          break;
-        }
-      }
-    }
-  }
-
-  const float brush_dist = out.trace.fraction < 1.f
-    ? Vec3_Distance(start, out.trace.end)
-    : Vec3_Distance(start, end);
-
-  // Phase 2: CONTENTS_EDITOR hull loop — prefer the smallest point entity closer than the BSP hit.
-  cl_entity_t *ent = NULL;
-  vec3_t pt = start;
-  float best_radius = FLT_MAX;
-
-  while (true) {
-
-    const cm_trace_t tr = cgi.Trace(pt, end, Box3_Zero(), ent, CONTENTS_EDITOR);
-    if (tr.fraction == 1.f) {
-      break;
-    }
-
-    pt = Vec3_Add(tr.end, cgi.view->forward);
-    ent = tr.ent;
-
-    if (tr.fraction == 0.f) {
+    if (edit->def == NULL) {
       continue;
     }
 
-    if (Vec3_Distance(start, tr.end) > brush_dist) {
-      break;
+    if (!cg_editor.show_func_groups) {
+      if (!g_strcmp0(cgi.EntityValue(edit->def, "classname")->string, "func_group")) {
+        continue;
+      }
     }
 
-    const float radius = Box3_Radius(ent->bounds);
-    if (radius < best_radius) {
-      best_radius = radius;
-      out.ent = &cg_editor.entities[ent->current.number];
+    if (edit->brushes) {
+      for (guint j = 0; j < edit->brushes->len; j++) {
+        const cm_bsp_brush_t *brush = g_ptr_array_index(edit->brushes, j);
+
+        const cm_trace_t tr = cgi.TraceToBrush(start, end, brush);
+
+        if (tr.start_solid || tr.fraction >= out.trace.fraction) {
+          continue;
+        }
+
+        out.ent = edit;
+        out.trace = tr;
+      }
+    } else {
+
+      const entity_state_t *s = &edit->ent->current;
+      const box3_t bounds = Box3_Translate(s->bounds, s->origin);
+
+      const float frac = Box3_RayFraction(start, end, bounds);
+      if (frac >= out.trace.fraction) {
+        continue;
+      }
+
+      out.ent = edit;
+      out.trace = (cm_trace_t) {
+        .fraction = frac,
+        .end = Vec3_Mix(start, end, frac)
+      };
     }
   }
 
   return out;
 }
+
+/**
+ * @brief Traces the view ray for material selection.
+ * @details Includes worldspawn so that wall and floor surfaces are reachable, and skips
+ *   point entities (they carry no surface material).
+ */
+cg_editor_trace_t Cg_MaterialSelectionTrace(const vec3_t start, const vec3_t end) {
+
+  cg_editor_trace_t out = {
+    .ent = NULL,
+    .trace = {
+      .fraction = 1.f
+    }
+  };
+
+  cg_editor_entity_t *edit = cg_editor.entities;
+  for (int32_t i = 0; i < MAX_ENTITIES; i++, edit++) {
+
+    if (edit->def == NULL) {
+      continue;
+    }
+
+    if (edit->brushes) {
+      for (guint j = 0; j < edit->brushes->len; j++) {
+        const cm_bsp_brush_t *brush = g_ptr_array_index(edit->brushes, j);
+
+        const cm_trace_t tr = cgi.TraceToBrush(start, end, brush);
+
+        if (tr.start_solid || tr.fraction >= out.trace.fraction) {
+          continue;
+        }
+
+        out.ent = edit;
+        out.trace = tr;
+      }
+    }
+  }
+
+  return out;
+}
+
 
 /**
  * @brief Pushes or pops the editor view controller based on the current editor cvar state.

@@ -641,31 +641,21 @@ typedef struct cg_import_s {
   cm_trace_t (*Trace)(const vec3_t start, const vec3_t end, const box3_t bounds, const cl_entity_t *skip, int32_t contents);
 
   /**
+   * @brief Traces a point ray from `start` to `end` against a single brush.
+   * @param start The trace start point.
+   * @param end The trace end point.
+   * @param brush The brush to test.
+   * @return A trace result. Check `start_solid` to detect the view origin being inside the brush.
+   */
+  cm_trace_t (*TraceToBrush)(const vec3_t start, const vec3_t end, const cm_bsp_brush_t *brush);
+
+  /**
    * @brief Returns the leaf number containing the specified point.
    * @param p The point.
    * @param head_node The head node to recurse from, or 0 for the world.
    * @return The leaf number, or -1 if outside.
    */
   int32_t (*PointLeafnum)(const vec3_t p, int32_t head_node);
-
-  /**
-   * @brief Sets up a box hull for use with BoxTrace.
-   * @param bounds The bounding box.
-   * @param contents The contents mask.
-   * @return The head node for the resulting box hull.
-   */
-  int32_t (*SetBoxHull)(const box3_t bounds, int32_t contents);
-
-  /**
-   * @brief Traces a box through the BSP from `start` to `end`.
-   * @param start The trace start.
-   * @param end The trace end.
-   * @param bounds The trace bounds.
-   * @param head_node The head node (use SetBoxHull or 0 for world).
-   * @param contents Contents mask.
-   * @return A trace result.
-   */
-  cm_trace_t (*BoxTrace)(const vec3_t start, const vec3_t end, const box3_t bounds, int32_t head_node, int32_t contents);
 
   /**
    * @}

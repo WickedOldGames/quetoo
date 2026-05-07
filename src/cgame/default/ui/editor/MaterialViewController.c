@@ -118,46 +118,9 @@ static void viewWillAppear(ViewController *self) {
 
   r_material_t *material = NULL;
 
-  const cg_editor_trace_t tr = Cg_EditorTrace(start, end);
+  const cg_editor_trace_t tr = Cg_MaterialSelectionTrace(start, end);
   if (tr.trace.fraction < 1.f && tr.trace.material) {
     material = cgi.LoadMaterial(tr.trace.material->name, ASSET_CONTEXT_TEXTURES);
-  }
-
-  // Mesh entities: prefer any hit closer than the BSP brush hit.
-  if (material == NULL) {
-
-    float distance = MAX_WORLD_DIST;
-
-    const r_entity_t *e = cgi.view->entities;
-    for (int32_t i = 0; i < cgi.view->num_entities; i++, e++) {
-
-      if (e->model == NULL) {
-        continue;
-      }
-
-      if (e->model->type != MODEL_MESH) {
-        continue;
-      }
-
-      if (e->model->mesh->faces->material == NULL) {
-        continue;
-      }
-
-      if (e->effects & (EF_SELF | EF_WEAPON)) {
-        continue;
-      }
-
-      const int32_t head_node = cgi.SetBoxHull(e->abs_model_bounds, CONTENTS_SOLID);
-      const cm_trace_t mesh_tr = cgi.BoxTrace(start, end, Box3_Zero(), head_node, CONTENTS_SOLID);
-      if (mesh_tr.fraction < 1.f) {
-
-        const float dist = Vec3_Distance(start, mesh_tr.end);
-        if (dist < distance) {
-          material = e->model->mesh->faces->material;
-          distance = dist;
-        }
-      }
-    }
   }
 
   $(this, setMaterial, material);

@@ -35,6 +35,16 @@ __attribute__ ((warn_unused_result))
 cm_trace_t Cm_BoxTrace(const vec3_t start, const vec3_t end, const box3_t bounds, int32_t head_node,
              int32_t contents);
 
+/** @brief Traces a point ray from `start` to `end` against a single brush.
+ * @param start The trace start point.
+ * @param end The trace end point.
+ * @param brush The brush to trace against.
+ * @return The cm_trace_t result. Check `start_solid` to detect the view origin being inside
+ *   the brush — callers should skip such results when selecting entities.
+ */
+__attribute__ ((warn_unused_result))
+cm_trace_t Cm_TraceToBrush(const vec3_t start, const vec3_t end, const cm_bsp_brush_t *brush);
+
 /** @brief Like Cm_BoxTrace but applies a model transform to start, end and planes.
  * @param matrix The forward transform of the entity being traced against.
  * @param inverse_matrix The inverse transform, used to bring the ray into model space.

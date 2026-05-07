@@ -120,7 +120,7 @@ static void R_DrawEntityBounds(const r_entity_t *e) {
  */
 static void R_DrawEntitiesBounds(const r_view_t *view) {
 
-  if (!r_draw_entity_bounds->value && !editor->value) {
+  if (!r_draw_entity_bounds->value) {
     return;
   }
 

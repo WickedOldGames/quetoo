@@ -39,7 +39,7 @@ static void didEndEditing(TextView *textView) {
   assert(self);
   assert(self->delegate.didEditEntity);
 
-  cm_entity_t *e = self->entity.def ?: cgi.AllocEntity();
+  cm_entity_t *e = self->pair ?: cgi.AllocEntity();
 
   const char *key = self->key->attributedText->string.chars;
   const char *value = self->value->attributedText->string.chars;
@@ -51,7 +51,7 @@ static void didEndEditing(TextView *textView) {
 
   self->delegate.didEditEntity(self, e);
 
-  if (e != self->entity.def) {
+  if (e != self->pair) {
     cgi.FreeEntity(e);
   }
 }
@@ -99,54 +99,16 @@ static void awakeWithDictionary(View *self, const Dictionary *dictionary) {
  * @memberof View
  */
 static View *init(View *self) {
-  return (View *) $((EntityView *) self, initWithEntity, &(EditorEntity) {
-    .number = -1,
-    .ent = NULL,
-    .def = NULL
-  });
-}
-
-/**
- * @fn void View::render(View *self, Renderer *renderer)
- * @memberof View
- */
-static void render(View *self, Renderer *renderer) {
-
-  super(View, self, render, renderer);
-
-  EntityView *this = (EntityView *) self;
-
-  const cl_entity_t *ent = this->entity.ent;
-  const cm_entity_t *def = this->entity.def;
-
-  // if we are the classname entity pair, draw the selection box
-  if (def && !g_strcmp0(def->key, "classname")) {
-
-    // except worldspawn, there's no point in drawing that selection box
-    if (g_strcmp0(def->string, "worldspawn")) {
-      vec3_t points[2] = { ent->origin };
-
-      points[1] = Vec3_Fmaf(ent->origin, 64.f, Vec3(1.f, 0.f, 0.f));
-      cgi.Draw3DLines(GL_LINES, points, 2, color_red, true);
-
-      points[1] = Vec3_Fmaf(ent->origin, 64.f, Vec3(0.f, 1.f, 0.f));
-      cgi.Draw3DLines(GL_LINES, points, 2, color_green, true);
-
-      points[1] = Vec3_Fmaf(ent->origin, 64.f, Vec3(0.f, 0.f, 1.f));
-      cgi.Draw3DLines(GL_LINES, points, 2, color_blue, true);
-
-      cgi.Draw3DBox(Box3_Expand(ent->abs_bounds, 2.f), color_red, false);
-    }
-  }
+  return (View *) $((EntityView *) self, initWithEntity, NULL, NULL);
 }
 
 #pragma mark - EntityView
 
 /**
- * @fn EntityView *EntityView::initWithEntity(EntityView *self, EditorEntity *entity)
+ * @fn EntityView *EntityView::initWithEntity(EntityView *self, cg_editor_entity_t *edit, cm_entity_t *pair)
  * @memberof EntityView
  */
-static EntityView *initWithEntity(EntityView *self, EditorEntity *entity) {
+static EntityView *initWithEntity(EntityView *self, cg_editor_entity_t *edit, cm_entity_t *pair) {
 
   self = (EntityView *) super(StackView, self, initWithFrame, NULL);
   if (self) {
@@ -162,42 +124,40 @@ static EntityView *initWithEntity(EntityView *self, EditorEntity *entity) {
     self->value->delegate.self = self;
     self->value->delegate.didEndEditing = didEndEditing;
 
-    $(self, setEntity, entity);
+    $(self, setEntity, edit, pair);
   }
 
   return self;
 }
 
 /**
- * @fn void EntityView::setEntity(EntityView *self, cm_entity_t *entity)
+ * @fn void EntityView::setEntity(EntityView *self, cg_editor_entity_t *edit, cm_entity_t *pair)
  * @memberof EntityView
  */
-static void setEntity(EntityView *self, EditorEntity *entity) {
+static void setEntity(EntityView *self, cg_editor_entity_t *edit, cm_entity_t *pair) {
 
-  assert(entity);
-
-  self->entity = *entity;
+  self->edit = edit;
+  self->pair = pair;
 
   self->key->control.state = ControlStateDefault;
   self->value->control.state = ControlStateDefault;
 
-  const cm_entity_t *def = self->entity.def;
-  if (def) {
-    $(self->key, setAttributedText, def->key);
-    if (def->parsed & ENTITY_VEC4) {
-      $(self->value, setAttributedText, va("%g %g %g %g", def->vec4.x, def->vec4.y, def->vec4.z, def->vec4.w));
-    } else if (def->parsed & ENTITY_VEC3) {
-      $(self->value, setAttributedText, va("%g %g %g", def->vec3.x, def->vec3.y, def->vec3.z));
-    } else if (def->parsed & ENTITY_VEC2) {
-      $(self->value, setAttributedText, va("%g %g", def->vec2.x, def->vec2.y));
-    } else if (def->parsed & ENTITY_FLOAT) {
-      $(self->value, setAttributedText, va("%g", def->value));
+  if (pair) {
+    $(self->key, setAttributedText, pair->key);
+    if (pair->parsed & ENTITY_VEC4) {
+      $(self->value, setAttributedText, va("%g %g %g %g", pair->vec4.x, pair->vec4.y, pair->vec4.z, pair->vec4.w));
+    } else if (pair->parsed & ENTITY_VEC3) {
+      $(self->value, setAttributedText, va("%g %g %g", pair->vec3.x, pair->vec3.y, pair->vec3.z));
+    } else if (pair->parsed & ENTITY_VEC2) {
+      $(self->value, setAttributedText, va("%g %g", pair->vec2.x, pair->vec2.y));
+    } else if (pair->parsed & ENTITY_FLOAT) {
+      $(self->value, setAttributedText, va("%g", pair->value));
     } else {
-      $(self->value, setAttributedText, def->string);
+      $(self->value, setAttributedText, pair->string);
     }
 
-    if (!g_strcmp0(def->key, "classname")
-        && !g_strcmp0(def->string, "worldspawn")) {
+    if (!g_strcmp0(pair->key, "classname")
+        && !g_strcmp0(pair->string, "worldspawn")) {
       self->key->control.state |= ControlStateDisabled;
       self->value->control.state |= ControlStateDisabled;
     }
@@ -218,7 +178,6 @@ static void initialize(Class *clazz) {
 
   ((ViewInterface *) clazz->interface)->awakeWithDictionary = awakeWithDictionary;
   ((ViewInterface *) clazz->interface)->init = init;
-  ((ViewInterface *) clazz->interface)->render = render;
 
   ((EntityViewInterface *) clazz->interface)->initWithEntity = initWithEntity;
   ((EntityViewInterface *) clazz->interface)->setEntity = setEntity;

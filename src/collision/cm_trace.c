@@ -136,7 +136,7 @@ static inline bool Cm_TraceIntersect(cm_trace_data_t *data, const cm_bsp_brush_t
  * The offsets[] array provides the box corner in the direction of each plane normal,
  * effectively expanding each plane outward by the box's radius in that direction.
  */
-static void Cm_TraceToBrush(cm_trace_data_t *data, const cm_bsp_brush_t *brush) {
+static void Cm_TraceToBrush_(cm_trace_data_t *data, const cm_bsp_brush_t *brush) {
 
   if (!brush->num_brush_sides) {
     return;
@@ -298,7 +298,7 @@ static void Cm_TraceToLeaf(cm_trace_data_t *data, int32_t leaf_num) {
       continue;
     }
 
-    Cm_TraceToBrush(data, b);
+    Cm_TraceToBrush_(data, b);
 
     if (data->trace.all_solid) {
       return;
@@ -596,6 +596,45 @@ cm_trace_t Cm_BoxTrace(const vec3_t start, const vec3_t end, const box3_t bounds
     },
     .unnudged_fraction = 1.f + TRACE_EPSILON
   });
+}
+
+/**
+ * @brief Traces a point ray from `start` to `end` against a single brush.
+ * @param start The trace start point.
+ * @param end The trace end point.
+ * @param brush The brush to test.
+ * @return The trace result. `start_solid` is set if the origin is inside the brush; callers
+ *   should skip `start_solid` results when selecting entities to avoid selecting brushes
+ *   that geometrically contain the view origin.
+ */
+cm_trace_t Cm_TraceToBrush(const vec3_t start, const vec3_t end, const cm_bsp_brush_t *brush) {
+
+  cm_trace_data_t data = {
+    .start = start,
+    .end = end,
+    .bounds = Box3_Zero(),
+    .abs_bounds = Cm_TraceBounds(start, end, Box3_Zero()),
+    .trace = {
+      .fraction = 1.f
+    },
+    .unnudged_fraction = 1.f + TRACE_EPSILON
+  };
+
+  Box3_ToPoints(Box3_Zero(), data.offsets);
+
+  Cm_TraceToBrush_(&data, brush);
+
+  data.trace.fraction = Maxf(0.f, data.trace.fraction);
+
+  if (data.trace.fraction == 0.f) {
+    data.trace.end = start;
+  } else if (data.trace.fraction == 1.f) {
+    data.trace.end = end;
+  } else {
+    data.trace.end = Vec3_Mix(start, end, data.trace.fraction);
+  }
+
+  return data.trace;
 }
 
 /**
