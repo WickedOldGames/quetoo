@@ -249,10 +249,6 @@ void EmitLights(void) {
           surface = patch->surface;
         }
 
-        if (contents & CONTENTS_MIST) {
-          continue;
-        }
-
         if (surface & SURF_MASK_NO_DRAW_ELEMENTS) {
           continue;
         }
