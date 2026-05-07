@@ -400,6 +400,9 @@ cg_editor_trace_t Cg_EditorTrace(const vec3_t start, const vec3_t end) {
 
   // Models[1..N]: inline model entities — trigger_*, func_wall, func_water, etc.
   for (int32_t i = 1; i < bsp->num_models; i++) {
+    if (Box3_ContainsPoint(bsp->models[i].bounds, start)) {
+      continue; // skip models the view origin occupies — they cut off brush_dist
+    }
     const cm_trace_t tr = cgi.BoxTrace(start, end, Box3_Zero(), bsp->models[i].head_node, ~CONTENTS_EDITOR);
     if (tr.fraction > 0.f && tr.fraction < out.trace.fraction) {
       out.trace = tr;
