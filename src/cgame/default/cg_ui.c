@@ -51,6 +51,7 @@ void Cg_InitUi(void) {
 void Cg_ShutdownUi(void) {
 
   cgi.PopAllViewControllers();
+  cgi.PopViewController();
 
   release(updateViewController);
   updateViewController = NULL;
