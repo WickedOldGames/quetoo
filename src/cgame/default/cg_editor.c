@@ -220,6 +220,8 @@ void Cg_PopulateEditorScene(const cl_frame_t *frame) {
     }
   }
 
+  Cg_AddFlares();
+
   Cg_AddSprites();
 }
 
