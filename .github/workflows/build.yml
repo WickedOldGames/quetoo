@@ -177,13 +177,14 @@ jobs:
           fi
         done
 
-        cd arm64 && zip -r ../quetoo-universal-apple-darwin.zip Quetoo.app
+        hdiutil create -volname "Quetoo" -srcfolder arm64/Quetoo.app \
+          -ov -format UDZO quetoo-universal-apple-darwin.dmg
 
     - name: Upload universal artifact
       uses: actions/upload-artifact@v6
       with:
         name: quetoo-universal-apple-darwin
-        path: quetoo-universal-apple-darwin.zip
+        path: quetoo-universal-apple-darwin.dmg
 
   build-linux:
     needs: resolve-deps
@@ -469,11 +470,11 @@ jobs:
 
         | Platform | Download |
         |----------|----------|
-        | macOS (Universal) | quetoo-universal-apple-darwin.zip |
+        | macOS (Universal) | quetoo-universal-apple-darwin.dmg |
         | Linux (x86_64) | quetoo-x86_64-pc-linux.tar.gz |
         | Windows (x86_64) | quetoo-x86_64-pc-windows.zip |" \
           --prerelease \
-          quetoo-universal-apple-darwin/quetoo-universal-apple-darwin.zip \
+          quetoo-universal-apple-darwin/quetoo-universal-apple-darwin.dmg \
           quetoo-x86_64-pc-linux-archive/quetoo-x86_64-pc-linux.tar.gz \
           quetoo-x86_64-pc-windows/quetoo-x86_64-pc-windows.zip
       env:
