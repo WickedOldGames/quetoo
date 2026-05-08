@@ -254,6 +254,8 @@ void Ui_Init(void) {
 
   $(windowController, setRenderer, renderer);
 
+  release(renderer);
+
   navigationViewController = $(alloc(NavigationViewController), init);
   $(windowController, setViewController, (ViewController *) navigationViewController);
 
@@ -270,6 +272,8 @@ void Ui_Shutdown(void) {
   $$(Resource, removeResourceProvider, Ui_Data);
 
   Ui_PopAllViewControllers();
+
+  navigationViewController = release(navigationViewController);
 
   windowController = release(windowController);
 
