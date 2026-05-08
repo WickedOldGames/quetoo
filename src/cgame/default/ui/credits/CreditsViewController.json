@@ -1,0 +1,698 @@
+{
+  "class": "Panel",
+  "classNames": [
+    "menu"
+  ],
+  "contentView": {
+    "subviews": [
+      {
+        "class": "StackView",
+        "classNames": [
+          "container"
+        ],
+        "subviews": [
+          {
+            "class": "Box",
+            "label": {
+              "text": {
+                "text": "Credits"
+              }
+            },
+            "identifier": "Credits",
+            "contentView": {
+              "class": "StackView",
+              "subviews": [
+                {
+                  "class": "Box",
+                  "label": {
+                    "text": {
+                      "text": "Programming"
+                    }
+                  },
+                  "contentView": {
+                    "subviews": [
+                      {
+                        "class": "StackView",
+                        "classNames": [
+                          "credit"
+                        ],
+                        "subviews": [
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "name"
+                            ],
+                            "text": {
+                              "text": "Jay 'jdolan' Dolan",
+                              "lineWrap": true
+                            }
+                          },
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "role"
+                            ],
+                            "text": {
+                              "text": "Engine, game module, tools, levels, artwork, sound",
+                              "lineWrap": true
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "class": "StackView",
+                        "classNames": [
+                          "credit"
+                        ],
+                        "subviews": [
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "name"
+                            ],
+                            "text": {
+                              "text": "Jonathan 'Paril' Barkley",
+                              "lineWrap": true
+                            }
+                          },
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "role"
+                            ],
+                            "text": {
+                              "text": "Engine, game module, bots",
+                              "lineWrap": true
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "class": "StackView",
+                        "classNames": [
+                          "credit"
+                        ],
+                        "subviews": [
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "name"
+                            ],
+                            "text": {
+                              "text": "Joe 'claire' Reid",
+                              "lineWrap": true
+                            }
+                          },
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "role"
+                            ],
+                            "text": {
+                              "text": "Programming, server hosting",
+                              "lineWrap": true
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "class": "StackView",
+                        "classNames": [
+                          "credit"
+                        ],
+                        "subviews": [
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "name"
+                            ],
+                            "text": {
+                              "text": "KaadmY",
+                              "lineWrap": true
+                            }
+                          },
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "role"
+                            ],
+                            "text": {
+                              "text": "Programming",
+                              "lineWrap": true
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "class": "Box",
+                  "label": {
+                    "text": {
+                      "text": "Original Artwork"
+                    }
+                  },
+                  "contentView": {
+                    "subviews": [
+                      {
+                        "class": "StackView",
+                        "classNames": [
+                          "credit"
+                        ],
+                        "subviews": [
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "name"
+                            ],
+                            "text": {
+                              "text": "DJ 'Panjoo' Bloot",
+                              "lineWrap": true
+                            }
+                          },
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "role"
+                            ],
+                            "text": {
+                              "text": "Logos, level design, textures",
+                              "lineWrap": true
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "class": "StackView",
+                        "classNames": [
+                          "credit"
+                        ],
+                        "subviews": [
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "name"
+                            ],
+                            "text": {
+                              "text": "Chris 'Skies912' Glenn",
+                              "lineWrap": true
+                            }
+                          },
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "role"
+                            ],
+                            "text": {
+                              "text": "Level design, textures, positive vibes",
+                              "lineWrap": true
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "class": "StackView",
+                        "classNames": [
+                          "credit"
+                        ],
+                        "subviews": [
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "name"
+                            ],
+                            "text": {
+                              "text": "Tim 'spirit' Schäfer",
+                              "lineWrap": true
+                            }
+                          },
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "role"
+                            ],
+                            "text": {
+                              "text": "Level design",
+                              "lineWrap": true
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "class": "StackView",
+                        "classNames": [
+                          "credit"
+                        ],
+                        "subviews": [
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "name"
+                            ],
+                            "text": {
+                              "text": "Georges 'TRaK' Grondin",
+                              "lineWrap": true
+                            }
+                          },
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "role"
+                            ],
+                            "text": {
+                              "text": "Level design, textures, models",
+                              "lineWrap": true
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "class": "StackView",
+                        "classNames": [
+                          "credit"
+                        ],
+                        "subviews": [
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "name"
+                            ],
+                            "text": {
+                              "text": "Steve 'Jester' Veihl",
+                              "lineWrap": true
+                            }
+                          },
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "role"
+                            ],
+                            "text": {
+                              "text": "Levels, brush mastery, |.,",
+                              "lineWrap": true
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "class": "StackView",
+                        "classNames": [
+                          "credit"
+                        ],
+                        "subviews": [
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "name"
+                            ],
+                            "text": {
+                              "text": "Noel 'Nilium' Cower",
+                              "lineWrap": true
+                            }
+                          },
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "role"
+                            ],
+                            "text": {
+                              "text": "Models",
+                              "lineWrap": true
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "class": "StackView",
+                        "classNames": [
+                          "credit"
+                        ],
+                        "subviews": [
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "name"
+                            ],
+                            "text": {
+                              "text": "Antti 'Karvajalka' Lahti",
+                              "lineWrap": true
+                            }
+                          },
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "role"
+                            ],
+                            "text": {
+                              "text": "Models",
+                              "lineWrap": true
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "class": "StackView",
+                        "classNames": [
+                          "credit"
+                        ],
+                        "subviews": [
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "name"
+                            ],
+                            "text": {
+                              "text": "BuzzardBait",
+                              "lineWrap": true
+                            }
+                          },
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "role"
+                            ],
+                            "text": {
+                              "text": "Models",
+                              "lineWrap": true
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "class": "Box",
+                  "label": {
+                    "text": {
+                      "text": "Sound"
+                    }
+                  },
+                  "contentView": {
+                    "subviews": [
+                      {
+                        "class": "StackView",
+                        "classNames": [
+                          "credit"
+                        ],
+                        "subviews": [
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "name"
+                            ],
+                            "text": {
+                              "text": "Anthony Webb",
+                              "lineWrap": true
+                            }
+                          },
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "role"
+                            ],
+                            "text": {
+                              "text": "Sounds, music",
+                              "lineWrap": true
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "class": "StackView",
+                        "classNames": [
+                          "credit"
+                        ],
+                        "subviews": [
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "name"
+                            ],
+                            "text": {
+                              "text": "Roland Shaw",
+                              "lineWrap": true
+                            }
+                          },
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "role"
+                            ],
+                            "text": {
+                              "text": "Sounds, music",
+                              "lineWrap": true
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "class": "StackView",
+                        "classNames": [
+                          "credit"
+                        ],
+                        "subviews": [
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "name"
+                            ],
+                            "text": {
+                              "text": "Jacob Zammit",
+                              "lineWrap": true
+                            }
+                          },
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "role"
+                            ],
+                            "text": {
+                              "text": "Music",
+                              "lineWrap": true
+                            }
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                },
+                {
+                  "class": "Box",
+                  "identifier": "SpecialThanks",
+                  "label": {
+                    "text": {
+                      "text": "Special Thanks"
+                    }
+                  },
+                  "contentView": {
+                    "subviews": [
+                      {
+                        "class": "StackView",
+                        "classNames": [
+                          "columns"
+                        ],
+                        "subviews": [
+                          {
+                            "class": "StackView",
+                            "classNames": [
+                              "column"
+                            ],
+                            "axis": "vertical",
+                            "subviews": [
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "KaBal"
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Seargant Science"
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Simon 'sock' O'Callaghan"
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Speedy"
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Tabun & Wirehead Studios"
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "broar"
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Ashley 'LadyHavoc' Hale"
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Brian 'BoBo the seal' Jones"
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Chris 'The Bunny' Dillman"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "class": "StackView",
+                            "classNames": [
+                              "column"
+                            ],
+                            "axis": "vertical",
+                            "subviews": [
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Coşku 'tapir' Baş"
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Dale 'supa_user' Blount"
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Dan 'CardO' Shannon"
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Eduardo 'mitomon' Pecina"
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Jan 'Stannum' van der Weg"
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Juha 'jhaa' Merilä"
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Kevin 'rorshach' Johnstone"
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Mads 'Madsy' Elvheim"
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Marcel 'maci' Wysocki"
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "class": "StackView",
+                            "classNames": [
+                              "column"
+                            ],
+                            "axis": "vertical",
+                            "subviews": [
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Martin 'mattn' Gerhardy"
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Matt 'Lunaran' Breit"
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Mattias 'Preacher' Konradsson"
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Michael 'Thorn' Rodenhurst"
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Philip Klevstav"
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Stephan 'stereo84' Reiter"
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Stijn 'Ingar' Buys"
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Tom 'keres' Havlik"
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "Yves 'evil lair' Allaire"
+                                }
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

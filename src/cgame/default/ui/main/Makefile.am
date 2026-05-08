@@ -29,6 +29,7 @@ libcguimain_la_CFLAGS = \
 	-I$(top_srcdir)/src/cgame/default/ui \
 	-I$(top_srcdir)/src/cgame/default/ui/common \
 	-I$(top_srcdir)/src/cgame/default/ui/controls \
+	-I$(top_srcdir)/src/cgame/default/ui/credits \
 	-I$(top_srcdir)/src/cgame/default/ui/home \
 	-I$(top_srcdir)/src/cgame/default/ui/play \
 	-I$(top_srcdir)/src/cgame/default/ui/settings \

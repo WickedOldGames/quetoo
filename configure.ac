@@ -415,6 +415,7 @@ AC_CONFIG_FILES([
 	src/cgame/default/ui/fonts/Makefile
 	src/cgame/default/ui/common/Makefile
 	src/cgame/default/ui/controls/Makefile
+	src/cgame/default/ui/credits/Makefile
 	src/cgame/default/ui/editor/Makefile
 	src/cgame/default/ui/home/Makefile
 	src/cgame/default/ui/main/Makefile

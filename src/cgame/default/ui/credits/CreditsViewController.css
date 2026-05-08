@@ -1,0 +1,38 @@
+#Credits {
+  max-width: 960;
+}
+
+#Credits .credit {
+  axis: horizontal;
+}
+
+#Credits .credit .name {
+  min-width: 320;
+}
+
+#Credits .credit .name Text {
+  color: #5fb0c4;
+  font-weight: bold;
+  font-size: 18;
+}
+
+#Credits .credit .role {
+  min-width: 600;
+}
+
+#Credits .credit .role Text {
+
+}
+
+#Credits .columns {
+  width: 920;
+}
+
+#Credits #SpecialThanks .column {
+  width: 300;
+}
+
+#Credits #SpecialThanks Text {
+  font-size: 13;
+}
+

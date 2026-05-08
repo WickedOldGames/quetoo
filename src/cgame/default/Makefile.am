@@ -77,6 +77,7 @@ cgame_la_LDFLAGS = \
 cgame_la_LIBADD = \
 	ui/common/libcguicommon.la \
 	ui/controls/libcguicontrols.la \
+	ui/credits/libcguicredits.la \
 	ui/editor/libcguieditor.la \
 	ui/home/libcguihome.la \
 	ui/main/libcguimain.la \

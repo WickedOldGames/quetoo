@@ -67,6 +67,7 @@
     <ClInclude Include="..\src\cgame\default\ui\editor\EntityView.h" />
     <ClInclude Include="..\src\cgame\default\ui\editor\EntityViewController.h" />
     <ClInclude Include="..\src\cgame\default\ui\editor\MaterialViewController.h" />
+    <ClInclude Include="..\src\cgame\default\ui\credits\CreditsViewController.h" />
     <ClInclude Include="..\src\cgame\default\ui\home\HomeViewController.h" />
     <ClInclude Include="..\src\cgame\default\ui\main\LoadingViewController.h" />
     <ClInclude Include="..\src\cgame\default\ui\main\MainView.h" />
@@ -129,6 +130,7 @@
     <ClCompile Include="..\src\cgame\default\ui\editor\EntityView.c" />
     <ClCompile Include="..\src\cgame\default\ui\editor\EntityViewController.c" />
     <ClCompile Include="..\src\cgame\default\ui\editor\MaterialViewController.c" />
+    <ClCompile Include="..\src\cgame\default\ui\credits\CreditsViewController.c" />
     <ClCompile Include="..\src\cgame\default\ui\home\HomeViewController.c" />
     <ClCompile Include="..\src\cgame\default\ui\main\LoadingViewController.c" />
     <ClCompile Include="..\src\cgame\default\ui\main\MainView.c" />
@@ -145,6 +147,10 @@
     <ClCompile Include="..\src\cgame\default\ui\teams\TeamPlayerView.c" />
     <ClCompile Include="..\src\cgame\default\ui\teams\TeamsViewController.c" />
     <ClCompile Include="..\src\cgame\default\ui\teams\TeamView.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\cgame\default\ui\credits\CreditsViewController.css" />
+    <None Include="..\src\cgame\default\ui\credits\CreditsViewController.json" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\ObjectivelyMVC\ObjectivelyMVC.vs15\ObjectivelyMVC.vcxproj">

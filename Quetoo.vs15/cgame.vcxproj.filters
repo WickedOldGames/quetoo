@@ -25,6 +25,9 @@
     <Filter Include="src\default\ui\controls">
       <UniqueIdentifier>{9857244c-6a1e-474f-92fa-6d9acfb03cbb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="src\default\ui\credits">
+      <UniqueIdentifier>{F4B4E2B1-7C95-4DB8-AE17-4F3D6878A9C1}</UniqueIdentifier>
+    </Filter>
     <Filter Include="src\default\ui\home">
       <UniqueIdentifier>{5e79bf76-7c5c-4ba3-8526-839648afb61e}</UniqueIdentifier>
     </Filter>
@@ -173,6 +176,9 @@
     </ClInclude>
     <ClInclude Include="..\src\cgame\default\ui\common\BindTextView.h">
       <Filter>src\default\ui\common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\cgame\default\ui\credits\CreditsViewController.h">
+      <Filter>src\default\ui\credits</Filter>
     </ClInclude>
     <ClInclude Include="..\src\cgame\default\ui\home\HomeViewController.h">
       <Filter>src\default\ui\home</Filter>
@@ -356,6 +362,9 @@
     <ClCompile Include="..\src\cgame\default\ui\common\BindTextView.c">
       <Filter>src\default\ui\common</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\cgame\default\ui\credits\CreditsViewController.c">
+      <Filter>src\default\ui\credits</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\cgame\default\ui\home\HomeViewController.c">
       <Filter>src\default\ui\home</Filter>
     </ClCompile>
@@ -416,5 +425,13 @@
     <ClCompile Include="..\deps\discord-rpc\src\connection_win.cpp">
       <Filter>deps\discord-rpc\src</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\src\cgame\default\ui\credits\CreditsViewController.css">
+      <Filter>src\default\ui\credits</Filter>
+    </None>
+    <None Include="..\src\cgame\default\ui\credits\CreditsViewController.json">
+      <Filter>src\default\ui\credits</Filter>
+    </None>
   </ItemGroup>
 </Project>
