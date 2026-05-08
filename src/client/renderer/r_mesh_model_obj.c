@@ -190,9 +190,21 @@ static void R_LoadObjModel(r_model_t *mod, void *buffer) {
           break;
         }
 
+        if (fv->v > obj.v->len) {
+          Com_Error(ERROR_DROP, "%s has out-of-range vertex index %u\n", mod->media.name, fv->v);
+        }
+
+        if (fv->vt > obj.vt->len) {
+          Com_Error(ERROR_DROP, "%s has out-of-range texcoord index %u\n", mod->media.name, fv->vt);
+        }
+
+        if (fv->vn == 0 || fv->vn > obj.vn->len) {
+          Com_Error(ERROR_DROP, "%s is missing vertex normals\n", mod->media.name);
+        }
+
         const r_mesh_vertex_t v = {
           .position = g_array_index(obj.v, vec3_t, fv->v - 1),
-          .diffusemap = g_array_index(obj.vt, vec2_t, fv->vt - 1),
+          .diffusemap = fv->vt ? g_array_index(obj.vt, vec2_t, fv->vt - 1) : Vec2_Zero(),
           .normal = g_array_index(obj.vn, vec3_t, fv->vn - 1),
         };
 
