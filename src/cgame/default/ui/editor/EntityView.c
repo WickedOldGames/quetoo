@@ -68,6 +68,9 @@ static void dealloc(Object *self) {
 
   memset(&this->delegate, 0, sizeof(this->delegate));
 
+  this->key->delegate.didEndEditing = NULL;
+  this->value->delegate.didEndEditing = NULL;
+
   release(this->key);
   release(this->value);
 
