@@ -488,6 +488,15 @@ static bool Cm_ParseStage(cm_material_t *m, cm_stage_t *s, parser_t *parser) {
       continue;
     }
 
+    if (!g_strcmp0(token, "lerp")) {
+      int32_t value = 0;
+      Parse_Primitive(parser, PARSE_NO_WRAP, PARSE_INT32, &value, 1);
+      if (value) {
+        s->flags |= STAGE_ANIM_LERP;
+      }
+      continue;
+    }
+
     if (!g_strcmp0(token, "lighting")) {
       s->flags |= STAGE_LIGHTING;
 
@@ -1135,6 +1144,10 @@ static void Cm_WriteStage(const cm_material_t *material, const cm_stage_t *stage
 
   if (stage->flags & STAGE_ANIMATION) {
     Fs_Print(file, "\t\tanim %u %0.2f\n", stage->animation.num_frames, stage->animation.fps);
+  }
+
+  if (stage->flags & STAGE_ANIM_LERP) {
+    Fs_Print(file, "\t\tlerp 1\n");
   }
 
   if (stage->flags & STAGE_TERRAIN) {

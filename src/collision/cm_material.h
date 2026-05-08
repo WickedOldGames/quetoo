@@ -232,6 +232,7 @@ typedef enum {
   STAGE_WARP      = (1 << 14),
   STAGE_FLARE     = (1 << 15),
   STAGE_LIGHTING  = (1 << 16),
+  STAGE_ANIM_LERP = (1 << 17),
   STAGE_SHELL     = (1 << 18),
 
   STAGE_DRAW      = (1 << 30),

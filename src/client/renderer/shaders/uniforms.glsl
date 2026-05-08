@@ -205,6 +205,11 @@ uniform sampler2DArray texture_material;
 uniform sampler2D texture_stage;
 
 /**
+ * @brief The next animation frame texture, for interpolated material stage animations.
+ */
+uniform sampler2D texture_stage_next;
+
+/**
  * @brief The warp texture, for liquids.
  */
 uniform sampler2D texture_warp;

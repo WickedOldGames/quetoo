@@ -53,6 +53,7 @@
 #define STAGE_WARP      (1 << 14)
 #define STAGE_FLARE     (1 << 15)
 #define STAGE_LIGHTING  (1 << 16)
+#define STAGE_ANIM_LERP (1 << 17)
 #define STAGE_SHELL     (1 << 18)
 
 #define STAGE_DRAW      (1 << 30)
@@ -167,6 +168,11 @@ struct stage_t {
    * @brief The stage lighting intensity.
    */
   float lighting;
+
+  /**
+   * @brief The animation lerp factor [0, 1] between current and next frame.
+   */
+  float lerp;
 
   /**
    * @brief The stage shell radius.
@@ -319,6 +325,9 @@ float sample_material_displacement(in vec2 texcoord, in float lod) {
  * @return Stage texture color.
  */
 vec4 sample_material_stage(in vec2 texcoord) {
+  if ((stage.flags & STAGE_ANIM_LERP) == STAGE_ANIM_LERP) {
+    return mix(texture(texture_stage, texcoord), texture(texture_stage_next, texcoord), stage.lerp);
+  }
   return texture(texture_stage, texcoord);
 }
 

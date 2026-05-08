@@ -36,6 +36,7 @@ static struct {
 
   GLint texture_material;
   GLint texture_stage;
+  GLint texture_stage_next;
   GLint texture_warp;
 
   GLint texture_voxel_data;
@@ -71,6 +72,7 @@ static struct {
     GLint dirtmap;
     GLint warp;
     GLint lighting;
+    GLint lerp;
   } stage;
 
   r_image_t *warp_image;
@@ -226,12 +228,26 @@ static void R_DrawBspDrawElementsMaterialStage(const r_view_t *view,
       case R_MEDIA_ANIMATION: {
         const r_animation_t *animation = (r_animation_t *) stage->media;
         int32_t frame;
+        float lerp_frac = 0.f;
         if (stage->cm->animation.fps == 0.f && entity != NULL) {
           frame = entity->frame;
+          if (stage->cm->flags & STAGE_ANIM_LERP) {
+            lerp_frac = entity->lerp;
+          }
         } else {
-          frame = view->ticks / 1000.f * stage->cm->animation.fps;
+          const float frame_f = view->ticks / 1000.f * stage->cm->animation.fps;
+          frame = (int32_t) frame_f;
+          if (stage->cm->flags & STAGE_ANIM_LERP) {
+            lerp_frac = frame_f - floorf(frame_f);
+          }
         }
         glBindTexture(GL_TEXTURE_2D, animation->frames[frame % animation->num_frames]->texnum);
+        if (stage->cm->flags & STAGE_ANIM_LERP) {
+          glUniform1f(r_bsp_program.stage.lerp, lerp_frac);
+          glActiveTexture(GL_TEXTURE0 + TEXTURE_STAGE_NEXT);
+          glBindTexture(GL_TEXTURE_2D, animation->frames[(frame + 1) % animation->num_frames]->texnum);
+          glActiveTexture(GL_TEXTURE0 + TEXTURE_STAGE);
+        }
       }
         break;
       case R_MEDIA_MATERIAL: {
@@ -555,6 +571,7 @@ void R_InitBspProgram(void) {
 
   r_bsp_program.texture_material = glGetUniformLocation(r_bsp_program.name, "texture_material");
   r_bsp_program.texture_stage = glGetUniformLocation(r_bsp_program.name, "texture_stage");
+  r_bsp_program.texture_stage_next = glGetUniformLocation(r_bsp_program.name, "texture_stage_next");
   r_bsp_program.texture_warp = glGetUniformLocation(r_bsp_program.name, "texture_warp");
 
   r_bsp_program.texture_voxel_data = glGetUniformLocation(r_bsp_program.name, "texture_voxel_data");
@@ -586,9 +603,11 @@ void R_InitBspProgram(void) {
   r_bsp_program.stage.dirtmap = glGetUniformLocation(r_bsp_program.name, "stage.dirtmap");
   r_bsp_program.stage.warp = glGetUniformLocation(r_bsp_program.name, "stage.warp");
   r_bsp_program.stage.lighting = glGetUniformLocation(r_bsp_program.name, "stage.lighting");
+  r_bsp_program.stage.lerp = glGetUniformLocation(r_bsp_program.name, "stage.lerp");
 
   glUniform1i(r_bsp_program.texture_material, TEXTURE_MATERIAL);
   glUniform1i(r_bsp_program.texture_stage, TEXTURE_STAGE);
+  glUniform1i(r_bsp_program.texture_stage_next, TEXTURE_STAGE_NEXT);
   glUniform1i(r_bsp_program.texture_warp, TEXTURE_WARP);
 
   glUniform1i(r_bsp_program.texture_voxel_data, TEXTURE_VOXEL_DATA);
