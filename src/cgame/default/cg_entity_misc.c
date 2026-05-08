@@ -761,7 +761,7 @@ static void Cg_misc_steam_Init(cg_entity_t *self) {
 
   cg_misc_steam_t *steam = self->data;
 
-  self->hz = cgi.EntityValue(self->def, "hz")->value ?: 24.f;
+  self->hz = cgi.EntityValue(self->def, "hz")->value ?: 30.f;
   self->drift = cgi.EntityValue(self->def, "drift")->value ?: .01f;
 
   if (self->target) {
