@@ -43,8 +43,8 @@
                               "name"
                             ],
                             "text": {
-                              "text": "Jay 'jdolan' Dolan",
-                              "lineWrap": true
+                              "text": "^2jdolan^7 (Jay Dolan)",
+                              "colorEscapes": true
                             }
                           },
                           {
@@ -54,7 +54,7 @@
                             ],
                             "text": {
                               "text": "Engine, game module, tools, levels, artwork, sound",
-                              "lineWrap": true
+                              "colorEscapes": true
                             }
                           }
                         ]
@@ -71,8 +71,8 @@
                               "name"
                             ],
                             "text": {
-                              "text": "Jonathan 'Paril' Barkley",
-                              "lineWrap": true
+                              "text": "^2Paril^7 (Jonathan Barkley)",
+                              "colorEscapes": true
                             }
                           },
                           {
@@ -82,7 +82,7 @@
                             ],
                             "text": {
                               "text": "Engine, game module, bots",
-                              "lineWrap": true
+                              "colorEscapes": true
                             }
                           }
                         ]
@@ -99,8 +99,8 @@
                               "name"
                             ],
                             "text": {
-                              "text": "Joe 'claire' Reid",
-                              "lineWrap": true
+                              "text": "^2claire^7 (Joe Reid)",
+                              "colorEscapes": true
                             }
                           },
                           {
@@ -110,7 +110,7 @@
                             ],
                             "text": {
                               "text": "Programming, server hosting",
-                              "lineWrap": true
+                              "colorEscapes": true
                             }
                           }
                         ]
@@ -127,8 +127,8 @@
                               "name"
                             ],
                             "text": {
-                              "text": "KaadmY",
-                              "lineWrap": true
+                              "text": "^2KaadmY^7",
+                              "colorEscapes": true
                             }
                           },
                           {
@@ -138,7 +138,7 @@
                             ],
                             "text": {
                               "text": "Programming",
-                              "lineWrap": true
+                              "colorEscapes": true
                             }
                           }
                         ]
@@ -167,8 +167,8 @@
                               "name"
                             ],
                             "text": {
-                              "text": "DJ 'Panjoo' Bloot",
-                              "lineWrap": true
+                              "text": "^2Panjoo^7 (DJ Bloot)",
+                              "colorEscapes": true
                             }
                           },
                           {
@@ -178,7 +178,7 @@
                             ],
                             "text": {
                               "text": "Logos, level design, textures",
-                              "lineWrap": true
+                              "colorEscapes": true
                             }
                           }
                         ]
@@ -195,8 +195,8 @@
                               "name"
                             ],
                             "text": {
-                              "text": "Chris 'Skies912' Glenn",
-                              "lineWrap": true
+                              "text": "^2Skies912^7 (Chris Glenn)",
+                              "colorEscapes": true
                             }
                           },
                           {
@@ -206,7 +206,7 @@
                             ],
                             "text": {
                               "text": "Level design, textures, positive vibes",
-                              "lineWrap": true
+                              "colorEscapes": true
                             }
                           }
                         ]
@@ -223,8 +223,8 @@
                               "name"
                             ],
                             "text": {
-                              "text": "Tim 'spirit' Schäfer",
-                              "lineWrap": true
+                              "text": "^2spirit^7 (Tim Schäfer)",
+                              "colorEscapes": true
                             }
                           },
                           {
@@ -234,7 +234,7 @@
                             ],
                             "text": {
                               "text": "Level design",
-                              "lineWrap": true
+                              "colorEscapes": true
                             }
                           }
                         ]
@@ -251,8 +251,8 @@
                               "name"
                             ],
                             "text": {
-                              "text": "Georges 'TRaK' Grondin",
-                              "lineWrap": true
+                              "text": "^2TRaK^7 (Georges Grondin)",
+                              "colorEscapes": true
                             }
                           },
                           {
@@ -262,7 +262,7 @@
                             ],
                             "text": {
                               "text": "Level design, textures, models",
-                              "lineWrap": true
+                              "colorEscapes": true
                             }
                           }
                         ]
@@ -279,8 +279,8 @@
                               "name"
                             ],
                             "text": {
-                              "text": "Steve 'Jester' Veihl",
-                              "lineWrap": true
+                              "text": "^2Jester^7 (Steve Veihl)",
+                              "colorEscapes": true
                             }
                           },
                           {
@@ -290,7 +290,7 @@
                             ],
                             "text": {
                               "text": "Levels, brush mastery, |.,",
-                              "lineWrap": true
+                              "colorEscapes": true
                             }
                           }
                         ]
@@ -307,8 +307,8 @@
                               "name"
                             ],
                             "text": {
-                              "text": "Noel 'Nilium' Cower",
-                              "lineWrap": true
+                              "text": "^2Nilium^7 (Noel Cower)",
+                              "colorEscapes": true
                             }
                           },
                           {
@@ -318,7 +318,7 @@
                             ],
                             "text": {
                               "text": "Models",
-                              "lineWrap": true
+                              "colorEscapes": true
                             }
                           }
                         ]
@@ -335,8 +335,8 @@
                               "name"
                             ],
                             "text": {
-                              "text": "Antti 'Karvajalka' Lahti",
-                              "lineWrap": true
+                              "text": "^2Karvajalka^7 (Antti Lahti)",
+                              "colorEscapes": true
                             }
                           },
                           {
@@ -346,7 +346,7 @@
                             ],
                             "text": {
                               "text": "Models",
-                              "lineWrap": true
+                              "colorEscapes": true
                             }
                           }
                         ]
@@ -363,8 +363,8 @@
                               "name"
                             ],
                             "text": {
-                              "text": "BuzzardBait",
-                              "lineWrap": true
+                              "text": "^2BuzzardBait^7",
+                              "colorEscapes": true
                             }
                           },
                           {
@@ -374,7 +374,7 @@
                             ],
                             "text": {
                               "text": "Models",
-                              "lineWrap": true
+                              "colorEscapes": true
                             }
                           }
                         ]
@@ -403,8 +403,7 @@
                               "name"
                             ],
                             "text": {
-                              "text": "Anthony Webb",
-                              "lineWrap": true
+                              "text": "Anthony Webb"
                             }
                           },
                           {
@@ -414,7 +413,7 @@
                             ],
                             "text": {
                               "text": "Sounds, music",
-                              "lineWrap": true
+                              "colorEscapes": true
                             }
                           }
                         ]
@@ -431,8 +430,7 @@
                               "name"
                             ],
                             "text": {
-                              "text": "Roland Shaw",
-                              "lineWrap": true
+                              "text": "Roland Shaw"
                             }
                           },
                           {
@@ -442,7 +440,7 @@
                             ],
                             "text": {
                               "text": "Sounds, music",
-                              "lineWrap": true
+                              "colorEscapes": true
                             }
                           }
                         ]
@@ -459,8 +457,7 @@
                               "name"
                             ],
                             "text": {
-                              "text": "Jacob Zammit",
-                              "lineWrap": true
+                              "text": "Jacob Zammit"
                             }
                           },
                           {
@@ -470,7 +467,7 @@
                             ],
                             "text": {
                               "text": "Music",
-                              "lineWrap": true
+                              "colorEscapes": true
                             }
                           }
                         ]
@@ -504,25 +501,29 @@
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "KaBal"
+                                  "text": "^2KaBal^7",
+                                  "colorEscapes": true
                                 }
                               },
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "Seargant Science"
+                                  "text": "^2Seargant Science^7",
+                                  "colorEscapes": true
                                 }
                               },
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "Simon 'sock' O'Callaghan"
+                                  "text": "^2sock^7 (Simon O'Callaghan)",
+                                  "colorEscapes": true
                                 }
                               },
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "Speedy"
+                                  "text": "^2Speedy^7",
+                                  "colorEscapes": true
                                 }
                               },
                               {
@@ -534,25 +535,29 @@
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "broar"
+                                  "text": "^2broar^7",
+                                  "colorEscapes": true
                                 }
                               },
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "Ashley 'LadyHavoc' Hale"
+                                  "text": "^2LadyHavoc^7 (Ashley Hale)",
+                                  "colorEscapes": true
                                 }
                               },
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "Brian 'BoBo the seal' Jones"
+                                  "text": "^2BoBo the seal^7 (Brian Jones)",
+                                  "colorEscapes": true
                                 }
                               },
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "Chris 'The Bunny' Dillman"
+                                  "text": "^2The Bunny^7 (Chris Dillman)",
+                                  "colorEscapes": true
                                 }
                               }
                             ]
@@ -567,55 +572,64 @@
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "Coşku 'tapir' Baş"
+                                  "text": "^2tapir^7 (Coşku Baş)",
+                                  "colorEscapes": true
                                 }
                               },
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "Dale 'supa_user' Blount"
+                                  "text": "^2supa_user^7 (Dale Blount)",
+                                  "colorEscapes": true
                                 }
                               },
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "Dan 'CardO' Shannon"
+                                  "text": "^2CardO^7 (Dan Shannon)",
+                                  "colorEscapes": true
                                 }
                               },
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "Eduardo 'mitomon' Pecina"
+                                  "text": "^2mitomon^7 (Eduardo Pecina)",
+                                  "colorEscapes": true
                                 }
                               },
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "Jan 'Stannum' van der Weg"
+                                  "text": "^2Stannum^7 (Jan van der Weg)",
+                                  "colorEscapes": true
                                 }
                               },
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "Juha 'jhaa' Merilä"
+                                  "text": "^2jhaa^7 (Juha Merilä)",
+                                  "colorEscapes": true
                                 }
                               },
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "Kevin 'rorshach' Johnstone"
+                                  "text": "^2rorshach^7 (Kevin Johnstone)",
+                                  "colorEscapes": true
                                 }
                               },
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "Mads 'Madsy' Elvheim"
+                                  "text": "^2Madsy^7 (Mads Elvheim)",
+                                  "colorEscapes": true
                                 }
                               },
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "Marcel 'maci' Wysocki"
+                                  "text": "^2maci^7 (Marcel Wysocki)",
+                                  "colorEscapes": true
                                 }
                               }
                             ]
@@ -630,25 +644,29 @@
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "Martin 'mattn' Gerhardy"
+                                  "text": "^2mattn^7 (Martin Gerhardy)",
+                                  "colorEscapes": true
                                 }
                               },
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "Matt 'Lunaran' Breit"
+                                  "text": "^2Lunaran^7 (Matt Breit)",
+                                  "colorEscapes": true
                                 }
                               },
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "Mattias 'Preacher' Konradsson"
+                                  "text": "^2Preacher^7 (Mattias Konradsson)",
+                                  "colorEscapes": true
                                 }
                               },
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "Michael 'Thorn' Rodenhurst"
+                                  "text": "^2Thorn^7 (Michael Rodenhurst)",
+                                  "colorEscapes": true
                                 }
                               },
                               {
@@ -660,25 +678,29 @@
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "Stephan 'stereo84' Reiter"
+                                  "text": "^2stereo84^7 (Stephan Reiter)",
+                                  "colorEscapes": true
                                 }
                               },
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "Stijn 'Ingar' Buys"
+                                  "text": "^2Ingar^7 (Stijn Buys)",
+                                  "colorEscapes": true
                                 }
                               },
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "Tom 'keres' Havlik"
+                                  "text": "^2keres^7 (Tom Havlik)",
+                                  "colorEscapes": true
                                 }
                               },
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "Yves 'evil lair' Allaire"
+                                  "text": "^2evil lair^7 (Yves Allaire)",
+                                  "colorEscapes": true
                                 }
                               }
                             ]
