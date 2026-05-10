@@ -177,8 +177,56 @@ jobs:
           fi
         done
 
+    - name: Sign application
+      env:
+        APPLE_CERTIFICATE_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
+        APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+      run: |
+        KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
+        echo "$APPLE_CERTIFICATE_P12" | base64 --decode > certificate.p12
+        security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+        security default-keychain -s build.keychain
+        security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+        security import certificate.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+        security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" build.keychain
+        rm certificate.p12
+
+        find arm64/Quetoo.app -type f \( -name "*.dylib" -o -name "*.so" \) | while read f; do
+          codesign --force --timestamp --options runtime \
+            --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" "$f"
+        done
+
+        for exe in quemap quetoo quetoo-dedicated quetoo-master; do
+          bin="arm64/Quetoo.app/Contents/MacOS/$exe"
+          if [ -f "$bin" ]; then
+            codesign --force --timestamp --options runtime \
+              --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" "$bin"
+          fi
+        done
+
+        codesign --force --timestamp --options runtime \
+          --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" arm64/Quetoo.app
+        codesign --verify --deep --strict arm64/Quetoo.app
+
+        security delete-keychain build.keychain
+
+    - name: Create DMG
+      run: |
         hdiutil create -volname "Quetoo" -srcfolder arm64/Quetoo.app \
           -ov -format UDZO quetoo-universal-apple-darwin.dmg
+
+    - name: Notarize DMG
+      env:
+        APPLE_ID: ${{ secrets.APPLE_ID }}
+        APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      run: |
+        xcrun notarytool submit quetoo-universal-apple-darwin.dmg \
+          --apple-id "$APPLE_ID" \
+          --team-id "$APPLE_TEAM_ID" \
+          --password "$APPLE_APP_PASSWORD" \
+          --wait
+        xcrun stapler staple quetoo-universal-apple-darwin.dmg
 
     - name: Upload universal artifact
       uses: actions/upload-artifact@v6
