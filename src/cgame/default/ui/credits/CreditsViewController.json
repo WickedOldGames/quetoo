@@ -93,7 +93,7 @@
                   "class": "Box",
                   "label": {
                     "text": {
-                      "text": "Original Artwork"
+                      "text": "Artwork"
                     }
                   },
                   "contentView": {
@@ -120,7 +120,7 @@
                               "role"
                             ],
                             "text": {
-                              "text": "Logos, level design, textures",
+                              "text": "Logos, level design, models, textures, game balance",
                               "colorEscapes": true
                             }
                           }
@@ -153,19 +153,7 @@
                             }
                           }
                         ]
-                      }
-                    ]
-                  }
-                },
-                {
-                  "class": "Box",
-                  "label": {
-                    "text": {
-                      "text": "Sound"
-                    }
-                  },
-                  "contentView": {
-                    "subviews": [
+                      },
                       {
                         "class": "StackView",
                         "classNames": [
@@ -216,7 +204,7 @@
                               "role"
                             ],
                             "text": {
-                              "text": "Levels, brush mastery, |.,",
+                              "text": "Level design, brush magic",
                               "colorEscapes": true
                             }
                           }
@@ -340,7 +328,6 @@
                             "classNames": [
                               "column"
                             ],
-                            "axis": "vertical",
                             "subviews": [
                               {
                                 "class": "Label",
@@ -433,7 +420,6 @@
                             "classNames": [
                               "column"
                             ],
-                            "axis": "vertical",
                             "subviews": [
                               {
                                 "class": "Label",
@@ -526,7 +512,6 @@
                             "classNames": [
                               "column"
                             ],
-                            "axis": "vertical",
                             "subviews": [
                               {
                                 "class": "Label",
