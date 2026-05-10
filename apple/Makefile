@@ -1,28 +1,40 @@
-# Makefile for Quetoo.app, requires awscli and dylibbundler.
-# http://macdylibbundler.sourceforge.net/
+# Makefile for Quetoo.app bundle assembly, code signing, and notarization.
+# Requires dylibbundler: https://github.com/auriamg/macdylibbundler
+#
+# Typical local workflow:
+#   make                    # build, install, bundle libs, move assets
+#   make sign               # sign with Developer ID (cert must be in Keychain)
+#   make dmg                # create distributable DMG
+#   make notarize           # notarize and staple DMG (needs APPLE_* env vars)
+#
+# For the bundle (with game data) DMG:
+#   make bundle-data QUETOO_DATA_DIR=../../quetoo-data
+#   make bundle-sign
+#   make bundle-notarize
 
-CODESIGN_IDENTITY = "F43DBDE48E6ACE15193C42883170FB0D35C38A2B"
+CODESIGN_IDENTITY ?= "Developer ID Application: Jay Dolan (C5PXKE9CU5)"
+QUETOO_DATA_DIR   ?= ../../quetoo-data
 
-ARCH = arm64
-BUILD = $(ARCH)-apple-darwin
-TARGET = target
-INSTALL = $(TARGET)/Quetoo.app
-BINDIR = $(INSTALL)/Contents/MacOS
-LIBDIR = $(INSTALL)/Contents/MacOS/lib
-DATADIR = $(INSTALL)/Contents/Resources
-SNAPSHOT = $(TARGET)/Quetoo-$(BUILD).dmg
-VOLUME_NAME = "Quetoo $(BUILD)"
-QUETOO_S3_BUCKET = s3://quetoo
-QUETOO_DATA_S3_BUCKET = s3://quetoo-data
+ARCH      = arm64
+BUILD     = $(ARCH)-apple-darwin
+TARGET    = target
+INSTALL   = $(TARGET)/Quetoo.app
+BINDIR    = $(INSTALL)/Contents/MacOS
+LIBDIR    = $(BINDIR)/lib
+PLUGINDIR = $(LIBDIR)/quetoo/default
+DATADIR   = $(INSTALL)/Contents/Resources
 
-all: clean configure compile pre-install install install-lib post-install
-continuous-integration: all release install-data snapshot snapshot-release
+SNAPSHOT        = $(TARGET)/Quetoo-$(BUILD).dmg
+BUNDLE_SNAPSHOT = $(TARGET)/Quetoo-bundle-$(BUILD).dmg
+VOLUME_NAME     = "Quetoo"
+
+all: configure compile pre-install install install-lib move-resources
 
 configure:
 	cd .. ; autoreconf -i; ./configure CFLAGS='-g -O2' --prefix=/
-	
+
 compile:
-	make -C .. -j8 all
+	make -C .. -j$(shell sysctl -n hw.logicalcpu) all
 
 pre-install:
 	install -d $(INSTALL)
@@ -42,30 +54,86 @@ install-lib:
 		-x $(BINDIR)/quetoo \
 		-x $(BINDIR)/quetoo-dedicated \
 		-x $(BINDIR)/quetoo-master \
-		-x $(LIBDIR)/default/cgame.so \
-		-x $(LIBDIR)/default/game.so \
-	-d $(LIBDIR) -of -p @executable_path/lib
+		-x $(PLUGINDIR)/cgame.so \
+		-x $(PLUGINDIR)/game.so \
+		-d $(LIBDIR) -of -p @executable_path/lib
 
-post-install:
-	codesign -s $(CODESIGN_IDENTITY) --verbose --deep --force $(INSTALL)
+# Move non-Mach-O engine assets (UI layouts, shaders, images) out of
+# lib/quetoo/default/ and into Contents/Resources/default/, where the
+# engine already searches for them on macOS. This leaves only .so plugins
+# in lib/quetoo/default/, which codesign --verify --deep handles cleanly.
+move-resources:
+	@mkdir -p $(DATADIR)/default
+	@if [ -d "$(PLUGINDIR)" ]; then \
+		find "$(PLUGINDIR)" -mindepth 1 -type f ! -name "*.so" ! -name "*.dylib" \
+			| while IFS= read -r src; do \
+				rel="$${src#$(PLUGINDIR)/}"; \
+				dest="$(DATADIR)/default/$$rel"; \
+				mkdir -p "$$(dirname "$$dest")"; \
+				mv "$$src" "$$dest"; \
+			done; \
+		find "$(PLUGINDIR)" -mindepth 1 -type d -empty -delete 2>/dev/null || true; \
+	fi
 
-release:
-	aws s3 sync --delete $(INSTALL) $(QUETOO_S3_BUCKET)/$(BUILD)
-	git rev-list --count HEAD > $(TARGET)/version
-	aws s3 cp $(TARGET)/version $(QUETOO_S3_BUCKET)/versions/$(BUILD)
+# Sign all Mach-O code in the bundle, then seal the bundle.
+# lib/quetoo/default/ contains only .so plugins after move-resources, so
+# codesign --verify --deep finds no mixed-content issues.
+sign:
+	find "$(INSTALL)" -type f \( -name "*.dylib" -o -name "*.so" \) \
+		-exec codesign --force --timestamp --options runtime \
+			--sign $(CODESIGN_IDENTITY) {} \;
+	for exe in quemap quetoo quetoo-dedicated quetoo-master; do \
+		bin="$(BINDIR)/$$exe"; \
+		if [ -f "$$bin" ]; then \
+			codesign --force --timestamp --options runtime \
+				--sign $(CODESIGN_IDENTITY) "$$bin"; \
+		fi; \
+	done
+	codesign --force --timestamp --options runtime \
+		--sign $(CODESIGN_IDENTITY) $(INSTALL)
+	codesign --verify --deep $(INSTALL)
 
-install-data:
-	aws s3 sync $(QUETOO_DATA_S3_BUCKET)/ $(DATADIR)
+dmg:
+	hdiutil create -volname $(VOLUME_NAME) -srcfolder $(INSTALL) \
+		-ov -format UDZO $(SNAPSHOT)
 
-snapshot:
-	ln -f -s /Applications $(TARGET)/Applications
-	hdiutil create -ov $(SNAPSHOT) -srcfolder $(TARGET) -volname $(VOLUME_NAME)
-	rm -f $(TARGET)/Applications
+# Notarize and staple the binary DMG.
+# Requires env vars: APPLE_ID, APPLE_TEAM_ID, APPLE_APP_PASSWORD
+notarize: dmg
+	xcrun notarytool submit $(SNAPSHOT) \
+		--apple-id "$$APPLE_ID" \
+		--team-id "$$APPLE_TEAM_ID" \
+		--password "$$APPLE_APP_PASSWORD" \
+		--wait
+	xcrun stapler staple $(SNAPSHOT)
 
-snapshot-release:
-	aws s3 cp $(SNAPSHOT) $(QUETOO_S3_BUCKET)/snapshots/
+# Copy quetoo-data into Contents/Resources/ to produce a self-contained bundle.
+bundle-data:
+	mkdir -p $(DATADIR)/default
+	cp -r $(QUETOO_DATA_DIR)/target/default/. $(DATADIR)/default/
+
+# Re-seal the bundle after adding game data.
+bundle-sign:
+	codesign --force --timestamp --options runtime \
+		--sign $(CODESIGN_IDENTITY) $(INSTALL)
+	codesign --verify --deep $(INSTALL)
+
+bundle-dmg:
+	hdiutil create -volname $(VOLUME_NAME) -srcfolder $(INSTALL) \
+		-ov -format UDZO $(BUNDLE_SNAPSHOT)
+
+# Notarize and staple the bundle DMG.
+# Requires env vars: APPLE_ID, APPLE_TEAM_ID, APPLE_APP_PASSWORD
+bundle-notarize: bundle-dmg
+	xcrun notarytool submit $(BUNDLE_SNAPSHOT) \
+		--apple-id "$$APPLE_ID" \
+		--team-id "$$APPLE_TEAM_ID" \
+		--password "$$APPLE_APP_PASSWORD" \
+		--wait
+	xcrun stapler staple $(BUNDLE_SNAPSHOT)
 
 clean:
 	rm -rf $(TARGET)/*
 
-.PHONY: all configure compile pre-install install install-lib post-install release install-data snapshot snapshot-release clean
+.PHONY: all configure compile pre-install install install-lib move-resources \
+        sign dmg notarize bundle-data bundle-sign bundle-dmg bundle-notarize clean

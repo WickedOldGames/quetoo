@@ -112,28 +112,15 @@ jobs:
 
     - name: Install Quetoo
       working-directory: quetoo
-      run: |
-        install -d apple/target/Quetoo.app
-        cp -r apple/Quetoo.app/* apple/target/Quetoo.app/
-        find apple/target/Quetoo.app -name .turd -delete
-        ln -f -s Contents/MacOS apple/target/Quetoo.app/bin
-        ln -f -s Contents/MacOS/lib apple/target/Quetoo.app/lib
-        ln -f -s Contents/Resources apple/target/Quetoo.app/share
-        make DESTDIR=$(pwd)/apple/target/Quetoo.app install
-        rm -f apple/target/Quetoo.app/bin apple/target/Quetoo.app/lib apple/target/Quetoo.app/share
+      run: make -C apple pre-install install
 
     - name: Bundle libraries
       working-directory: quetoo
-      run: |
-        dylibbundler -b \
-          -x apple/target/Quetoo.app/Contents/MacOS/quemap \
-          -x apple/target/Quetoo.app/Contents/MacOS/quetoo \
-          -x apple/target/Quetoo.app/Contents/MacOS/quetoo-dedicated \
-          -x apple/target/Quetoo.app/Contents/MacOS/quetoo-master \
-          -x apple/target/Quetoo.app/Contents/MacOS/lib/quetoo/default/cgame.so \
-          -x apple/target/Quetoo.app/Contents/MacOS/lib/quetoo/default/game.so \
-          -d apple/target/Quetoo.app/Contents/MacOS/lib \
-          -of -p @executable_path/lib
+      run: make -C apple install-lib
+
+    - name: Move engine assets to Resources
+      working-directory: quetoo
+      run: make -C apple move-resources
 
     - name: Create archive
       working-directory: quetoo
@@ -162,12 +149,19 @@ jobs:
         mkdir arm64
         unzip quetoo-arm64-apple-darwin.zip -d arm64
 
-    - name: Sign application
+    - name: Checkout Quetoo
+      uses: actions/checkout@v6
+      with:
+        path: quetoo
+        fetch-depth: 1
+
+    - name: Set up keychain
       env:
         APPLE_CERTIFICATE_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
         APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
       run: |
         KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
+        echo "KEYCHAIN_PASSWORD=$KEYCHAIN_PASSWORD" >> $GITHUB_ENV
         echo "$APPLE_CERTIFICATE_P12" | base64 --decode > certificate.p12
         security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
         security default-keychain -s build.keychain
@@ -176,48 +170,24 @@ jobs:
         security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" build.keychain
         rm certificate.p12
 
-        find arm64/Quetoo.app -type f \( -name "*.dylib" -o -name "*.so" \) | while read f; do
-          codesign --force --timestamp --options runtime \
-            --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" "$f"
-        done
-
-        for exe in quemap quetoo quetoo-dedicated quetoo-master; do
-          bin="arm64/Quetoo.app/Contents/MacOS/$exe"
-          if [ -f "$bin" ]; then
-            codesign --force --timestamp --options runtime \
-              --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" "$bin"
-          fi
-        done
-
-        # lib/quetoo/default/ has no Info.plist, so codesign does NOT treat it as
-        # a nested bundle. --deep would try to process subdirectories as bundles
-        # and choke on non-Mach-O files (JSON, PNG, etc.). Instead: sign .so/.dylib
-        # files individually above, then sign the outer bundle without --deep.
-        # codesign --verify --deep still works: it finds the individually-signed
-        # .so files as code objects and skips non-Mach-O assets.
-        codesign --force --timestamp --options runtime \
-          --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" arm64/Quetoo.app
-        codesign --verify --deep arm64/Quetoo.app
-
-        security delete-keychain build.keychain
+    - name: Sign application
+      run: make -C quetoo/apple sign INSTALL=$(pwd)/arm64/Quetoo.app
 
     - name: Create DMG
-      run: |
-        hdiutil create -volname "Quetoo" -srcfolder arm64/Quetoo.app \
-          -ov -format UDZO quetoo-universal-apple-darwin.dmg
+      run: make -C quetoo/apple dmg INSTALL=$(pwd)/arm64/Quetoo.app \
+             SNAPSHOT=$(pwd)/quetoo-universal-apple-darwin.dmg
 
     - name: Notarize DMG
       env:
         APPLE_ID: ${{ secrets.APPLE_ID }}
         APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
         APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-      run: |
-        xcrun notarytool submit quetoo-universal-apple-darwin.dmg \
-          --apple-id "$APPLE_ID" \
-          --team-id "$APPLE_TEAM_ID" \
-          --password "$APPLE_APP_PASSWORD" \
-          --wait
-        xcrun stapler staple quetoo-universal-apple-darwin.dmg
+      run: make -C quetoo/apple notarize INSTALL=$(pwd)/arm64/Quetoo.app \
+             SNAPSHOT=$(pwd)/quetoo-universal-apple-darwin.dmg
+
+    - name: Tear down keychain
+      if: always()
+      run: security delete-keychain build.keychain
 
     - name: Upload universal artifact
       uses: actions/upload-artifact@v6
