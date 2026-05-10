@@ -180,6 +180,24 @@ jobs:
             --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" "$f"
         done
 
+        cat > arm64/Quetoo.app/Contents/MacOS/lib/quetoo/default/Info.plist << 'EOF'
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleIdentifier</key>
+  <string>org.quetoo.default</string>
+  <key>CFBundleVersion</key>
+  <string>1.0</string>
+  <key>CFBundlePackageType</key>
+  <string>BNDL</string>
+</dict>
+</plist>
+EOF
+        codesign --force --timestamp --options runtime \
+          --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" \
+          arm64/Quetoo.app/Contents/MacOS/lib/quetoo/default
+
         for exe in quemap quetoo quetoo-dedicated quetoo-master; do
           bin="arm64/Quetoo.app/Contents/MacOS/$exe"
           if [ -f "$bin" ]; then
@@ -188,7 +206,7 @@ jobs:
           fi
         done
 
-        codesign --force --timestamp --options runtime --deep \
+        codesign --force --timestamp --options runtime \
           --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" arm64/Quetoo.app
         codesign --verify --deep arm64/Quetoo.app
 
@@ -226,7 +244,7 @@ jobs:
     - name: Re-sign bundle
       run: |
         security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-        codesign --force --timestamp --options runtime --deep \
+        codesign --force --timestamp --options runtime \
           --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" arm64/Quetoo.app
         codesign --verify --deep arm64/Quetoo.app
         security delete-keychain build.keychain
