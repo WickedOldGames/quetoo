@@ -20,8 +20,6 @@
               }
             },
             "contentView": {
-              "class": "StackView",
-              "spacing": 12,
               "subviews": [
                 {
                   "class": "Box",
@@ -83,34 +81,6 @@
                             ],
                             "text": {
                               "text": "Engine, game module, bots",
-                              "colorEscapes": true
-                            }
-                          }
-                        ]
-                      },
-                      {
-                        "class": "StackView",
-                        "classNames": [
-                          "credit"
-                        ],
-                        "subviews": [
-                          {
-                            "class": "Label",
-                            "classNames": [
-                              "name"
-                            ],
-                            "text": {
-                              "text": "^2claire^7 (Joe Reid)",
-                              "colorEscapes": true
-                            }
-                          },
-                          {
-                            "class": "Label",
-                            "classNames": [
-                              "role"
-                            ],
-                            "text": {
-                              "text": "Programming, server hosting",
                               "colorEscapes": true
                             }
                           }
@@ -183,35 +153,19 @@
                             }
                           }
                         ]
-                      },
-                      {
-                        "class": "StackView",
-                        "classNames": [
-                          "credit"
-                        ],
-                        "subviews": [
-                          {
-                            "class": "Label",
-                            "classNames": [
-                              "name"
-                            ],
-                            "text": {
-                              "text": "^2spirit^7 (Tim Schäfer)",
-                              "colorEscapes": true
-                            }
-                          },
-                          {
-                            "class": "Label",
-                            "classNames": [
-                              "role"
-                            ],
-                            "text": {
-                              "text": "Level design",
-                              "colorEscapes": true
-                            }
-                          }
-                        ]
-                      },
+                      }
+                    ]
+                  }
+                },
+                {
+                  "class": "Box",
+                  "label": {
+                    "text": {
+                      "text": "Sound"
+                    }
+                  },
+                  "contentView": {
+                    "subviews": [
                       {
                         "class": "StackView",
                         "classNames": [
@@ -263,90 +217,6 @@
                             ],
                             "text": {
                               "text": "Levels, brush mastery, |.,",
-                              "colorEscapes": true
-                            }
-                          }
-                        ]
-                      },
-                      {
-                        "class": "StackView",
-                        "classNames": [
-                          "credit"
-                        ],
-                        "subviews": [
-                          {
-                            "class": "Label",
-                            "classNames": [
-                              "name"
-                            ],
-                            "text": {
-                              "text": "^2Nilium^7 (Noel Cower)",
-                              "colorEscapes": true
-                            }
-                          },
-                          {
-                            "class": "Label",
-                            "classNames": [
-                              "role"
-                            ],
-                            "text": {
-                              "text": "Models",
-                              "colorEscapes": true
-                            }
-                          }
-                        ]
-                      },
-                      {
-                        "class": "StackView",
-                        "classNames": [
-                          "credit"
-                        ],
-                        "subviews": [
-                          {
-                            "class": "Label",
-                            "classNames": [
-                              "name"
-                            ],
-                            "text": {
-                              "text": "^2Karvajalka^7 (Antti Lahti)",
-                              "colorEscapes": true
-                            }
-                          },
-                          {
-                            "class": "Label",
-                            "classNames": [
-                              "role"
-                            ],
-                            "text": {
-                              "text": "Models",
-                              "colorEscapes": true
-                            }
-                          }
-                        ]
-                      },
-                      {
-                        "class": "StackView",
-                        "classNames": [
-                          "credit"
-                        ],
-                        "subviews": [
-                          {
-                            "class": "Label",
-                            "classNames": [
-                              "name"
-                            ],
-                            "text": {
-                              "text": "^2BuzzardBait^7",
-                              "colorEscapes": true
-                            }
-                          },
-                          {
-                            "class": "Label",
-                            "classNames": [
-                              "role"
-                            ],
-                            "text": {
-                              "text": "Models",
                               "colorEscapes": true
                             }
                           }
@@ -489,7 +359,28 @@
                               {
                                 "class": "Label",
                                 "text": {
+                                  "text": "^2BuzzardBait^7",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
                                   "text": "^2CardO^7 (Dan Shannon)",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2claire^7 (Joe Reid)",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2dfsp_spirit^7 (Tim Schäfer)",
                                   "colorEscapes": true
                                 }
                               },
@@ -531,14 +422,7 @@
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "^2keres^7 (Tom Havlik)",
-                                  "colorEscapes": true
-                                }
-                              },
-                              {
-                                "class": "Label",
-                                "text": {
-                                  "text": "^2LadyHavoc^7 (Ashley Hale)",
+                                  "text": "^2Karvajalka^7 (Antti Lahti)",
                                   "colorEscapes": true
                                 }
                               }
@@ -551,6 +435,20 @@
                             ],
                             "axis": "vertical",
                             "subviews": [
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2keres^7 (Tom Havlik)",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2LadyHavoc^7 (Ashley Hale)",
+                                  "colorEscapes": true
+                                }
+                              },
                               {
                                 "class": "Label",
                                 "text": {
@@ -589,6 +487,13 @@
                               {
                                 "class": "Label",
                                 "text": {
+                                  "text": "^2Nilium^7 (Noel Cower)",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
                                   "text": "^2philipk^7 (Philip Klevstav)",
                                   "colorEscapes": true
                                 }
@@ -613,13 +518,6 @@
                                   "text": "^2rorshach^7 (Kevin Johnstone)",
                                   "colorEscapes": true
                                 }
-                              },
-                              {
-                                "class": "Label",
-                                "text": {
-                                  "text": "^2Seargant Science^7",
-                                  "colorEscapes": true
-                                }
                               }
                             ]
                           },
@@ -630,6 +528,13 @@
                             ],
                             "axis": "vertical",
                             "subviews": [
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2Seargant Science^7",
+                                  "colorEscapes": true
+                                }
+                              },
                               {
                                 "class": "Label",
                                 "text": {
