@@ -189,10 +189,13 @@ jobs:
           fi
         done
 
-        # lib/quetoo/default/ has an Info.plist (versioned in apple/Quetoo.app),
-        # making it a proper BNDL. --deep signs it as such: non-Mach-O assets are
-        # sealed as bundle resources (not code objects), .so files as nested code.
-        codesign --force --timestamp --options runtime --deep \
+        # lib/quetoo/default/ has no Info.plist, so codesign does NOT treat it as
+        # a nested bundle. --deep would try to process subdirectories as bundles
+        # and choke on non-Mach-O files (JSON, PNG, etc.). Instead: sign .so/.dylib
+        # files individually above, then sign the outer bundle without --deep.
+        # codesign --verify --deep still works: it finds the individually-signed
+        # .so files as code objects and skips non-Mach-O assets.
+        codesign --force --timestamp --options runtime \
           --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" arm64/Quetoo.app
         codesign --verify --deep arm64/Quetoo.app
 

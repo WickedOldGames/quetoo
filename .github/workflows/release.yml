@@ -188,10 +188,9 @@ jobs:
           fi
         done
 
-        # lib/quetoo/default/ has an Info.plist (versioned in apple/Quetoo.app),
-        # making it a proper BNDL. --deep signs it as such: non-Mach-O assets are
-        # sealed as bundle resources (not code objects), .so files as nested code.
-        codesign --force --timestamp --options runtime --deep \
+        # lib/quetoo/default/ has no Info.plist — sign without --deep.
+        # See build.yml for full explanation.
+        codesign --force --timestamp --options runtime \
           --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" arm64/Quetoo.app
         codesign --verify --deep arm64/Quetoo.app
 
@@ -229,7 +228,7 @@ jobs:
     - name: Re-sign bundle
       run: |
         security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-        codesign --force --timestamp --options runtime --deep \
+        codesign --force --timestamp --options runtime \
           --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" arm64/Quetoo.app
         codesign --verify --deep arm64/Quetoo.app
         security delete-keychain build.keychain
