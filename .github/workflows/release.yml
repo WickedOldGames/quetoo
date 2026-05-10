@@ -180,20 +180,7 @@ jobs:
             --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" "$f"
         done
 
-        cat > arm64/Quetoo.app/Contents/MacOS/lib/quetoo/default/Info.plist << 'EOF'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-  <key>CFBundleIdentifier</key>
-  <string>org.quetoo.default</string>
-  <key>CFBundleVersion</key>
-  <string>1.0</string>
-  <key>CFBundlePackageType</key>
-  <string>BNDL</string>
-</dict>
-</plist>
-EOF
+        # Info.plist is versioned in apple/Quetoo.app and lands here via cp -r.
         codesign --force --timestamp --options runtime \
           --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" \
           arm64/Quetoo.app/Contents/MacOS/lib/quetoo/default
