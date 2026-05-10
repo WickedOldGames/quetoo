@@ -181,13 +181,6 @@ jobs:
             --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" "$f"
         done
 
-        # lib/quetoo/default/ mixes Mach-O plugins with non-code assets; codesign
-        # treats it as a nested bundle but rejects it without an Info.plist.
-        # Info.plist is versioned in apple/Quetoo.app and lands here via cp -r.
-        codesign --force --timestamp --options runtime \
-          --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" \
-          arm64/Quetoo.app/Contents/MacOS/lib/quetoo/default
-
         for exe in quemap quetoo quetoo-dedicated quetoo-master; do
           bin="arm64/Quetoo.app/Contents/MacOS/$exe"
           if [ -f "$bin" ]; then
@@ -196,7 +189,10 @@ jobs:
           fi
         done
 
-        codesign --force --timestamp --options runtime \
+        # lib/quetoo/default/ has an Info.plist (versioned in apple/Quetoo.app),
+        # making it a proper BNDL. --deep signs it as such: non-Mach-O assets are
+        # sealed as bundle resources (not code objects), .so files as nested code.
+        codesign --force --timestamp --options runtime --deep \
           --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" arm64/Quetoo.app
         codesign --verify --deep arm64/Quetoo.app
 
