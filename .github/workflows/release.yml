@@ -175,13 +175,91 @@ jobs:
           fi
         done
 
-        cd arm64 && zip -r ../quetoo-universal-apple-darwin.zip Quetoo.app
+    - name: Sign binaries
+      env:
+        APPLE_CERTIFICATE_P12: ${{ secrets.APPLE_CERTIFICATE_P12 }}
+        APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+      run: |
+        KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
+        echo "$APPLE_CERTIFICATE_P12" | base64 --decode > certificate.p12
+        security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+        security default-keychain -s build.keychain
+        security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+        security import certificate.p12 -k build.keychain -P "$APPLE_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+        security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" build.keychain
+        rm certificate.p12
+        echo "KEYCHAIN_PASSWORD=$KEYCHAIN_PASSWORD" >> $GITHUB_ENV
 
-    - name: Upload universal artifact
+        find arm64/Quetoo.app -type f \( -name "*.dylib" -o -name "*.so" \) | while read f; do
+          codesign --force --timestamp --options runtime \
+            --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" "$f"
+        done
+
+        for exe in quemap quetoo quetoo-dedicated quetoo-master; do
+          bin="arm64/Quetoo.app/Contents/MacOS/$exe"
+          if [ -f "$bin" ]; then
+            codesign --force --timestamp --options runtime \
+              --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" "$bin"
+          fi
+        done
+
+        codesign --force --timestamp --options runtime \
+          --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" arm64/Quetoo.app
+        codesign --verify --deep --strict arm64/Quetoo.app
+
+    - name: Create binary archive
+      run: cd arm64 && zip -r ../quetoo-universal-apple-darwin.zip Quetoo.app
+
+    - name: Checkout quetoo-data
+      uses: actions/checkout@v6
+      with:
+        repository: jdolan/quetoo-data
+        path: quetoo-data
+        fetch-depth: 1
+        sparse-checkout: target
+
+    - name: Bundle game data
+      run: |
+        mkdir -p arm64/Quetoo.app/Contents/Resources/default
+        cp -r quetoo-data/target/default/. arm64/Quetoo.app/Contents/Resources/default/
+
+    - name: Re-sign bundle
+      run: |
+        security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+        codesign --force --timestamp --options runtime \
+          --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" arm64/Quetoo.app
+        codesign --verify --deep --strict arm64/Quetoo.app
+        security delete-keychain build.keychain
+
+    - name: Create bundle DMG
+      run: |
+        hdiutil create -volname "Quetoo" -srcfolder arm64/Quetoo.app \
+          -ov -format UDZO quetoo-bundle-universal-apple-darwin.dmg
+
+    - name: Notarize bundle DMG
+      env:
+        APPLE_ID: ${{ secrets.APPLE_ID }}
+        APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      run: |
+        xcrun notarytool submit quetoo-bundle-universal-apple-darwin.dmg \
+          --apple-id "$APPLE_ID" \
+          --team-id "$APPLE_TEAM_ID" \
+          --password "$APPLE_APP_PASSWORD" \
+          --wait
+        xcrun stapler staple quetoo-bundle-universal-apple-darwin.dmg
+
+    - name: Upload binary artifact
       uses: actions/upload-artifact@v6
       with:
         name: quetoo-universal-apple-darwin
         path: quetoo-universal-apple-darwin.zip
+
+    - name: Upload bundle artifact
+      uses: actions/upload-artifact@v6
+      with:
+        name: quetoo-bundle-universal-apple-darwin
+        path: quetoo-bundle-universal-apple-darwin.dmg
 
   build-linux:
     needs: resolve-deps
@@ -469,14 +547,6 @@ jobs:
 
     - name: Create bundles
       run: |
-        # macOS bundle: data into Quetoo.app/Contents/Resources/default/
-        mkdir bundle-macos && cd bundle-macos
-        unzip ../quetoo-universal-apple-darwin/quetoo-universal-apple-darwin.zip
-        mkdir -p Quetoo.app/Contents/Resources/default
-        cp -r ../quetoo-data/target/default/. Quetoo.app/Contents/Resources/default/
-        zip -r ../quetoo-bundle-universal-apple-darwin.zip Quetoo.app
-        cd ..
-
         # Linux bundle: extract archive, inject data into quetoo/share/quetoo/default/, repack
         mkdir -p quetoo-bundle-linux-x86_64
         tar xzf quetoo-x86_64-pc-linux-archive/quetoo-x86_64-pc-linux.tar.gz -C quetoo-bundle-linux-x86_64
@@ -511,7 +581,7 @@ jobs:
         ### Bundles (binaries + game data, ready to play)
         | Platform | Download |
         |----------|----------|
-        | macOS (Universal) | quetoo-bundle-universal-apple-darwin.zip |
+        | macOS (Universal) | quetoo-bundle-universal-apple-darwin.dmg |
         | Linux (x86_64 archive) | quetoo-bundle-x86_64-pc-linux.tar.gz |
         | Linux (arm64 archive) | quetoo-bundle-aarch64-pc-linux.tar.gz |
         | Windows (x86_64) | quetoo-bundle-x86_64-pc-windows.zip |
@@ -529,7 +599,7 @@ jobs:
         | Windows (x86_64) | quetoo-x86_64-pc-windows.zip |
 
         For Linux package-managed installs, also install the matching [quetoo-data ${{ github.ref_name }}](https://github.com/jdolan/quetoo-data/releases/tag/${{ github.ref_name }}) release." \
-          quetoo-bundle-universal-apple-darwin.zip \
+          quetoo-bundle-universal-apple-darwin/quetoo-bundle-universal-apple-darwin.dmg \
           quetoo-bundle-x86_64-pc-linux.tar.gz \
           quetoo-bundle-aarch64-pc-linux.tar.gz \
           quetoo-bundle-x86_64-pc-windows.zip \
