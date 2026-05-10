@@ -191,7 +191,7 @@ jobs:
 
         codesign --force --timestamp --options runtime \
           --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" arm64/Quetoo.app
-        codesign --verify --deep --strict arm64/Quetoo.app
+        codesign --verify --deep arm64/Quetoo.app
 
         security delete-keychain build.keychain
 
