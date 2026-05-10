@@ -13,14 +13,15 @@
         "subviews": [
           {
             "class": "Box",
+            "identifier": "Credits",
             "label": {
               "text": {
                 "text": "Credits"
               }
             },
-            "identifier": "Credits",
             "contentView": {
               "class": "StackView",
+              "spacing": 12,
               "subviews": [
                 {
                   "class": "Box",

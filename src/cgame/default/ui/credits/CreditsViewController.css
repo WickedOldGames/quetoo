@@ -11,16 +11,11 @@
 }
 
 #Credits .credit .name Text {
-  font-weight: bold;
-  font-size: 18;
+  font-size: 16;
 }
 
 #Credits .credit .role {
   min-width: 600;
-}
-
-#Credits .credit .role Text {
-
 }
 
 #Credits .columns {
@@ -34,4 +29,3 @@
 #Credits #SpecialThanks Text {
   font-size: 13;
 }
-
