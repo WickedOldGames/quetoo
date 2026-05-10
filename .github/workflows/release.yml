@@ -207,8 +207,23 @@ jobs:
           --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" arm64/Quetoo.app
         codesign --verify --deep --strict arm64/Quetoo.app
 
-    - name: Create binary archive
-      run: cd arm64 && zip -r ../quetoo-universal-apple-darwin.zip Quetoo.app
+    - name: Create binary DMG
+      run: |
+        hdiutil create -volname "Quetoo" -srcfolder arm64/Quetoo.app \
+          -ov -format UDZO quetoo-universal-apple-darwin.dmg
+
+    - name: Notarize binary DMG
+      env:
+        APPLE_ID: ${{ secrets.APPLE_ID }}
+        APPLE_APP_PASSWORD: ${{ secrets.APPLE_APP_PASSWORD }}
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      run: |
+        xcrun notarytool submit quetoo-universal-apple-darwin.dmg \
+          --apple-id "$APPLE_ID" \
+          --team-id "$APPLE_TEAM_ID" \
+          --password "$APPLE_APP_PASSWORD" \
+          --wait
+        xcrun stapler staple quetoo-universal-apple-darwin.dmg
 
     - name: Checkout quetoo-data
       uses: actions/checkout@v6
@@ -249,11 +264,11 @@ jobs:
           --wait
         xcrun stapler staple quetoo-bundle-universal-apple-darwin.dmg
 
-    - name: Upload binary artifact
+    - name: Upload binary DMG artifact
       uses: actions/upload-artifact@v6
       with:
         name: quetoo-universal-apple-darwin
-        path: quetoo-universal-apple-darwin.zip
+        path: quetoo-universal-apple-darwin.dmg
 
     - name: Upload bundle artifact
       uses: actions/upload-artifact@v6
@@ -589,7 +604,7 @@ jobs:
         ### Binaries only (for updates)
         | Platform | Download |
         |----------|----------|
-        | macOS (Universal) | quetoo-universal-apple-darwin.zip |
+        | macOS (Universal) | quetoo-universal-apple-darwin.dmg |
         | Linux (x86_64 archive) | quetoo-x86_64-pc-linux.tar.gz |
         | Linux (x86_64 .deb) | quetoo-x86_64-pc-linux.deb |
         | Linux (x86_64 .rpm) | quetoo-x86_64-pc-linux.rpm |
@@ -603,7 +618,7 @@ jobs:
           quetoo-bundle-x86_64-pc-linux.tar.gz \
           quetoo-bundle-aarch64-pc-linux.tar.gz \
           quetoo-bundle-x86_64-pc-windows.zip \
-          quetoo-universal-apple-darwin/quetoo-universal-apple-darwin.zip \
+          quetoo-universal-apple-darwin/quetoo-universal-apple-darwin.dmg \
           quetoo-x86_64-pc-linux-archive/quetoo-x86_64-pc-linux.tar.gz \
           quetoo-x86_64-pc-linux-deb/quetoo-x86_64-pc-linux.deb \
           quetoo-x86_64-pc-linux-rpm/quetoo-x86_64-pc-linux.rpm \
