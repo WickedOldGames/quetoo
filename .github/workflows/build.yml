@@ -181,11 +181,6 @@ jobs:
             --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" "$f"
         done
 
-        # Sign the game plugin directory as a bundle (it contains .so files + assets)
-        codesign --force --timestamp --options runtime \
-          --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" \
-          arm64/Quetoo.app/Contents/MacOS/lib/quetoo/default
-
         for exe in quemap quetoo quetoo-dedicated quetoo-master; do
           bin="arm64/Quetoo.app/Contents/MacOS/$exe"
           if [ -f "$bin" ]; then
@@ -194,7 +189,7 @@ jobs:
           fi
         done
 
-        codesign --force --timestamp --options runtime \
+        codesign --force --timestamp --options runtime --deep \
           --sign "Developer ID Application: Jay Dolan (C5PXKE9CU5)" arm64/Quetoo.app
         codesign --verify --deep arm64/Quetoo.app
 
