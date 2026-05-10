@@ -114,34 +114,6 @@
                             }
                           }
                         ]
-                      },
-                      {
-                        "class": "StackView",
-                        "classNames": [
-                          "credit"
-                        ],
-                        "subviews": [
-                          {
-                            "class": "Label",
-                            "classNames": [
-                              "name"
-                            ],
-                            "text": {
-                              "text": "^2KaadmY^7",
-                              "colorEscapes": true
-                            }
-                          },
-                          {
-                            "class": "Label",
-                            "classNames": [
-                              "role"
-                            ],
-                            "text": {
-                              "text": "Programming",
-                              "colorEscapes": true
-                            }
-                          }
-                        ]
                       }
                     ]
                   }
@@ -403,33 +375,6 @@
                               "name"
                             ],
                             "text": {
-                              "text": "Anthony Webb"
-                            }
-                          },
-                          {
-                            "class": "Label",
-                            "classNames": [
-                              "role"
-                            ],
-                            "text": {
-                              "text": "Sounds, music",
-                              "colorEscapes": true
-                            }
-                          }
-                        ]
-                      },
-                      {
-                        "class": "StackView",
-                        "classNames": [
-                          "credit"
-                        ],
-                        "subviews": [
-                          {
-                            "class": "Label",
-                            "classNames": [
-                              "name"
-                            ],
-                            "text": {
                               "text": "Roland Shaw"
                             }
                           },
@@ -439,7 +384,7 @@
                               "role"
                             ],
                             "text": {
-                              "text": "Sounds, music",
+                              "text": "Sounds, original music",
                               "colorEscapes": true
                             }
                           }
@@ -457,7 +402,7 @@
                               "name"
                             ],
                             "text": {
-                              "text": "Jacob Zammit"
+                              "text": "Anthony Webb"
                             }
                           },
                           {
@@ -466,7 +411,35 @@
                               "role"
                             ],
                             "text": {
-                              "text": "Music",
+                              "text": "Sounds, original music",
+                              "colorEscapes": true
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "class": "StackView",
+                        "classNames": [
+                          "credit"
+                        ],
+                        "subviews": [
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "name"
+                            ],
+                            "text": {
+                              "text": "^2floproast^7 (Jacob Zammit)",
+                              "colorEscapes": true
+                            }
+                          },
+                          {
+                            "class": "Label",
+                            "classNames": [
+                              "role"
+                            ],
+                            "text": {
+                              "text": "Quake II soundtrack covers",
                               "colorEscapes": true
                             }
                           }
@@ -501,7 +474,142 @@
                               {
                                 "class": "Label",
                                 "text": {
+                                  "text": "^2BoBo the seal^7 (Brian Jones)",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2broar^7",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2CardO^7 (Dan Shannon)",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2evil lair^7 (Yves Allaire)",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2Ingar^7 (Stijn Buys)",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2jhaa^7 (Juha Merilä)",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
                                   "text": "^2KaBal^7",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2KaadmY^7",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2keres^7 (Tom Havlik)",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2LadyHavoc^7 (Ashley Hale)",
+                                  "colorEscapes": true
+                                }
+                              }
+                            ]
+                          },
+                          {
+                            "class": "StackView",
+                            "classNames": [
+                              "column"
+                            ],
+                            "axis": "vertical",
+                            "subviews": [
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2Lunaran^7 (Matt Breit)",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2maci^7 (Marcel Wysocki)",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2Madsy^7 (Mads Elvheim)",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2mattn^7 (Martin Gerhardy)",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2mitomon^7 (Eduardo Pecina)",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2philipk^7 (Philip Klevstav)",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2Preacher^7 (Mattias Konradsson)",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2Quake Revitalization Project^7",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2rorshach^7 (Kevin Johnstone)",
                                   "colorEscapes": true
                                 }
                               },
@@ -511,7 +619,16 @@
                                   "text": "^2Seargant Science^7",
                                   "colorEscapes": true
                                 }
-                              },
+                              }
+                            ]
+                          },
+                          {
+                            "class": "StackView",
+                            "classNames": [
+                              "column"
+                            ],
+                            "axis": "vertical",
+                            "subviews": [
                               {
                                 "class": "Label",
                                 "text": {
@@ -529,71 +646,7 @@
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "Tabun & Wirehead Studios"
-                                }
-                              },
-                              {
-                                "class": "Label",
-                                "text": {
-                                  "text": "^2broar^7",
-                                  "colorEscapes": true
-                                }
-                              },
-                              {
-                                "class": "Label",
-                                "text": {
-                                  "text": "^2LadyHavoc^7 (Ashley Hale)",
-                                  "colorEscapes": true
-                                }
-                              },
-                              {
-                                "class": "Label",
-                                "text": {
-                                  "text": "^2BoBo the seal^7 (Brian Jones)",
-                                  "colorEscapes": true
-                                }
-                              },
-                              {
-                                "class": "Label",
-                                "text": {
-                                  "text": "^2The Bunny^7 (Chris Dillman)",
-                                  "colorEscapes": true
-                                }
-                              }
-                            ]
-                          },
-                          {
-                            "class": "StackView",
-                            "classNames": [
-                              "column"
-                            ],
-                            "axis": "vertical",
-                            "subviews": [
-                              {
-                                "class": "Label",
-                                "text": {
-                                  "text": "^2tapir^7 (Coşku Baş)",
-                                  "colorEscapes": true
-                                }
-                              },
-                              {
-                                "class": "Label",
-                                "text": {
-                                  "text": "^2supa_user^7 (Dale Blount)",
-                                  "colorEscapes": true
-                                }
-                              },
-                              {
-                                "class": "Label",
-                                "text": {
-                                  "text": "^2CardO^7 (Dan Shannon)",
-                                  "colorEscapes": true
-                                }
-                              },
-                              {
-                                "class": "Label",
-                                "text": {
-                                  "text": "^2mitomon^7 (Eduardo Pecina)",
+                                  "text": "^2spiney^7 (Pieter Verhoeven)",
                                   "colorEscapes": true
                                 }
                               },
@@ -607,77 +660,6 @@
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "^2jhaa^7 (Juha Merilä)",
-                                  "colorEscapes": true
-                                }
-                              },
-                              {
-                                "class": "Label",
-                                "text": {
-                                  "text": "^2rorshach^7 (Kevin Johnstone)",
-                                  "colorEscapes": true
-                                }
-                              },
-                              {
-                                "class": "Label",
-                                "text": {
-                                  "text": "^2Madsy^7 (Mads Elvheim)",
-                                  "colorEscapes": true
-                                }
-                              },
-                              {
-                                "class": "Label",
-                                "text": {
-                                  "text": "^2maci^7 (Marcel Wysocki)",
-                                  "colorEscapes": true
-                                }
-                              }
-                            ]
-                          },
-                          {
-                            "class": "StackView",
-                            "classNames": [
-                              "column"
-                            ],
-                            "axis": "vertical",
-                            "subviews": [
-                              {
-                                "class": "Label",
-                                "text": {
-                                  "text": "^2mattn^7 (Martin Gerhardy)",
-                                  "colorEscapes": true
-                                }
-                              },
-                              {
-                                "class": "Label",
-                                "text": {
-                                  "text": "^2Lunaran^7 (Matt Breit)",
-                                  "colorEscapes": true
-                                }
-                              },
-                              {
-                                "class": "Label",
-                                "text": {
-                                  "text": "^2Preacher^7 (Mattias Konradsson)",
-                                  "colorEscapes": true
-                                }
-                              },
-                              {
-                                "class": "Label",
-                                "text": {
-                                  "text": "^2Thorn^7 (Michael Rodenhurst)",
-                                  "colorEscapes": true
-                                }
-                              },
-                              {
-                                "class": "Label",
-                                "text": {
-                                  "text": "Philip Klevstav"
-                                }
-                              },
-                              {
-                                "class": "Label",
-                                "text": {
                                   "text": "^2stereo84^7 (Stephan Reiter)",
                                   "colorEscapes": true
                                 }
@@ -685,21 +667,35 @@
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "^2Ingar^7 (Stijn Buys)",
+                                  "text": "^2supa_user^7 (Dale Blount)",
                                   "colorEscapes": true
                                 }
                               },
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "^2keres^7 (Tom Havlik)",
+                                  "text": "^2Tabun & Wirehead Studios^7",
                                   "colorEscapes": true
                                 }
                               },
                               {
                                 "class": "Label",
                                 "text": {
-                                  "text": "^2evil lair^7 (Yves Allaire)",
+                                  "text": "^2tapir^7 (Coşku Baş)",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2The Bunny^7 (Chris Dillman)",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2Thorn^7 (Michael Rodenhurst)",
                                   "colorEscapes": true
                                 }
                               }
