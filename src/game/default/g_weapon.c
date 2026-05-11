@@ -899,6 +899,140 @@ void G_FireRailgun(g_client_t *cl) {
 }
 
 /**
+ * @brief Fires a wider, Quake-style super shotgun spread.
+ */
+void G_FireQuakeSuperShotgun(g_client_t *cl) {
+
+  if (G_FireWeapon(cl)) {
+    vec3_t forward, right, up, org;
+
+    G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+
+    G_ShotgunProjectiles(cl->entity, org, forward, g_balance_quake_supershotgun_damage->integer,
+      g_balance_quake_supershotgun_knockback->integer, g_balance_quake_supershotgun_spread_x->integer,
+      g_balance_quake_supershotgun_spread_y->integer, g_balance_quake_supershotgun_pellets->integer,
+      MOD_SUPER_SHOTGUN);
+
+    G_MuzzleFlash(cl->entity, MZ_SUPER_SHOTGUN);
+
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_supershotgun_refire->value), cl->weapon->quantity);
+  }
+}
+
+/**
+ * @brief Fires a single nail from the Quake nailgun.
+ */
+void G_FireQuakeNailgun(g_client_t *cl) {
+
+  if (G_FireWeapon(cl)) {
+    vec3_t forward, right, up, org;
+
+    G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+
+    G_BulletProjectile(cl->entity, org, forward, g_balance_quake_nailgun_damage->integer,
+      g_balance_quake_nailgun_knockback->integer, g_balance_quake_nailgun_spread_x->integer,
+      g_balance_quake_nailgun_spread_y->integer, MOD_MACHINEGUN);
+
+    G_MuzzleFlash(cl->entity, MZ_MACHINEGUN);
+
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_nailgun_refire->value), cl->weapon->quantity);
+  }
+}
+
+/**
+ * @brief Fires two nails per shot from the Quake super nailgun.
+ */
+void G_FireQuakeSuperNailgun(g_client_t *cl) {
+
+  if (G_FireWeapon(cl)) {
+    vec3_t forward, right, up, org;
+
+    G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+
+    G_BulletProjectile(cl->entity, org, forward, g_balance_quake_supernailgun_damage->integer,
+      g_balance_quake_supernailgun_knockback->integer, g_balance_quake_supernailgun_spread_x->integer,
+      g_balance_quake_supernailgun_spread_y->integer, MOD_MACHINEGUN);
+
+    G_BulletProjectile(cl->entity, org, forward, g_balance_quake_supernailgun_damage->integer,
+      g_balance_quake_supernailgun_knockback->integer, g_balance_quake_supernailgun_spread_x->integer,
+      g_balance_quake_supernailgun_spread_y->integer, MOD_MACHINEGUN);
+
+    G_MuzzleFlash(cl->entity, MZ_MACHINEGUN);
+
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_supernailgun_refire->value), cl->weapon->quantity);
+  }
+}
+
+/**
+ * @brief Fires a bouncing grenade from the Quake grenade launcher.
+ */
+void G_FireQuakeGrenadeLauncher(g_client_t *cl) {
+
+  if (G_FireWeapon(cl)) {
+    vec3_t forward, right, up, org;
+
+    G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+
+    G_GrenadeProjectile(cl->entity, org, forward, g_balance_quake_grenadelauncher_speed->integer,
+      g_balance_quake_grenadelauncher_damage->integer, g_balance_quake_grenadelauncher_knockback->integer,
+      g_balance_quake_grenadelauncher_radius->value, SECONDS_TO_MILLIS(g_balance_quake_grenadelauncher_timer->value));
+
+    G_MuzzleFlash(cl->entity, MZ_GRENADE_LAUNCHER);
+
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_grenadelauncher_refire->value), cl->weapon->quantity);
+  }
+}
+
+/**
+ * @brief Fires a rocket from the Quake rocket launcher.
+ */
+void G_FireQuakeRocketLauncher(g_client_t *cl) {
+
+  if (G_FireWeapon(cl)) {
+    vec3_t forward, right, up, org;
+
+    G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+
+    G_RocketProjectile(cl->entity, org, forward, g_balance_quake_rocketlauncher_speed->integer,
+      g_balance_quake_rocketlauncher_damage->integer, g_balance_quake_rocketlauncher_knockback->integer,
+      g_balance_quake_rocketlauncher_radius->value);
+
+    G_MuzzleFlash(cl->entity, MZ_ROCKET_LAUNCHER);
+
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_rocketlauncher_refire->value), cl->weapon->quantity);
+  }
+}
+
+/**
+ * @brief Fires a continuous lightning beam from the Quake thunderbolt.
+ */
+void G_FireQuakeLightning(g_client_t *cl) {
+
+  if (G_FireWeapon(cl)) {
+    vec3_t forward, right, up, org;
+
+    g_entity_t *projectile = NULL;
+
+    while ((projectile = G_Find(projectile, EOFS(classname), "G_LightningProjectile"))) {
+      if (projectile->owner == cl->entity) {
+        break;
+      }
+    }
+
+    if (projectile == NULL) {
+      G_MuzzleFlash(cl->entity, MZ_LIGHTNING);
+    }
+
+    G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+
+    G_LightningProjectile(cl->entity, org, forward, g_balance_quake_lightning_damage->integer,
+      g_balance_quake_lightning_knockback->integer);
+
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_lightning_refire->value), cl->weapon->quantity);
+  }
+}
+
+/**
  * @brief Think callback that detonates an in-flight BFG ball on expiry or target impact.
  */
 static void G_FireBfg_(g_entity_t *ent) {

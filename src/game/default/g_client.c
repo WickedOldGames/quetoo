@@ -477,6 +477,8 @@ static void G_ClientDie(g_entity_t *ent, g_entity_t *attacker, uint32_t mod) {
   G_HookDetach(cl);
 
   G_TossQuadDamage(cl);
+  G_TossShadows(cl);
+  G_TossPentagram(cl);
 
   if (g_level.gameplay == GAME_DEATHMATCH && mod != MOD_TRIGGER_HURT) {
     G_TossWeapon(cl);
@@ -1327,6 +1329,8 @@ bool G_ClientConnect(g_client_t *cl, char *user_info) {
 void G_ClientDisconnect(g_client_t *cl) {
 
   G_TossQuadDamage(cl);
+  G_TossShadows(cl);
+  G_TossPentagram(cl);
   G_TossFlag(cl);
   G_TossTech(cl);
   G_HookDetach(cl);
@@ -1682,6 +1686,35 @@ static void G_ClientInventoryThink(g_client_t *cl) {
   }
 
   // other power-ups and things can be timed out here as well
+
+  if (cl->inventory[g_media.items.powerups[POWERUP_QUAKE_SHADOWS]->index]) {
+
+    if (cl->shadows_time < g_level.time) {
+      cl->shadows_time = 0;
+      cl->inventory[g_media.items.powerups[POWERUP_QUAKE_SHADOWS]->index] = 0;
+      cl->entity->s.effects &= ~EF_SHADOWS;
+    }
+  }
+
+  if (cl->inventory[g_media.items.powerups[POWERUP_QUAKE_PENTAGRAM]->index]) {
+
+    if (cl->pentagram_countdown_time && cl->pentagram_countdown_time < g_level.time) {
+      G_MulticastSound(&(const g_play_sound_t) {
+        .index = g_media.sounds.quad_expire,
+        .entity = cl->entity,
+        .atten = SOUND_ATTEN_LINEAR
+      }, MULTICAST_PHS);
+
+      cl->pentagram_countdown_time += 1000;
+    }
+
+    if (cl->pentagram_time < g_level.time) {
+      cl->pentagram_time = 0;
+      cl->pentagram_countdown_time = 0;
+      cl->inventory[g_media.items.powerups[POWERUP_QUAKE_PENTAGRAM]->index] = 0;
+      cl->entity->s.effects &= ~EF_PENTAGRAM;
+    }
+  }
 
   if (cl->respawn_protection_time > g_level.time) {
     cl->entity->s.effects |= EF_RESPAWN;

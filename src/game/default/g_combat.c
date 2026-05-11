@@ -229,6 +229,12 @@ void G_Damage(const g_damage_t *dmg) {
     }
   }
 
+  if (target->client && !(dflags & DMG_NO_GOD)) { // pentagram of protection
+    if (target->client->inventory[g_media.items.powerups[POWERUP_QUAKE_PENTAGRAM]->index]) {
+      return;
+    }
+  }
+
   if (target->client && G_HasTech(target->client, TECH_RESIST)) {
     damage *= TECH_RESIST_DAMAGE_FACTOR;
     knockback *= TECH_RESIST_KNOCKBACK_FACTOR;

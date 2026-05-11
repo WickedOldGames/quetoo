@@ -356,6 +356,8 @@ typedef enum {
 #define EF_DESPAWN    (EF_GAME << 11) // translucent
 #define EF_LIGHT      (EF_GAME << 12) // colored light
 #define EF_TEAM_TINT  (EF_GAME << 13) // tint by the team color provided
+#define EF_SHADOWS    (EF_GAME << 14) // ring of shadows (translucency)
+#define EF_PENTAGRAM  (EF_GAME << 15) // pentagram of protection (invulnerability shell)
 
 #define EF_CTF_MASK   (EF_CTF_RED | EF_CTF_BLUE | EF_CTF_YELLOW | EF_CTF_GREEN)
 
@@ -471,6 +473,13 @@ typedef enum {
   WEAPON_RAILGUN,
   WEAPON_BFG10K,
 
+  WEAPON_QUAKE_SUPER_SHOTGUN,
+  WEAPON_QUAKE_NAILGUN,
+  WEAPON_QUAKE_SUPER_NAILGUN,
+  WEAPON_QUAKE_GRENADE_LAUNCHER,
+  WEAPON_QUAKE_ROCKET_LAUNCHER,
+  WEAPON_QUAKE_LIGHTNING,
+
   WEAPON_TOTAL
 } g_weapon_tag_t;
 
@@ -499,6 +508,11 @@ typedef enum {
   AMMO_BOLTS,
   AMMO_SLUGS,
   AMMO_NUKES,
+
+  AMMO_QUAKE_SHELLS,
+  AMMO_QUAKE_NAILS,
+  AMMO_QUAKE_ROCKETS,
+  AMMO_QUAKE_BOLTS,
 
   AMMO_TOTAL
 } g_ammo_t;
@@ -554,6 +568,9 @@ typedef enum {
 typedef enum {
   POWERUP_QUAD,
   POWERUP_ADRENALINE,
+
+  POWERUP_QUAKE_SHADOWS,
+  POWERUP_QUAKE_PENTAGRAM,
 
   POWERUP_TOTAL
 } g_powerup_t;
@@ -1657,6 +1674,21 @@ struct g_client_s {
    * @brief Quad attack sound plays when time exceeds this.
    */
   uint32_t quad_attack_time;
+
+  /**
+   * @brief Ring of Shadows is active while time is less than this.
+   */
+  uint32_t shadows_time;
+
+  /**
+   * @brief Pentagram of Protection is active while time is less than this.
+   */
+  uint32_t pentagram_time;
+
+  /**
+   * @brief Pentagram countdown warning threshold.
+   */
+  uint32_t pentagram_countdown_time;
 
   /**
    * @brief Client being chased in spectator mode.

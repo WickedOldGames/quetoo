@@ -90,6 +90,8 @@
   g_entity_t *G_TossFlag(g_client_t *cl);
   g_entity_t *G_TossTech(g_client_t *cl);
   g_entity_t *G_TossQuadDamage(g_client_t *cl);
+  g_entity_t *G_TossShadows(g_client_t *cl);
+  g_entity_t *G_TossPentagram(g_client_t *cl);
   void G_TouchItem(g_entity_t *ent, g_entity_t *other, const cm_trace_t *trace);
   void G_InitItems(void);
 
