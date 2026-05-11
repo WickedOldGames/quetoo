@@ -142,6 +142,7 @@ for unit in "${INSTANCES[@]}"; do
   instance="${unit#quetoo-dedicated@}"
   instance="${instance%.service}"
   echo "Restarting quetoo-dedicated@${instance}..."
+  systemctl reset-failed "quetoo-dedicated@${instance}" 2>/dev/null || true
   systemctl restart "quetoo-dedicated@${instance}" || true
 done
 
