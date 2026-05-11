@@ -936,26 +936,34 @@ static void Cg_misc_weather_Init(cg_entity_t *self) {
     self->bounds = Box3_Union(self->bounds, brush->bounds);
 
     const vec3_t brush_size = Box3_Size(brush->bounds);
-    const int32_t brush_origins = Maxi(Vec3_Length(brush_size) * weather->density, 1);
+
+    // Grid spacing derived from XY footprint and density, independent of brush height
+    const float spacing = powf(brush_size.x * brush_size.y, 0.25f) / sqrtf(weather->density);
+    const int32_t num_cols = Maxi((int32_t) (brush_size.x / spacing), 1);
+    const int32_t num_rows = Maxi((int32_t) (brush_size.y / spacing), 1);
+    const float dx = brush_size.x / num_cols;
+    const float dy = brush_size.y / num_rows;
 
     if (weather->origins) {
-      weather->origins = cgi.Realloc(weather->origins, (weather->num_origins + brush_origins) * sizeof(vec4_t));
+      weather->origins = cgi.Realloc(weather->origins, (weather->num_origins + num_cols * num_rows) * sizeof(vec4_t));
     } else {
-      weather->origins = cgi.LinkMalloc(brush_origins * sizeof(vec4_t), weather);
+      weather->origins = cgi.LinkMalloc(num_cols * num_rows * sizeof(vec4_t), weather);
     }
 
-    int32_t j = weather->num_origins;
-    while (j < weather->num_origins + brush_origins) {
+    for (int32_t row = 0; row < num_rows; row++) {
+      for (int32_t col = 0; col < num_cols; col++) {
 
-      vec3_t point = Box3_RandomPoint(brush->bounds);
-      point.z = brush->bounds.maxs.z;
+        const float x = brush->bounds.mins.x + (col + 0.5f) * dx;
+        const float y = brush->bounds.mins.y + (row + 0.5f) * dy;
 
-      if (cgi.PointInsideBrush(point, brush)) {
-        weather->origins[j++] = Vec4(point.x, point.y, point.z, 0.f);
+        for (float z = brush->bounds.maxs.z; z >= brush->bounds.mins.z; z -= 1.f) {
+          if (cgi.PointInsideBrush(Vec3(x, y, z), brush)) {
+            weather->origins[weather->num_origins++] = Vec4(x, y, z, 0.f);
+            break;
+          }
+        }
       }
     }
-
-    weather->num_origins += brush_origins;
   }
 }
 
@@ -1027,14 +1035,14 @@ static void Cg_misc_weather_Think(cg_entity_t *self) {
       s.size = 32.f;
       s.velocity = Vec3_Subtract(Vec3_RandomRange(-2.f, 2.f), Vec3(0.f, 0.f, 800.f));
       s.axis = SPRITE_AXIS_X | SPRITE_AXIS_Y;
-      s.lifetime = 1000.f * height / 800.f * RandomRangef(.8f, 1.2f);
+      s.lifetime = 1000.f * Maxf(height - s.size, 0.f) / 800.f * RandomRangef(.8f, 1.2f);
       s.lighting = 1.f;
 
-      if (Randomf() > .5f) {
+      if (Randomf() > .8f) {
         Cg_AddSprite(&(cg_sprite_t) {
           .atlas_image = cg_sprite_water_ring,
           .lifetime = 300,
-          .origin = Vec3(pos.x, pos.y, pos.z - height),
+          .origin = Vec3(pos.x, pos.y, pos.z - height + 2.f),
           .size = 4.f,
           .size_velocity = 4.f * 6.f,
           .rotation = RandomRadian(),
