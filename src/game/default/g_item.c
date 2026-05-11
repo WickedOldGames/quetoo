@@ -2389,7 +2389,7 @@ static g_item_t g_items[] = {
     .Use = NULL,
     .Drop = NULL,
     .Think = NULL,
-    .pickup_sound = "quad/pickup.wav",
+    .pickup_sound = "powerups/quad/pickup.wav",
     .model = "models/powerups/quad/tris.obj",
     .effects = EF_BOB | EF_ROTATE ,
     .icon = "pics/i_quad",
@@ -2399,7 +2399,7 @@ static g_item_t g_items[] = {
     .type = ITEM_POWERUP,
     .tag = POWERUP_QUAD,
     .priority = 0.80,
-    .precaches = "quad/attack.wav quad/expire.wav"
+    .precaches = "powerups/quad/attack.wav powerups/quad/expire.wav"
   },
 
   {
@@ -2868,7 +2868,7 @@ static g_item_t g_items[] = {
     .type = ITEM_POWERUP,
     .tag = POWERUP_QUAKE_SHADOWS,
     .priority = 0.80,
-    .precaches = "models/powerups/quake_eyes/tris.obj quad/expire.wav"
+    .precaches = "models/powerups/quake_eyes/tris.obj powerups/quad/expire.wav"
   },
 
   /*QUAKED item_quake_pentagram (.8 .1 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
@@ -2901,7 +2901,7 @@ static g_item_t g_items[] = {
     .type = ITEM_POWERUP,
     .tag = POWERUP_QUAKE_PENTAGRAM,
     .priority = 0.90,
-    .precaches = "quad/expire.wav"
+    .precaches = "powerups/quad/expire.wav"
   },
 };
 

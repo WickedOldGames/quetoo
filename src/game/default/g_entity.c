@@ -273,15 +273,15 @@ static void G_InitMedia(void) {
   g_media.sounds.grenade_throw = gi.SoundIndex("weapons/handgrenades/hg_throw");
   g_media.sounds.rocket_fly = gi.SoundIndex("projectiles/rocket/fly");
   g_media.sounds.lightning_fly = gi.SoundIndex("weapons/lightning/fly");
-  g_media.sounds.quad_attack = gi.SoundIndex("quad/attack");
-  g_media.sounds.quad_expire = gi.SoundIndex("quad/expire");
+  g_media.sounds.quad_attack = gi.SoundIndex("powerups/quad/attack");
+  g_media.sounds.quad_expire = gi.SoundIndex("powerups/quad/expire");
 
-  g_media.sounds.hook_fire = gi.SoundIndex("hook/fire");
-  g_media.sounds.hook_fly = gi.SoundIndex("hook/fly");
-  g_media.sounds.hook_hit = gi.SoundIndex("hook/hit");
-  g_media.sounds.hook_pull = gi.SoundIndex("hook/pull");
-  g_media.sounds.hook_detach = gi.SoundIndex("hook/detach");
-  g_media.sounds.hook_gibhit = gi.SoundIndex("hook/gibhit");
+  g_media.sounds.hook_fire = gi.SoundIndex("grapplehook/fire");
+  g_media.sounds.hook_fly = gi.SoundIndex("grapplehook/fly");
+  g_media.sounds.hook_hit = gi.SoundIndex("grapplehook/hit");
+  g_media.sounds.hook_pull = gi.SoundIndex("grapplehook/pull");
+  g_media.sounds.hook_detach = gi.SoundIndex("grapplehook/detach");
+  g_media.sounds.hook_gibhit = gi.SoundIndex("grapplehook/gibhit");
 
   g_media.sounds.teleport = gi.SoundIndex("misc/teleport");
 
