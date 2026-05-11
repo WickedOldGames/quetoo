@@ -1586,7 +1586,7 @@ static g_item_t g_items[] = {
    hover : Item will spawn where it was placed in the map and won't drop the floor.
 
    -------- Radiant config --------
-   model="models/grenade/tris.md3"
+   model="models/projectiles/grenade/tris.md3"
    */
   {
     .classname = "weapon_handgrenades",
@@ -1595,7 +1595,7 @@ static g_item_t g_items[] = {
     .Drop = NULL,
     .Think = G_FireHandGrenade,
     .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/grenade/tris.md3",
+    .model = "models/projectiles/grenade/tris.md3",
     .effects = EF_ROTATE | EF_BOB,
     .icon = "pics/a_handgrenades",
     .name = "Hand Grenades",
@@ -1640,7 +1640,7 @@ static g_item_t g_items[] = {
     .tag = WEAPON_GRENADE_LAUNCHER,
     .flags = WF_PROJECTILE | WF_EXPLOSIVE,
     .priority = 0.40,
-    .precaches = "models/grenade/tris.md3 weapons/grenadelauncher/fire.wav"
+    .precaches = "models/projectiles/grenade/tris.md3 weapons/grenadelauncher/fire.wav"
   },
 
   /*QUAKED weapon_rocketlauncher (.8 .2 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
@@ -1674,7 +1674,7 @@ static g_item_t g_items[] = {
     .tag = WEAPON_ROCKET_LAUNCHER,
     .flags = WF_PROJECTILE | WF_EXPLOSIVE | WF_MED_RANGE | WF_LONG_RANGE,
     .priority = 0.50,
-    .precaches = "models/rocket/tris.obj rocket/fly.wav "
+    .precaches = "models/projectiles/rocket/tris.obj rocket/fly.wav "
     "weapons/rocketlauncher/fire.wav"
   },
 
@@ -2509,7 +2509,7 @@ static g_item_t g_items[] = {
    hover : Item will spawn where it was placed in the map and won't drop the floor.
 
    -------- Radiant config --------
-   model="models/quake/ammo/shells/tris.obj"
+   model="models/ammo/quake_shells/tris.obj"
    */
   {
     .classname = "ammo_quake_shells",
@@ -2518,7 +2518,7 @@ static g_item_t g_items[] = {
     .Drop = G_DropItem,
     .Think = NULL,
     .pickup_sound = "ammo/common/pickup.wav",
-    .model = "models/quake/ammo/shells/tris.obj",
+    .model = "models/ammo/quake_shells/tris.obj",
     .effects = EF_ROTATE | EF_BOB,
     .icon = "pics/a_quake_shells",
     .name = "Shells (Quake)",
@@ -2543,7 +2543,7 @@ static g_item_t g_items[] = {
    hover : Item will spawn where it was placed in the map and won't drop the floor.
 
    -------- Radiant config --------
-   model="models/quake/ammo/nails/tris.obj"
+   model="models/ammo/quake_nails/tris.obj"
    */
   {
     .classname = "ammo_quake_nails",
@@ -2552,7 +2552,7 @@ static g_item_t g_items[] = {
     .Drop = G_DropItem,
     .Think = NULL,
     .pickup_sound = "ammo/common/pickup.wav",
-    .model = "models/quake/ammo/nails/tris.obj",
+    .model = "models/ammo/quake_nails/tris.obj",
     .effects = EF_ROTATE | EF_BOB,
     .icon = "pics/a_quake_nails",
     .name = "Nails",
@@ -2577,7 +2577,7 @@ static g_item_t g_items[] = {
    hover : Item will spawn where it was placed in the map and won't drop the floor.
 
    -------- Radiant config --------
-   model="models/quake/ammo/rockets/tris.obj"
+   model="models/ammo/quake_rockets/tris.obj"
    */
   {
     .classname = "ammo_quake_rockets",
@@ -2586,7 +2586,7 @@ static g_item_t g_items[] = {
     .Drop = G_DropItem,
     .Think = NULL,
     .pickup_sound = "ammo/common/pickup.wav",
-    .model = "models/quake/ammo/rockets/tris.obj",
+    .model = "models/ammo/quake_rockets/tris.obj",
     .effects = EF_ROTATE | EF_BOB,
     .icon = "pics/a_quake_rockets",
     .name = "Rockets (Quake)",
@@ -2611,7 +2611,7 @@ static g_item_t g_items[] = {
    hover : Item will spawn where it was placed in the map and won't drop the floor.
 
    -------- Radiant config --------
-   model="models/quake/ammo/bolts/tris.obj"
+   model="models/ammo/quake_bolts/tris.obj"
    */
   {
     .classname = "ammo_quake_bolts",
@@ -2620,7 +2620,7 @@ static g_item_t g_items[] = {
     .Drop = G_DropItem,
     .Think = NULL,
     .pickup_sound = "ammo/common/pickup.wav",
-    .model = "models/quake/ammo/bolts/tris.obj",
+    .model = "models/ammo/quake_bolts/tris.obj",
     .effects = EF_ROTATE | EF_BOB,
     .icon = "pics/a_quake_bolts",
     .name = "Bolts (Quake)",
@@ -2645,7 +2645,7 @@ static g_item_t g_items[] = {
    hover : Item will spawn where it was placed in the map and won't drop the floor.
 
    -------- Radiant config --------
-   model="models/quake/weapons/supershotgun/tris.obj"
+   model="models/weapons/quake_supershotgun/tris.obj"
    */
   {
     .classname = "weapon_quake_supershotgun",
@@ -2654,7 +2654,7 @@ static g_item_t g_items[] = {
     .Drop = G_DropWeapon,
     .Think = G_FireQuakeSuperShotgun,
     .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/quake/weapons/supershotgun/tris.obj",
+    .model = "models/weapons/quake_supershotgun/tris.obj",
     .effects = EF_ROTATE | EF_BOB,
     .icon = "pics/w_quake_supershotgun",
     .name = "Super Shotgun (Quake)",
@@ -2679,7 +2679,7 @@ static g_item_t g_items[] = {
    hover : Item will spawn where it was placed in the map and won't drop the floor.
 
    -------- Radiant config --------
-   model="models/quake/weapons/nailgun/tris.obj"
+   model="models/weapons/quake_nailgun/tris.obj"
    */
   {
     .classname = "weapon_quake_nailgun",
@@ -2688,7 +2688,7 @@ static g_item_t g_items[] = {
     .Drop = G_DropWeapon,
     .Think = G_FireQuakeNailgun,
     .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/quake/weapons/nailgun/tris.obj",
+    .model = "models/weapons/quake_nailgun/tris.obj",
     .effects = EF_ROTATE | EF_BOB,
     .icon = "pics/w_quake_nailgun",
     .name = "Nailgun",
@@ -2713,7 +2713,7 @@ static g_item_t g_items[] = {
    hover : Item will spawn where it was placed in the map and won't drop the floor.
 
    -------- Radiant config --------
-   model="models/quake/weapons/supernailgun/tris.obj"
+   model="models/weapons/quake_supernailgun/tris.obj"
    */
   {
     .classname = "weapon_quake_supernailgun",
@@ -2722,7 +2722,7 @@ static g_item_t g_items[] = {
     .Drop = G_DropWeapon,
     .Think = G_FireQuakeSuperNailgun,
     .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/quake/weapons/supernailgun/tris.obj",
+    .model = "models/weapons/quake_supernailgun/tris.obj",
     .effects = EF_ROTATE | EF_BOB,
     .icon = "pics/w_quake_supernailgun",
     .name = "Super Nailgun",
@@ -2747,7 +2747,7 @@ static g_item_t g_items[] = {
    hover : Item will spawn where it was placed in the map and won't drop the floor.
 
    -------- Radiant config --------
-   model="models/quake/weapons/grenadelauncher/tris.obj"
+   model="models/weapons/quake_grenadelauncher/tris.obj"
    */
   {
     .classname = "weapon_quake_grenadelauncher",
@@ -2756,7 +2756,7 @@ static g_item_t g_items[] = {
     .Drop = G_DropWeapon,
     .Think = G_FireQuakeGrenadeLauncher,
     .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/quake/weapons/grenadelauncher/tris.obj",
+    .model = "models/weapons/quake_grenadelauncher/tris.obj",
     .effects = EF_ROTATE | EF_BOB,
     .icon = "pics/w_quake_grenadelauncher",
     .name = "Grenade Launcher (Quake)",
@@ -2781,7 +2781,7 @@ static g_item_t g_items[] = {
    hover : Item will spawn where it was placed in the map and won't drop the floor.
 
    -------- Radiant config --------
-   model="models/quake/weapons/rocketlauncher/tris.obj"
+   model="models/weapons/quake_rocketlauncher/tris.obj"
    */
   {
     .classname = "weapon_quake_rocketlauncher",
@@ -2790,7 +2790,7 @@ static g_item_t g_items[] = {
     .Drop = G_DropWeapon,
     .Think = G_FireQuakeRocketLauncher,
     .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/quake/weapons/rocketlauncher/tris.obj",
+    .model = "models/weapons/quake_rocketlauncher/tris.obj",
     .effects = EF_ROTATE | EF_BOB,
     .icon = "pics/w_quake_rocketlauncher",
     .name = "Rocket Launcher (Quake)",
@@ -2815,7 +2815,7 @@ static g_item_t g_items[] = {
    hover : Item will spawn where it was placed in the map and won't drop the floor.
 
    -------- Radiant config --------
-   model="models/quake/weapons/lightning/tris.obj"
+   model="models/weapons/quake_lightning/tris.obj"
    */
   {
     .classname = "weapon_quake_lightning",
@@ -2824,7 +2824,7 @@ static g_item_t g_items[] = {
     .Drop = G_DropWeapon,
     .Think = G_FireQuakeLightning,
     .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/quake/weapons/lightning/tris.obj",
+    .model = "models/weapons/quake_lightning/tris.obj",
     .effects = EF_ROTATE | EF_BOB,
     .icon = "pics/w_quake_lightning",
     .name = "Thunderbolt",
@@ -2850,7 +2850,7 @@ static g_item_t g_items[] = {
    hover : Item will spawn where it was placed in the map and won't drop the floor.
 
    -------- Radiant config --------
-   model="models/quake/powerups/shadows/tris.obj"
+   model="models/powerups/quake_shadows/tris.obj"
    */
   {
     .classname = "item_quake_shadows",
@@ -2859,7 +2859,7 @@ static g_item_t g_items[] = {
     .Drop = NULL,
     .Think = NULL,
     .pickup_sound = "items/powerup.wav",
-    .model = "models/quake/powerups/shadows/tris.obj",
+    .model = "models/powerups/quake_shadows/tris.obj",
     .effects = EF_BOB | EF_ROTATE,
     .icon = "pics/i_quake_shadows",
     .name = "Ring of Shadows",
@@ -2883,7 +2883,7 @@ static g_item_t g_items[] = {
    hover : Item will spawn where it was placed in the map and won't drop the floor.
 
    -------- Radiant config --------
-   model="models/quake/powerups/pentagram/tris.obj"
+   model="models/powerups/quake_pentagram/tris.obj"
    */
   {
     .classname = "item_quake_pentagram",
@@ -2892,7 +2892,7 @@ static g_item_t g_items[] = {
     .Drop = NULL,
     .Think = NULL,
     .pickup_sound = "items/powerup.wav",
-    .model = "models/quake/powerups/pentagram/tris.obj",
+    .model = "models/powerups/quake_pentagram/tris.obj",
     .effects = EF_BOB | EF_ROTATE,
     .icon = "pics/i_quake_pentagram",
     .name = "Pentagram of Protection",
