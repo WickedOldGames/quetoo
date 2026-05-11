@@ -684,6 +684,8 @@ void Cl_Frame(const uint32_t msec) {
     Cl_UpdateScene();
   } else {
     Cl_SendCommands();
+
+    S_RenderStage(&cl_stage);
   }
 
   Cl_UpdateScreen();

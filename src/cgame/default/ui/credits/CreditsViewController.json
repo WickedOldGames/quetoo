@@ -243,7 +243,7 @@
                               "role"
                             ],
                             "text": {
-                              "text": "Sounds, original music",
+                              "text": "Sound design",
                               "colorEscapes": true
                             }
                           }
@@ -270,7 +270,7 @@
                               "role"
                             ],
                             "text": {
-                              "text": "Sounds, original music",
+                              "text": "Sound design",
                               "colorEscapes": true
                             }
                           }
@@ -332,6 +332,13 @@
                               {
                                 "class": "Label",
                                 "text": {
+                                  "text": "^2Alexandr Zhelanov^7",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
                                   "text": "^2BoBo the seal^7 (Brian Jones)",
                                   "colorEscapes": true
                                 }
@@ -375,6 +382,13 @@
                                 "class": "Label",
                                 "text": {
                                   "text": "^2evil lair^7 (Yves Allaire)",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2GTDStudio^7 (Palrom)",
                                   "colorEscapes": true
                                 }
                               },
@@ -587,6 +601,13 @@
                                 "class": "Label",
                                 "text": {
                                   "text": "^2Thorn^7 (Michael Rodenhurst)",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
+                                  "text": "^2Zander Noriega^7",
                                   "colorEscapes": true
                                 }
                               }

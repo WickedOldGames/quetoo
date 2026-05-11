@@ -666,25 +666,28 @@ gint G_worldspawn_MusicShuffle(gconstpointer a, gconstpointer b) {
 }
 
 /**
+ * @brief Fs_Enumerator to collect music track names.
+ */
+static void G_worldspawn_EnumerateMusic(const char *path, void *data) {
+  GArray *tracks = (GArray *) data;
+  char name[MAX_QPATH];
+  StripExtension(Basename(path), name);
+  g_array_append_val(tracks, name);
+}
+
+/**
  * @brief Selects and sets the music tracks for the current level from the music key or available files.
  */
 static void G_worldspawn_Music(void) {
 
   if (*g_level.music == '\0') {
 
-    int32_t num_tracks = 0;
-    while (gi.FileExists(va("music/track%d.ogg", num_tracks + 1))) {
-      num_tracks++;
-    }
-
-    GArray *tracks = g_array_new(0, 0, sizeof(int32_t));
-    for (int32_t i = 1; i <= num_tracks; i++) {
-      tracks = g_array_append_val(tracks, i);
-    }
+    GArray *tracks = g_array_new(0, 0, MAX_QPATH);
+    gi.EnumerateFiles("music/*.ogg", G_worldspawn_EnumerateMusic, tracks);
     g_array_sort(tracks, G_worldspawn_MusicShuffle);
 
-    for (int32_t i = 0; i < MAX_MUSICS; i++) {
-      gi.SetConfigString(CS_MUSICS + i, va("track%d", g_array_index(tracks, int32_t, i)));
+    for (int32_t i = 0; i < MIN(MAX_MUSICS, (int32_t) tracks->len); i++) {
+      gi.SetConfigString(CS_MUSICS + i, &g_array_index(tracks, char, i * MAX_QPATH));
     }
 
     g_array_free(tracks, 1);

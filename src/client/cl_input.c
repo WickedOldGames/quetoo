@@ -26,6 +26,7 @@ static cvar_t *cl_pitch_speed;
 static cvar_t *cl_right_speed;
 static cvar_t *cl_up_speed;
 static cvar_t *cl_yaw_speed;
+static cvar_t *cl_capture_media_keys;
 
 cvar_t *m_interpolate;
 cvar_t *m_invert;
@@ -342,6 +343,30 @@ static bool Cl_HandleSystemEvent(const SDL_Event *event) {
         }
       }
 
+      if (cl_capture_media_keys->integer) {
+        switch (event->key.scancode) {
+          case SDL_SCANCODE_MEDIA_PLAY:
+          case SDL_SCANCODE_MEDIA_PLAY_PAUSE:
+            Cbuf_AddText("s_pause_music\n");
+            Cbuf_Execute();
+            return true;
+          case SDL_SCANCODE_MEDIA_NEXT_TRACK:
+            Cbuf_AddText("s_next_track\n");
+            Cbuf_Execute();
+            return true;
+          case SDL_SCANCODE_MEDIA_PREVIOUS_TRACK:
+            Cbuf_AddText("s_prev_track\n");
+            Cbuf_Execute();
+            return true;
+          case SDL_SCANCODE_MUTE:
+            Cbuf_AddText("toggle s_music_volume 0 0.15\n");
+            Cbuf_Execute();
+            return true;
+          default:
+            break;
+        }
+      }
+
       // for everything other than ESC, check for system-level command binds
 
       SDL_Scancode key = event->key.scancode;
@@ -528,6 +553,7 @@ void Cl_InitInput(void) {
   cl_right_speed = Cvar_Add("cl_right_speed", "300.0", 0, NULL);
   cl_up_speed = Cvar_Add("cl_up_speed", "300.0", 0, NULL);
   cl_yaw_speed = Cvar_Add("cl_yaw_speed", "0.15", 0, NULL);
+  cl_capture_media_keys = Cvar_Add("cl_capture_media_keys", "1", CVAR_ARCHIVE, "Handle media keys (play/pause, next, previous, mute) for in-game music.");
 
   m_sensitivity = Cvar_Add("m_sensitivity", "3.0", CVAR_ARCHIVE, NULL);
   m_sensitivity_zoom = Cvar_Add("m_sensitivity_zoom", "1.0", CVAR_ARCHIVE, NULL);

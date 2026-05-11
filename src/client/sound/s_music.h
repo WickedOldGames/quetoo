@@ -27,6 +27,8 @@ s_music_t *S_LoadMusic(const char *name);
 void S_StopMusic(void);
 void S_ClearPlaylist(void);
 void S_NextTrack_f(void);
+void S_PrevTrack_f(void);
+void S_PauseMusic_f(void);
 
 #if defined(__S_LOCAL_H__)
 void S_RenderMusic(const s_stage_t *stage);

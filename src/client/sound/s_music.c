@@ -49,9 +49,9 @@ static struct {
  * @brief Retain event listener for s_music_t.
  */
 static bool S_RetainMusic(s_media_t *self) {
-  s_music_t *music = (s_music_t *) self;
+  (void) self;
 
-  return GlobMatch("track*", music->media.name, GLOB_FLAGS_NONE);
+  return true;
 }
 
 /**
@@ -264,6 +264,27 @@ static void S_PlayMusic(s_music_t *music) {
 }
 
 /**
+ * @brief Returns the previous track in the configured playlist.
+ */
+static s_music_t *S_PrevMusic(void) {
+  GList *elt;
+
+  if (g_list_length(s_music_state.playlist)) {
+
+    if ((elt = g_list_find(s_music_state.playlist, s_music_state.current_music))) {
+
+      if (elt->prev) {
+        return (s_music_t *) elt->prev->data;
+      }
+    }
+
+    return g_list_last(s_music_state.playlist)->data;
+  }
+
+  return s_music_state.default_music;
+}
+
+/**
  * @brief Returns the next track in the configured playlist.
  */
 static s_music_t *S_NextMusic(void) {
@@ -373,19 +394,60 @@ void S_NextTrack_f(void) {
 }
 
 /**
+ * @brief Plays the previous track in the configured playlist.
+ */
+void S_PrevTrack_f(void) {
+
+  if (s_music_volume->value) {
+    s_music_t *music = S_PrevMusic();
+
+    if (music) {
+      S_PlayMusic(music);
+    } else {
+      Com_Debug(DEBUG_SOUND, "No music available\n");
+    }
+  } else {
+    Com_Debug(DEBUG_SOUND, "Music is muted\n");
+  }
+}
+
+/**
+ * @brief Toggles pause of music playback.
+ */
+void S_PauseMusic_f(void) {
+
+  SDL_LockMutex(s_music_state.mutex);
+
+  ALenum state;
+  alGetSourcei(s_music_state.source, AL_SOURCE_STATE, &state);
+
+  if (state == AL_PLAYING) {
+    alSourcePause(s_music_state.source);
+  } else if (state == AL_PAUSED) {
+    alSourcePlay(s_music_state.source);
+  }
+
+  S_GetError(NULL);
+
+  SDL_UnlockMutex(s_music_state.mutex);
+}
+
+/**
  * @brief Initializes the music state, loading the default track.
  */
 void S_InitMusic(void) {
 
   memset(&s_music_state, 0, sizeof(s_music_state));
   
-  s_music_volume = Cvar_Add("s_music_volume", "0.15", CVAR_ARCHIVE, "Music volume level.");
+  s_music_volume = Cvar_Add("s_music_volume", "0.5", CVAR_ARCHIVE, "Music volume level.");
 
   s_music_state.raw_frame_buffer = Mem_TagMalloc(sizeof(float) * MUSIC_BUFFER_SIZE, MEM_TAG_SOUND);
   s_music_state.frame_buffer = Mem_TagMalloc(sizeof(int16_t) * MUSIC_BUFFER_SIZE, MEM_TAG_SOUND);
   s_music_state.resample_frame_buffer = NULL;
 
   Cmd_Add("s_next_track", S_NextTrack_f, CMD_SOUND, "Play the next music track.");
+  Cmd_Add("s_prev_track", S_PrevTrack_f, CMD_SOUND, "Play the previous music track.");
+  Cmd_Add("s_pause_music", S_PauseMusic_f, CMD_SOUND, "Pause or resume music playback.");
 
   alGenSources(1, &s_music_state.source);
   
@@ -403,7 +465,8 @@ void S_InitMusic(void) {
     return;
   }
 
-  s_music_state.default_music = S_LoadMusic("track3");
+  s_music_state.default_music = S_LoadMusic("gtdstudio-explore");
+  S_ClearPlaylist();
 
   s_music_state.mutex = SDL_CreateMutex();
 
