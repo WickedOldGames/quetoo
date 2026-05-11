@@ -77,7 +77,7 @@ fi
 if [[ $WAIT_FOR_EMPTY -eq 1 ]]; then
   for cfg in /etc/quetoo-dedicated/*.cfg; do
     instance=$(basename "$cfg" .cfg)
-    port=$(grep -E '^set net_port[[:space:]]' "$cfg" 2>/dev/null | head -1 | awk '{print $3}' | tr -d '"')
+    port=$(grep -E '^set net_port[[:space:]]' "$cfg" 2>/dev/null | head -1 | awk '{print $3}' | tr -d '"' || true)
     port="${port:-1998}"
 
     humans=$(python3 - <<EOF
