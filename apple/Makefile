@@ -21,7 +21,7 @@ TARGET    = target
 INSTALL   = $(TARGET)/Quetoo.app
 BINDIR    = $(INSTALL)/Contents/MacOS
 LIBDIR    = $(BINDIR)/lib
-PLUGINDIR = $(LIBDIR)/quetoo/default
+GAMEDIR   = $(LIBDIR)/quetoo/default
 DATADIR   = $(INSTALL)/Contents/Resources
 
 SNAPSHOT        = $(TARGET)/Quetoo-$(BUILD).dmg
@@ -54,8 +54,8 @@ install-lib:
 		-x $(BINDIR)/quetoo \
 		-x $(BINDIR)/quetoo-dedicated \
 		-x $(BINDIR)/quetoo-master \
-		-x $(PLUGINDIR)/cgame.so \
-		-x $(PLUGINDIR)/game.so \
+		-x $(GAMEDIR)/cgame.so \
+		-x $(GAMEDIR)/game.so \
 		-d $(LIBDIR) -of -p @executable_path/lib
 
 # Move non-Mach-O engine assets (UI layouts, shaders, images) out of
@@ -64,15 +64,15 @@ install-lib:
 # in lib/quetoo/default/, which codesign --verify --deep handles cleanly.
 move-resources:
 	@mkdir -p $(DATADIR)/default
-	@if [ -d "$(PLUGINDIR)" ]; then \
-		find "$(PLUGINDIR)" -mindepth 1 -type f ! -name "*.so" ! -name "*.dylib" \
+	@if [ -d "$(GAMEDIR)" ]; then \
+		find "$(GAMEDIR)" -mindepth 1 -type f ! -name "*.so" ! -name "*.dylib" \
 			| while IFS= read -r src; do \
-				rel="$${src#$(PLUGINDIR)/}"; \
+				rel="$${src#$(GAMEDIR)/}"; \
 				dest="$(DATADIR)/default/$$rel"; \
 				mkdir -p "$$(dirname "$$dest")"; \
 				mv "$$src" "$$dest"; \
 			done; \
-		find "$(PLUGINDIR)" -mindepth 1 -type d -empty -delete 2>/dev/null || true; \
+		find "$(GAMEDIR)" -mindepth 1 -type d -empty -delete 2>/dev/null || true; \
 	fi
 
 # Sign all Mach-O code in the bundle, then seal the bundle.
