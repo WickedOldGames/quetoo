@@ -49,6 +49,7 @@ static struct {
 
   GLint texture_sky;
   GLint texture_stage;
+  GLint texture_stage_next;
   GLint texture_voxel_light_data;
   GLint texture_voxel_light_indices;
 
@@ -225,11 +226,13 @@ static void R_InitSkyProgram(void) {
 
   r_sky_program.texture_sky = glGetUniformLocation(r_sky_program.name, "texture_sky");
   r_sky_program.texture_stage = glGetUniformLocation(r_sky_program.name, "texture_stage");
+  r_sky_program.texture_stage_next = glGetUniformLocation(r_sky_program.name, "texture_stage_next");
   r_sky_program.texture_voxel_light_data = glGetUniformLocation(r_sky_program.name, "texture_voxel_light_data");
   r_sky_program.texture_voxel_light_indices = glGetUniformLocation(r_sky_program.name, "texture_voxel_light_indices");
 
   glUniform1i(r_sky_program.texture_sky, TEXTURE_SKY);
   glUniform1i(r_sky_program.texture_stage, TEXTURE_STAGE);
+  glUniform1i(r_sky_program.texture_stage_next, TEXTURE_STAGE_NEXT);
   glUniform1i(r_sky_program.texture_voxel_light_data, TEXTURE_VOXEL_LIGHT_DATA);
   glUniform1i(r_sky_program.texture_voxel_light_indices, TEXTURE_VOXEL_LIGHT_INDICES);
 
