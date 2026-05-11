@@ -2868,7 +2868,7 @@ static g_item_t g_items[] = {
     .type = ITEM_POWERUP,
     .tag = POWERUP_QUAKE_SHADOWS,
     .priority = 0.80,
-    .precaches = "quad/expire.wav"
+    .precaches = "models/powerups/quake_eyes/tris.obj quad/expire.wav"
   },
 
   /*QUAKED item_quake_pentagram (.8 .1 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
