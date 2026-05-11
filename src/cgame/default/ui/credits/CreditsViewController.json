@@ -452,6 +452,13 @@
                               {
                                 "class": "Label",
                                 "text": {
+                                  "text": "^Lava_Croft^7 (Kai Holwerda)",
+                                  "colorEscapes": true
+                                }
+                              },
+                              {
+                                "class": "Label",
+                                "text": {
                                   "text": "^2Lunaran^7 (Matt Breit)",
                                   "colorEscapes": true
                                 }
