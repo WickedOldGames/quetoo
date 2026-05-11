@@ -198,10 +198,6 @@ void Sv_LinkEntity(g_entity_t *ent) {
     return;
   }
 
-  if (ent->solid == SOLID_PROJECTILE) {
-    return;
-  }
-
   // find the first sector that the ent's box crosses
   sv_sector_t *sector = sv_world.sectors;
   while (true) {

@@ -405,6 +405,10 @@ void G_TouchOccupy(g_entity_t *ent) {
       continue;
     }
 
+    if (ent->solid == SOLID_PROJECTILE && occupied->solid == SOLID_PROJECTILE) {
+      continue;
+    }
+
     G_Debug("%s occupying %s\n", etos(ent), etos(occupied));
 
     if (occupied->Touch) {
@@ -556,7 +560,7 @@ static g_entity_t *G_Physics_Push_Translate(g_entity_t *ent, const vec3_t move) 
         // and clip us to where we end up.
         gi.UnlinkEntity(ent);
 
-        const cm_trace_t tr = gi.Trace(other->s.origin, Vec3_Add(other->s.origin, move), other->bounds, other, other->clip_mask);
+        const cm_trace_t tr = gi.Trace(other->s.origin, Vec3_Add(other->s.origin, move), other->bounds, other, other->clip_mask ? : CONTENTS_MASK_SOLID);
 
         gi.LinkEntity(ent);
 
@@ -586,7 +590,7 @@ static g_entity_t *G_Physics_Push_Translate(g_entity_t *ent, const vec3_t move) 
 
         gi.LinkEntity(ent);
 
-        cm_trace_t tr = gi.Clip(other->s.origin, Vec3_Subtract(other->s.origin, move), other->bounds, ent, other->clip_mask);
+        cm_trace_t tr = gi.Clip(other->s.origin, Vec3_Subtract(other->s.origin, move), other->bounds, ent, other->clip_mask ? : CONTENTS_MASK_SOLID);
 
         // move back to final position
         ent->s.origin = final_position;
@@ -607,7 +611,7 @@ static g_entity_t *G_Physics_Push_Translate(g_entity_t *ent, const vec3_t move) 
 
           const vec3_t new_position = Vec3_Fmaf(other->s.origin, remaining_dist, Vec3_Multiply(move, Vec3_Fabsf(tr.plane.normal)));
 
-          tr = gi.Trace(other->s.origin, new_position, other->s.bounds, ent, other->clip_mask);
+          tr = gi.Trace(other->s.origin, new_position, other->s.bounds, ent, other->clip_mask ? : CONTENTS_MASK_SOLID);
         
           other->s.origin = tr.end;
 
@@ -773,7 +777,7 @@ static g_entity_t *G_Physics_Push_Rotate(g_entity_t *self, const vec3_t amove) {
 
       gi.LinkEntity(self);
 
-      cm_trace_t tr = gi.Clip(ent->s.origin, ent->s.origin, ent->bounds, self, ent->clip_mask);
+      cm_trace_t tr = gi.Clip(ent->s.origin, ent->s.origin, ent->bounds, self, ent->clip_mask ? : CONTENTS_MASK_SOLID);
       float remaining_move = 1.0f;
 
       if (tr.fraction < 1.f) {
@@ -805,7 +809,7 @@ static g_entity_t *G_Physics_Push_Rotate(g_entity_t *self, const vec3_t amove) {
 
         ent->s.origin = Mat4_Transform(m, original_ent_position);
 
-        if (gi.Clip(ent->s.origin, ent->s.origin, ent->bounds, self, ent->clip_mask).fraction == 1.0f) {
+        if (gi.Clip(ent->s.origin, ent->s.origin, ent->bounds, self, ent->clip_mask ? : CONTENTS_MASK_SOLID).fraction == 1.0f) {
           G_Debug("%s rotated %s @ %i, good position\n", etos(self), etos(ent), i);
           break;
         }
@@ -816,7 +820,7 @@ static g_entity_t *G_Physics_Push_Rotate(g_entity_t *self, const vec3_t amove) {
       }
 
       // clip rest of the movement.
-      tr = gi.Trace(original_ent_position, ent->s.origin, ent->bounds, ent, ent->clip_mask);
+      tr = gi.Trace(original_ent_position, ent->s.origin, ent->bounds, ent, ent->clip_mask ? : CONTENTS_MASK_SOLID);
 
       ent->s.origin = tr.end;
 
