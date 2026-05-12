@@ -81,7 +81,7 @@ static struct {
   struct {
     int16_t tag, used_tag;
     uint32_t time, bar_time;
-    int16_t bits;
+    int32_t bits;
     int16_t num;
     bool has[MAX_STAT_BITS];
   } weapon;
@@ -560,7 +560,7 @@ static void Cg_DrawCrosshair(const player_state_t *ps) {
       return; // spectating
     }
 
-    if (!ps->stats[STAT_WEAPONS]) {
+    if (!ps->stats[STAT_WEAPONS] && !ps->stats[STAT_WEAPONS_2]) {
       return; // dead
     }
 
@@ -1087,7 +1087,7 @@ bool Cg_AttemptSelectWeapon(const player_state_t *ps) {
 static void Cg_DrawSelectWeapon(const player_state_t *ps) {
 
   // spectator/dead
-  if (!ps->stats[STAT_WEAPONS]) {
+  if (!ps->stats[STAT_WEAPONS] && !ps->stats[STAT_WEAPONS_2]) {
     cg_hud_state.weapon.tag = -1;
     cg_hud_state.weapon.time = 0;
     cg_hud_state.weapon.bar_time = 0;
@@ -1096,9 +1096,11 @@ static void Cg_DrawSelectWeapon(const player_state_t *ps) {
   }
 
   // see if we have any weapons at all
-  if (cg_hud_state.weapon.bits != ps->stats[STAT_WEAPONS])
+  const int32_t new_bits = ((int32_t)(uint16_t) ps->stats[STAT_WEAPONS]) |
+                           ((int32_t)(uint16_t) ps->stats[STAT_WEAPONS_2] << 16);
+  if (cg_hud_state.weapon.bits != new_bits)
   {
-    cg_hud_state.weapon.bits = ps->stats[STAT_WEAPONS];
+    cg_hud_state.weapon.bits = new_bits;
     cg_hud_state.weapon.num = 0;
 
     for (int32_t i = 0; i < MAX_STAT_BITS; i++) {

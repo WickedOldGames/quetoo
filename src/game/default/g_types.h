@@ -177,6 +177,7 @@ typedef enum {
   STAT_WEAPON_ICON,
   STAT_WEAPON_TAG,
   STAT_WEAPONS,
+  STAT_WEAPONS_2,
   STAT_TECH_ICON
 } g_stat_t;
 

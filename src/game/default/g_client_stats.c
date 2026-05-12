@@ -294,8 +294,9 @@ void G_ClientStats(g_client_t *cl) {
     cl->ps.stats[STAT_QUAD_TIME] = 0;
   }
 
-  // change-able weapons
+  // change-able weapons (split across two int16_t stats for >16 weapons)
   cl->ps.stats[STAT_WEAPONS] = 0;
+  cl->ps.stats[STAT_WEAPONS_2] = 0;
 
   if (!cl->persistent.spectator && !cl->entity->dead) {
     for (int32_t i = WEAPON_NONE + 1; i < WEAPON_TOTAL; i++) {
@@ -304,7 +305,12 @@ void G_ClientStats(g_client_t *cl) {
       const g_item_t *ammo = weapon->ammo_item;
 
       if (cl->inventory[weapon->index] && (!ammo || cl->inventory[ammo->index] >= weapon->quantity)) {
-        cl->ps.stats[STAT_WEAPONS] |= 1 << (i - 1);
+        const int32_t bit = i - 1;
+        if (bit < 16) {
+          cl->ps.stats[STAT_WEAPONS] |= 1 << bit;
+        } else {
+          cl->ps.stats[STAT_WEAPONS_2] |= 1 << (bit - 16);
+        }
       }
     }
   }
