@@ -678,8 +678,12 @@ static void G_InitClientInventory(g_client_t *cl) {
 
     item = g_media.items.weapons[WEAPON_ROCKET_LAUNCHER];
   }
-  // dm gets the blaster
-  else {
+  // dm gets the blaster, or the quake shotgun + shells in quake item sets
+  else if (g_level.items == ITEMS_QUAKE) {
+    G_Give(cl, "Shotgun (Quake)", 1);
+    G_Give(cl, "Shells (Quake)", 10);
+    item = g_media.items.weapons[WEAPON_QUAKE_SHOTGUN];
+  } else {
     G_Give(cl, "Blaster", -1);
     item = g_media.items.weapons[WEAPON_BLASTER];
   }
