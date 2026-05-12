@@ -971,6 +971,27 @@ static void Cg_GibTrail(cl_entity_t *ent, const vec3_t start, const vec3_t end) 
 }
 
 /**
+ * @brief Renders the nail projectile trail as a thin metallic streak.
+ */
+static void Cg_NailTrail(cl_entity_t *ent, const vec3_t start, const vec3_t end) {
+
+  float len;
+  const vec3_t dir = Vec3_NormalizeLength(Vec3_Subtract(end, start), &len);
+
+  if (len < 1.f) {
+    return;
+  }
+
+  cgi.AddBeam(cgi.view, &(r_beam_t) {
+    .start = Vec3_Fmaf(end, -Minf(len, 40.f), dir),
+    .end = end,
+    .color = Vec3(1.f, .9f, .6f),
+    .image = cg_beam_tracer,
+    .size = 1.5f,
+  });
+}
+
+/**
  * @brief Renders the fireball projectile trail with flame sprites and a decaying dynamic light.
  */
 static void Cg_FireballTrail(cl_entity_t *ent, const vec3_t start, const vec3_t end) {
@@ -1209,6 +1230,9 @@ void Cg_EntityTrail(cl_entity_t *ent) {
       break;
     case TRAIL_FIREBALL:
       Cg_FireballTrail(ent, start, end);
+      break;
+    case TRAIL_NAIL:
+      Cg_NailTrail(ent, start, end);
       break;
     default:
       break;

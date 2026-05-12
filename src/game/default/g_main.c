@@ -1046,11 +1046,11 @@ void G_Init(void) {
   g_balance_quake_nailgun_damage = gi.AddCvar("g_balance_quake_nailgun_damage", "9", 0, NULL);
   g_balance_quake_nailgun_knockback = gi.AddCvar("g_balance_quake_nailgun_knockback", "4", 0, NULL);
   g_balance_quake_nailgun_refire = gi.AddCvar("g_balance_quake_nailgun_refire", "0.1", 0, NULL);
-  g_balance_quake_nailgun_speed = gi.AddCvar("g_balance_quake_nailgun_speed", "1000", 0, NULL);
+  g_balance_quake_nailgun_speed = gi.AddCvar("g_balance_quake_nailgun_speed", "1400", 0, NULL);
   g_balance_quake_supernailgun_damage = gi.AddCvar("g_balance_quake_supernailgun_damage", "9", 0, NULL);
   g_balance_quake_supernailgun_knockback = gi.AddCvar("g_balance_quake_supernailgun_knockback", "4", 0, NULL);
   g_balance_quake_supernailgun_refire = gi.AddCvar("g_balance_quake_supernailgun_refire", "0.1", 0, NULL);
-  g_balance_quake_supernailgun_speed = gi.AddCvar("g_balance_quake_supernailgun_speed", "1000", 0, NULL);
+  g_balance_quake_supernailgun_speed = gi.AddCvar("g_balance_quake_supernailgun_speed", "2000", 0, NULL);
   g_balance_quake_grenadelauncher_damage = gi.AddCvar("g_balance_quake_grenadelauncher_damage", "120", 0, NULL);
   g_balance_quake_grenadelauncher_knockback = gi.AddCvar("g_balance_quake_grenadelauncher_knockback", "120", 0, NULL);
   g_balance_quake_grenadelauncher_radius = gi.AddCvar("g_balance_quake_grenadelauncher_radius", "185", 0, NULL);

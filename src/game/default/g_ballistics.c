@@ -567,6 +567,7 @@ void G_GrenadeProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir, 
   }
 
   projectile->solid = SOLID_PROJECTILE;
+  projectile->mass = 75.f;
   projectile->avelocity.x = RandomRangef(-310.f, -290.f);
   projectile->avelocity.y = RandomRangef(-50.f, 50.f);
   projectile->avelocity.z = RandomRangef(-25.f, 25.f);
@@ -592,7 +593,7 @@ void G_GrenadeProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir, 
  */
 void G_QuakeGrenadeProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir, int32_t speed, int32_t damage, int32_t knockback, float damage_radius, uint32_t timer) {
 
-  const box3_t bounds = Box3f(6.f, 6.f, 6.f);
+  const box3_t bounds = Box3f(6.f, 6.f, 3.f);
 
   vec3_t forward, right, up;
 
@@ -616,6 +617,7 @@ void G_QuakeGrenadeProjectile(g_entity_t *ent, const vec3_t start, const vec3_t 
   }
 
   projectile->solid = SOLID_PROJECTILE;
+  projectile->mass = 75.f;
   projectile->avelocity.x = RandomRangef(-310.f, -290.f);
   projectile->avelocity.y = RandomRangef(-50.f, 50.f);
   projectile->avelocity.z = RandomRangef(-25.f, 25.f);
@@ -667,6 +669,7 @@ void G_HandGrenadeProjectile(g_entity_t *ent, g_entity_t *projectile, vec3_t con
     projectile->spawn_flags |= HAND_GRENADE_HELD;
   }
 
+  projectile->mass = 75.f;
   projectile->avelocity.x = RandomRangef(-310.f, -290.f);
   projectile->avelocity.y = RandomRangef(-50.f, 50.f);
   projectile->avelocity.z = RandomRangef(-25.f, 25.f);
@@ -780,7 +783,7 @@ void G_QuakeRocketProjectile(g_entity_t *ent, const vec3_t start, const vec3_t d
   projectile->bounds = bounds;
   projectile->s.angles = Vec3_Euler(dir);
   projectile->velocity = Vec3_Scale(dir, speed);
-  projectile->avelocity = Vec3(0.0, 0.0, 600.0);
+  projectile->avelocity = Vec3_Zero();
 
   if (G_ImmediateWall(ent, projectile)) {
     projectile->s.origin = ent->s.origin;

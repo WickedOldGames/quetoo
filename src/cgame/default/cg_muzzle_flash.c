@@ -577,7 +577,7 @@ static void Cg_RocketFlash(const cl_entity_t *ent) {
  */
 static void Cg_QuakeRocketFlash(const cl_entity_t *ent) {
 
-  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(10.f, 0.f, 38.f));
+  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(10.f, 0.f, 22.f));
 
   vec3_t forward, right;
   Vec3_Vectors(ent->angles, &forward, &right, NULL);

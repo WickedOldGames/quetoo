@@ -144,6 +144,10 @@ void Cg_EntityEffects(cl_entity_t *ent, r_entity_t *e) {
 
   e->color = Vec4_One();
 
+  if (ent->current.trail == TRAIL_NAIL) {
+    e->effects |= EF_NO_SHADOW;
+  }
+
   if (e->effects & EF_DESPAWN) {
 
     if (!(ent->prev.effects & EF_DESPAWN)) {
