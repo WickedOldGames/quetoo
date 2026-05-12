@@ -277,7 +277,8 @@ void G_ClientStats(g_client_t *cl) {
   if (weapon) {
     cl->ps.stats[STAT_WEAPON] = cl->weapon->model_index;
     cl->ps.stats[STAT_WEAPON_ICON] = weapon->icon_index;
-    cl->ps.stats[STAT_WEAPON_TAG] = weapon->tag;
+    const int32_t wb = g_level.weapons[weapon->tag];
+    cl->ps.stats[STAT_WEAPON_TAG] = wb >= 0 ? wb + 1 : 0;
   } else {
     cl->ps.stats[STAT_WEAPON] = 0;
     cl->ps.stats[STAT_WEAPON_ICON] = 0;
@@ -285,7 +286,8 @@ void G_ClientStats(g_client_t *cl) {
   }
 
   if (cl->next_weapon) {
-    cl->ps.stats[STAT_WEAPON_TAG] |= (cl->next_weapon->tag << 8);
+    const int32_t wb = g_level.weapons[cl->next_weapon->tag];
+    cl->ps.stats[STAT_WEAPON_TAG] |= ((wb >= 0 ? wb + 1 : 0) << 8);
   }
 
   if (g_level.time <= cl->quad_damage_time) {
