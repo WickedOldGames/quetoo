@@ -342,7 +342,7 @@
                         "class": "Input",
                         "label": {
                           "text": {
-                            "text": "Machinegun"
+                            "text": "Machinegun / Nailgun"
                           }
                         },
                         "control": {
@@ -390,7 +390,7 @@
                         "class": "Input",
                         "label": {
                           "text": {
-                            "text": "Hyperblaster"
+                            "text": "Hyperblaster / Super nailgun"
                           }
                         },
                         "control": {

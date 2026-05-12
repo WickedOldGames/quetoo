@@ -57,6 +57,8 @@ const g_item_t *G_FindItem(const char *name) {
     return NULL;
   }
 
+  const g_item_t *fallback = NULL;
+
   for (size_t i = 0; i < g_num_items; i++) {
     const g_item_t *it = G_ItemByIndex(i);
 
@@ -65,11 +67,16 @@ const g_item_t *G_FindItem(const char *name) {
     }
 
     if (!g_ascii_strcasecmp(it->name, name)) {
-      return it;
+      if (G_ItemAvailable(it)) {
+        return it;
+      }
+      if (!fallback) {
+        fallback = it;
+      }
     }
   }
 
-  return NULL;
+  return fallback;
 }
 
 /**
@@ -2782,7 +2789,7 @@ static g_item_t g_items[] = {
     .model = "models/ammo/quake_shells/tris.obj",
     .effects = 0,
     .icon = "pics/a_quake_shells",
-    .name = "Shells (Quake)",
+    .name = "Shells",
     .quantity = 10,
     .max = 80,
     .ammo = NULL,
@@ -2850,7 +2857,7 @@ static g_item_t g_items[] = {
     .model = "models/ammo/quake_rockets/tris.obj",
     .effects = 0,
     .icon = "pics/a_quake_rockets",
-    .name = "Rockets (Quake)",
+    .name = "Rockets",
     .quantity = 5,
     .max = 100,
     .ammo = NULL,
@@ -2884,7 +2891,7 @@ static g_item_t g_items[] = {
     .model = "models/ammo/quake_bolts/tris.obj",
     .effects = 0,
     .icon = "pics/a_quake_bolts",
-    .name = "Bolts (Quake)",
+    .name = "Bolts",
     .quantity = 15,
     .max = 200,
     .ammo = NULL,
@@ -2918,8 +2925,8 @@ static g_item_t g_items[] = {
     .model = "models/weapons/quake_shotgun/tris.obj",
     .effects = EF_ROTATE,
     .icon = "pics/w_quake_shotgun",
-    .name = "Shotgun (Quake)",
-    .ammo = "Shells (Quake)",
+    .name = "Shotgun",
+    .ammo = "Shells",
     .type = ITEM_WEAPON,
     .tag = WEAPON_QUAKE_SHOTGUN,
     .flags = WF_HITSCAN | WF_SHORT_RANGE,
@@ -2951,11 +2958,9 @@ static g_item_t g_items[] = {
     .model = "models/weapons/quake_supershotgun/tris.obj",
     .effects = EF_ROTATE,
     .icon = "pics/w_quake_supershotgun",
-    .name = "Super Shotgun (Quake)",
+    .name = "Super Shotgun",
     .quantity = 2,
-    .ammo = "Shells (Quake)",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_QUAKE_SUPER_SHOTGUN,
+    .ammo = "Shells",
     .flags = WF_HITSCAN | WF_SHORT_RANGE,
     .priority = 0.25,
     .precaches = "weapons/supershotgun/fire.wav"
@@ -3053,9 +3058,9 @@ static g_item_t g_items[] = {
     .model = "models/weapons/quake_grenadelauncher/tris.obj",
     .effects = EF_ROTATE,
     .icon = "pics/w_quake_grenadelauncher",
-    .name = "Grenade Launcher (Quake)",
+    .name = "Grenade Launcher",
     .quantity = 1,
-    .ammo = "Rockets (Quake)",
+    .ammo = "Rockets",
     .type = ITEM_WEAPON,
     .tag = WEAPON_QUAKE_GRENADE_LAUNCHER,
     .flags = WF_PROJECTILE | WF_EXPLOSIVE | WF_MED_RANGE,
@@ -3087,9 +3092,9 @@ static g_item_t g_items[] = {
     .model = "models/weapons/quake_rocketlauncher/tris.obj",
     .effects = EF_ROTATE,
     .icon = "pics/w_quake_rocketlauncher",
-    .name = "Rocket Launcher (Quake)",
+    .name = "Rocket Launcher",
     .quantity = 1,
-    .ammo = "Rockets (Quake)",
+    .ammo = "Rockets",
     .type = ITEM_WEAPON,
     .tag = WEAPON_QUAKE_ROCKET_LAUNCHER,
     .flags = WF_PROJECTILE | WF_EXPLOSIVE | WF_MED_RANGE | WF_LONG_RANGE,
@@ -3123,7 +3128,7 @@ static g_item_t g_items[] = {
     .icon = "pics/w_quake_lightning",
     .name = "Thunderbolt",
     .quantity = 1,
-    .ammo = "Bolts (Quake)",
+    .ammo = "Bolts",
     .type = ITEM_WEAPON,
     .tag = WEAPON_QUAKE_LIGHTNING,
     .flags = WF_HITSCAN | WF_SHORT_RANGE,
