@@ -382,7 +382,8 @@ typedef enum {
   TRAIL_GIB,
   TRAIL_FIREBALL,
   TRAIL_HOOK,
-  TRAIL_PLAYER_SPAWN
+  TRAIL_PLAYER_SPAWN,
+  TRAIL_NAIL
 } g_entity_trail_t;
 
 /**
@@ -525,6 +526,7 @@ typedef enum {
   ARMOR_JACKET,
   ARMOR_COMBAT,
   ARMOR_BODY,
+  ARMOR_QUAKE,
 
   ARMOR_TOTAL
 } g_armor_t;
@@ -558,6 +560,9 @@ typedef enum {
   HEALTH_MEDIUM,
   HEALTH_LARGE,
   HEALTH_MEGA,
+  HEALTH_QUAKE_MEDIUM,
+  HEALTH_QUAKE_LARGE,
+  HEALTH_QUAKE_MEGA,
 
   HEALTH_TOTAL
 } g_health_t;
@@ -901,6 +906,7 @@ typedef struct {
     uint16_t gibs[NUM_GIB_MODELS];
 
     uint16_t grenade;
+    uint16_t nail;
     uint16_t rocket;
     uint16_t hook;
 

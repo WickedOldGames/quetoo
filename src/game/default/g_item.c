@@ -80,7 +80,7 @@ const g_item_t *G_FindItem(const char *name) {
 const g_item_t *G_ClientArmor(const g_client_t *cl) {
 
 
-  for (g_armor_t armor = ARMOR_BODY; armor > ARMOR_SHARD; armor--) {
+  for (g_armor_t armor = ARMOR_QUAKE; armor > ARMOR_SHARD; armor--) {
 
     if (cl->inventory[g_media.items.armor[armor]->index]) {
       return g_media.items.armor[armor];
@@ -408,7 +408,7 @@ static bool G_PickupHealth(g_client_t *cl, g_entity_t *ent) {
   const uint16_t tag = ent->item->tag;
 
   const bool always_add = tag == HEALTH_SMALL;
-  const bool always_pickup = (tag == HEALTH_SMALL || tag == HEALTH_MEGA);
+  const bool always_pickup = (tag == HEALTH_SMALL || tag == HEALTH_MEGA || tag == HEALTH_QUAKE_MEGA);
 
   if (cl->entity->health < cl->entity->max_health || always_add || always_pickup) {
 
@@ -417,7 +417,7 @@ static bool G_PickupHealth(g_client_t *cl, g_entity_t *ent) {
 
     if (always_pickup) { // resolve max
       if (h > max && cl) {
-        if (tag == HEALTH_MEGA) {
+        if (tag == HEALTH_MEGA || tag == HEALTH_QUAKE_MEGA) {
           cl->boost_time = g_level.time + 1000;
         }
         max = cl->max_boost_health;
@@ -444,6 +444,15 @@ static bool G_PickupHealth(g_client_t *cl, g_entity_t *ent) {
       case HEALTH_MEGA:
         G_SetItemRespawn(ent, g_balance_health_mega_respawn->integer * 1000);
         break;
+      case HEALTH_QUAKE_MEDIUM:
+        G_SetItemRespawn(ent, g_balance_health_medium_respawn->integer * 1000);
+        break;
+      case HEALTH_QUAKE_LARGE:
+        G_SetItemRespawn(ent, g_balance_health_large_respawn->integer * 1000);
+        break;
+      case HEALTH_QUAKE_MEGA:
+        G_SetItemRespawn(ent, g_balance_health_mega_respawn->integer * 1000);
+        break;
     }
 
     return true;
@@ -457,6 +466,7 @@ static bool G_PickupHealth(g_client_t *cl, g_entity_t *ent) {
  */
 const g_armor_info_t *G_ArmorInfo(const g_item_t *armor) {
   static const g_armor_info_t armor_info[] = {
+    { ARMOR_QUAKE, 0.8, 0.6 },
     { ARMOR_BODY, 0.8, 0.6 },
     { ARMOR_COMBAT, 0.6, 0.3 },
     { ARMOR_JACKET, 0.3, 0.0 }
@@ -554,6 +564,9 @@ static bool G_PickupArmor(g_client_t *cl, g_entity_t *ent) {
         G_SetItemRespawn(ent, g_balance_armor_combat_respawn->integer * 1000);
         break;
       case ARMOR_BODY:
+        G_SetItemRespawn(ent, g_balance_armor_body_respawn->integer * 1000);
+        break;
+      case ARMOR_QUAKE:
         G_SetItemRespawn(ent, g_balance_armor_body_respawn->integer * 1000);
         break;
       default:
@@ -1437,6 +1450,40 @@ static g_item_t g_items[] = {
     .precaches = ""
   },
 
+  /*QUAKED item_quake_armor (.8 .7 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Quake Armor (+100).
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/armor/quake/tris.obj"
+   */
+  {
+    .classname = "item_quake_armor",
+    .Pickup = G_PickupArmor,
+    .Use = NULL,
+    .Drop = NULL,
+    .Think = NULL,
+    .pickup_sound = "armor/body/pickup.wav",
+    .model = "models/armor/quake/tris.obj",
+    .effects = EF_ROTATE | EF_BOB,
+    .icon = "pics/i_quake_armor",
+    .name = "Quake Armor",
+    .quantity = 100,
+    .max = 200,
+    .ammo = NULL,
+    .type = ITEM_ARMOR,
+    .tag = ARMOR_QUAKE,
+    .priority = 0.80,
+    .precaches = ""
+  },
+
   /*QUAKED weapon_blaster (.8 .8 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
    Blaster.
 
@@ -2249,6 +2296,105 @@ static g_item_t g_items[] = {
     .ammo = NULL,
     .type = ITEM_HEALTH,
     .tag = HEALTH_MEGA,
+    .priority = 0.60,
+    .precaches = ""
+  },
+
+  /*QUAKED item_health_quake_medium (.8 .8 0) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Quake Health (+15).
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/health/quake_medium/tris.obj"
+   */
+  {
+    .classname = "item_health_quake_medium",
+    .Pickup = G_PickupHealth,
+    .Use = NULL,
+    .Drop = NULL,
+    .Think = NULL,
+    .pickup_sound = "health/medium/pickup.wav",
+    .model = "models/health/quake_medium/tris.obj",
+    .effects = EF_ROTATE | EF_BOB,
+    .icon = "pics/i_quake_health_medium",
+    .name = "Quake Medium Health",
+    .quantity = 15,
+    .ammo = NULL,
+    .type = ITEM_HEALTH,
+    .tag = HEALTH_QUAKE_MEDIUM,
+    .priority = 0.25,
+    .precaches = ""
+  },
+
+  /*QUAKED item_health_quake_large (1 0 0) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Quake Large Health (+25).
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/health/quake_large/tris.obj"
+   */
+  {
+    .classname = "item_health_quake_large",
+    .Pickup = G_PickupHealth,
+    .Use = NULL,
+    .Drop = NULL,
+    .Think = NULL,
+    .pickup_sound = "health/large/pickup.wav",
+    .model = "models/health/quake_large/tris.obj",
+    .effects = EF_ROTATE | EF_BOB,
+    .icon = "pics/i_quake_health_large",
+    .name = "Quake Large Health",
+    .quantity = 25,
+    .ammo = NULL,
+    .type = ITEM_HEALTH,
+    .tag = HEALTH_QUAKE_LARGE,
+    .priority = 0.40,
+    .precaches = ""
+  },
+
+  /*QUAKED item_health_quake_mega (.3 .3 1) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Quake Mega Health (+100).
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/health/quake_mega/tris.obj"
+   */
+  {
+    .classname = "item_health_quake_mega",
+    .Pickup = G_PickupHealth,
+    .Use = NULL,
+    .Drop = NULL,
+    .Think = NULL,
+    .pickup_sound = "health/mega/pickup.wav",
+    .model = "models/health/quake_mega/tris.obj",
+    .effects = EF_ROTATE | EF_BOB,
+    .icon = "pics/i_quake_health_mega",
+    .name = "Quake Mega Health",
+    .quantity = 100,
+    .ammo = NULL,
+    .type = ITEM_HEALTH,
+    .tag = HEALTH_QUAKE_MEGA,
     .priority = 0.60,
     .precaches = ""
   },
