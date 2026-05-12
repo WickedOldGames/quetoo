@@ -80,7 +80,7 @@ const g_item_t *G_FindItem(const char *name) {
 const g_item_t *G_ClientArmor(const g_client_t *cl) {
 
 
-  for (g_armor_t armor = ARMOR_QUAKE; armor > ARMOR_SHARD; armor--) {
+  for (g_armor_t armor = ARMOR_QUAKE_BODY; armor > ARMOR_SHARD; armor--) {
 
     if (cl->inventory[g_media.items.armor[armor]->index]) {
       return g_media.items.armor[armor];
@@ -466,8 +466,10 @@ static bool G_PickupHealth(g_client_t *cl, g_entity_t *ent) {
  */
 const g_armor_info_t *G_ArmorInfo(const g_item_t *armor) {
   static const g_armor_info_t armor_info[] = {
-    { ARMOR_QUAKE, 0.8, 0.6 },
-    { ARMOR_BODY, 0.8, 0.6 },
+    { ARMOR_QUAKE_JACKET, 0.3, 0.0 },
+    { ARMOR_QUAKE_COMBAT, 0.6, 0.3 },
+    { ARMOR_QUAKE_BODY,   0.8, 0.6 },
+    { ARMOR_BODY,         0.8, 0.6 },
     { ARMOR_COMBAT, 0.6, 0.3 },
     { ARMOR_JACKET, 0.3, 0.0 }
   };
@@ -566,7 +568,13 @@ static bool G_PickupArmor(g_client_t *cl, g_entity_t *ent) {
       case ARMOR_BODY:
         G_SetItemRespawn(ent, g_balance_armor_body_respawn->integer * 1000);
         break;
-      case ARMOR_QUAKE:
+      case ARMOR_QUAKE_JACKET:
+        G_SetItemRespawn(ent, g_balance_armor_jacket_respawn->integer * 1000);
+        break;
+      case ARMOR_QUAKE_COMBAT:
+        G_SetItemRespawn(ent, g_balance_armor_combat_respawn->integer * 1000);
+        break;
+      case ARMOR_QUAKE_BODY:
         G_SetItemRespawn(ent, g_balance_armor_body_respawn->integer * 1000);
         break;
       default:
@@ -1450,8 +1458,8 @@ static g_item_t g_items[] = {
     .precaches = ""
   },
 
-  /*QUAKED item_quake_armor (.8 .7 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Quake Armor (+100).
+  /*QUAKED item_quake_body_armor (.8 .2 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Quake Red Armor (+200). Absorbs 80% of damage.
 
    -------- Keys --------
    team : The team name for alternating item spawns.
@@ -1462,25 +1470,93 @@ static g_item_t g_items[] = {
    hover : Item will spawn where it was placed in the map and won't drop the floor.
 
    -------- Radiant config --------
-   model="models/armor/quake/tris.obj"
+   model="models/armor/quake_body/tris.obj"
    */
   {
-    .classname = "item_quake_armor",
+    .classname = "item_quake_body_armor",
     .Pickup = G_PickupArmor,
     .Use = NULL,
     .Drop = NULL,
     .Think = NULL,
     .pickup_sound = "armor/body/pickup.wav",
-    .model = "models/armor/quake/tris.obj",
+    .model = "models/armor/quake_body/tris.obj",
     .effects = EF_ROTATE,
-    .icon = "pics/i_quake_armor",
-    .name = "Quake Armor",
-    .quantity = 100,
+    .icon = "pics/i_quake_body_armor",
+    .name = "Red Armor",
+    .quantity = 200,
     .max = 200,
     .ammo = NULL,
     .type = ITEM_ARMOR,
-    .tag = ARMOR_QUAKE,
-    .priority = 0.80,
+    .tag = ARMOR_QUAKE_BODY,
+    .priority = 0.90,
+    .precaches = ""
+  },
+
+  /*QUAKED item_quake_combat_armor (.8 .8 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Quake Yellow Armor (+150). Absorbs 60% of damage.
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/armor/quake_combat/tris.obj"
+   */
+  {
+    .classname = "item_quake_combat_armor",
+    .Pickup = G_PickupArmor,
+    .Use = NULL,
+    .Drop = NULL,
+    .Think = NULL,
+    .pickup_sound = "armor/combat/pickup.wav",
+    .model = "models/armor/quake_combat/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/i_quake_combat_armor",
+    .name = "Yellow Armor",
+    .quantity = 150,
+    .max = 150,
+    .ammo = NULL,
+    .type = ITEM_ARMOR,
+    .tag = ARMOR_QUAKE_COMBAT,
+    .priority = 0.75,
+    .precaches = ""
+  },
+
+  /*QUAKED item_quake_jacket_armor (.2 .8 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Quake Green Armor (+100). Absorbs 30% of damage.
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/armor/quake_jacket/tris.obj"
+   */
+  {
+    .classname = "item_quake_jacket_armor",
+    .Pickup = G_PickupArmor,
+    .Use = NULL,
+    .Drop = NULL,
+    .Think = NULL,
+    .pickup_sound = "armor/jacket/pickup.wav",
+    .model = "models/armor/quake_jacket/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/i_quake_jacket_armor",
+    .name = "Green Armor",
+    .quantity = 100,
+    .max = 100,
+    .ammo = NULL,
+    .type = ITEM_ARMOR,
+    .tag = ARMOR_QUAKE_JACKET,
+    .priority = 0.60,
     .precaches = ""
   },
 
