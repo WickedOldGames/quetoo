@@ -79,7 +79,7 @@ static struct {
   } blend;
 
   struct {
-    int16_t tag, used_tag;
+    int16_t bit, used_bit;
     uint32_t time, bar_time;
     int32_t bits;
     int16_t num;
@@ -967,13 +967,13 @@ void Cg_ParseWeaponInfo(const char *s) {
  */
 static int16_t Cg_ActiveWeapon(const player_state_t *ps) {
 
-  int16_t switching = ((ps->stats[STAT_WEAPON_TAG] >> 8) & 0xFF);
+  int16_t switching = ((ps->stats[STAT_WEAPON_BIT] >> 8) & 0xFF);
 
   if (switching) {
     return switching - 1;
   }
 
-  return (ps->stats[STAT_WEAPON_TAG] & 0xFF) - 1;
+  return (ps->stats[STAT_WEAPON_BIT] & 0xFF) - 1;
 }
 
 /**
@@ -982,33 +982,33 @@ static int16_t Cg_ActiveWeapon(const player_state_t *ps) {
 static void Cg_ValidateSelectedWeapon(const player_state_t *ps) {
 
   // if we were off, start from our current weapon.
-  if (cg_hud_state.weapon.tag == WEAPON_SELECT_OFF) {
-    cg_hud_state.weapon.tag = Cg_ActiveWeapon(ps);
+  if (cg_hud_state.weapon.bit == WEAPON_SELECT_OFF) {
+    cg_hud_state.weapon.bit = Cg_ActiveWeapon(ps);
     return;
   }
 
   // see if we have this weapon
-  if (cg_hud_state.weapon.has[cg_hud_state.weapon.tag]) {
+  if (cg_hud_state.weapon.has[cg_hud_state.weapon.bit]) {
     return; // got it
   }
 
   // nope, so pick the closest one we have
   for (int32_t i = 2; i < MAX_STAT_BITS * 2; i++) {
     int32_t offset = (int32_t) (((i & 1) ? -i : i) / 2);
-    int32_t id = cg_hud_state.weapon.tag + offset;
+    int32_t id = cg_hud_state.weapon.bit + offset;
 
     if (id < 0 || id >= MAX_STAT_BITS) {
       continue;
     }
 
     if (cg_hud_state.weapon.has[id]) {
-      cg_hud_state.weapon.tag = id;
+      cg_hud_state.weapon.bit = id;
       return;
     }
   }
 
   // should never happen
-  cg_hud_state.weapon.tag = WEAPON_SELECT_OFF;
+  cg_hud_state.weapon.bit = WEAPON_SELECT_OFF;
 }
 
 /**
@@ -1035,15 +1035,15 @@ static void Cg_SelectWeapon(const int8_t dir) {
 
   for (int32_t i = 0; i < MAX_STAT_BITS; i++) {
 
-    cg_hud_state.weapon.tag += dir;
+    cg_hud_state.weapon.bit += dir;
 
-    if (cg_hud_state.weapon.tag < 0) {
-      cg_hud_state.weapon.tag = MAX_STAT_BITS - 1;
-    } else if (cg_hud_state.weapon.tag >= MAX_STAT_BITS) {
-      cg_hud_state.weapon.tag = 0;
+    if (cg_hud_state.weapon.bit < 0) {
+      cg_hud_state.weapon.bit = MAX_STAT_BITS - 1;
+    } else if (cg_hud_state.weapon.bit >= MAX_STAT_BITS) {
+      cg_hud_state.weapon.bit = 0;
     }
 
-    if (cg_hud_state.weapon.has[cg_hud_state.weapon.tag]) {
+    if (cg_hud_state.weapon.has[cg_hud_state.weapon.bit]) {
       cg_hud_state.weapon.time = cgi.client->unclamped_time + cg_select_weapon_delay->integer;
       cg_hud_state.weapon.bar_time = cgi.client->unclamped_time + cg_select_weapon_interval->integer;
       return;
@@ -1051,7 +1051,7 @@ static void Cg_SelectWeapon(const int8_t dir) {
   }
 
   // should never happen
-  cg_hud_state.weapon.tag = WEAPON_SELECT_OFF;
+  cg_hud_state.weapon.bit = WEAPON_SELECT_OFF;
 }
 
 /**
@@ -1062,10 +1062,10 @@ bool Cg_AttemptSelectWeapon(const player_state_t *ps) {
   cg_hud_state.weapon.time = 0;
 
   if (!ps->stats[STAT_SPECTATOR] &&
-    cg_hud_state.weapon.tag != -1) {
+    cg_hud_state.weapon.bit != -1) {
 
-    if (cg_hud_state.weapon.tag != Cg_ActiveWeapon(ps)) {
-      const char *name = cgi.client->config_strings[CS_ITEMS + cg_hud_weapons[cg_hud_state.weapon.tag].item_index];
+    if (cg_hud_state.weapon.bit != Cg_ActiveWeapon(ps)) {
+      const char *name = cgi.client->config_strings[CS_ITEMS + cg_hud_weapons[cg_hud_state.weapon.bit].item_index];
       cgi.Cbuf(va("use %s\n", name));
 
       cg_hud_state.weapon.time = cgi.client->unclamped_time + cg_select_weapon_interval->integer;
@@ -1074,7 +1074,7 @@ bool Cg_AttemptSelectWeapon(const player_state_t *ps) {
       return true;
     }
 
-    cg_hud_state.weapon.tag = -1;
+    cg_hud_state.weapon.bit = -1;
     return true;
   }
 
@@ -1088,10 +1088,10 @@ static void Cg_DrawSelectWeapon(const player_state_t *ps) {
 
   // spectator/dead
   if (!ps->stats[STAT_WEAPONS] && !ps->stats[STAT_WEAPONS_2]) {
-    cg_hud_state.weapon.tag = -1;
+    cg_hud_state.weapon.bit = -1;
     cg_hud_state.weapon.time = 0;
     cg_hud_state.weapon.bar_time = 0;
-    cg_hud_state.weapon.used_tag = 0;
+    cg_hud_state.weapon.used_bit = 0;
     return;
   }
 
@@ -1112,22 +1112,22 @@ static void Cg_DrawSelectWeapon(const player_state_t *ps) {
   }
 
   if (!cg_hud_state.weapon.num) {
-    cg_hud_state.weapon.tag = -1;
+    cg_hud_state.weapon.bit = -1;
     cg_hud_state.weapon.time = 0;
     cg_hud_state.weapon.bar_time = 0;
-    cg_hud_state.weapon.used_tag = 0;
+    cg_hud_state.weapon.used_bit = 0;
     return;
   }
 
-  const int16_t switching = ((ps->stats[STAT_WEAPON_TAG] >> 8) & 0xFF);
+  const int16_t switching = ((ps->stats[STAT_WEAPON_BIT] >> 8) & 0xFF);
 
-  if (cg_hud_state.weapon.used_tag != switching) {
-    cg_hud_state.weapon.used_tag = switching;
+  if (cg_hud_state.weapon.used_bit != switching) {
+    cg_hud_state.weapon.used_bit = switching;
 
-    if (cg_hud_state.weapon.used_tag && !ps->stats[STAT_SPECTATOR]) {
+    if (cg_hud_state.weapon.used_bit && !ps->stats[STAT_SPECTATOR]) {
 
       // we changed weapons without using scrolly, show it for a bit
-      cg_hud_state.weapon.tag = cg_hud_state.weapon.used_tag - 1;
+      cg_hud_state.weapon.bit = cg_hud_state.weapon.used_bit - 1;
       cg_hud_state.weapon.time = cgi.client->unclamped_time + cg_select_weapon_interval->integer;
       cg_hud_state.weapon.bar_time = cgi.client->unclamped_time + cg_select_weapon_interval->integer;
     }
@@ -1142,7 +1142,7 @@ static void Cg_DrawSelectWeapon(const player_state_t *ps) {
     }
   }
 
-  // figure out weapon.tag
+  // figure out weapon.bit
   Cg_ValidateSelectedWeapon(ps);
 
   GLint x = ((cgi.context->w / 2) - ((cg_hud_state.weapon.num * HUD_PIC_HEIGHT) / 2));
@@ -1170,11 +1170,11 @@ static void Cg_DrawSelectWeapon(const player_state_t *ps) {
       continue;
     }
 
-    const color_t c = (i == cg_hud_state.weapon.tag) ? color_selection : color;
+    const color_t c = (i == cg_hud_state.weapon.bit) ? color_selection : color;
 
     Cg_DrawIcon(x, y, cg_hud_weapons[i].icon_index, c);
 
-    if (i == cg_hud_state.weapon.tag) {
+    if (i == cg_hud_state.weapon.bit) {
       const char *name = cgi.client->config_strings[CS_ITEMS + cg_hud_weapons[i].item_index];
       cgi.Draw2DString(((cgi.context->w / 2) - (cgi.StringWidth(name) / 2)), y - ch, name, HUD_COLOR_STAT);
       cgi.Draw2DImage(x,
@@ -1311,7 +1311,7 @@ void Cg_DrawHud(const player_state_t *ps) {
 void Cg_ClearHud(void) {
   memset(&cg_hud_state, 0, sizeof(cg_hud_state));
 
-  cg_hud_state.weapon.tag = WEAPON_SELECT_OFF;
+  cg_hud_state.weapon.bit = WEAPON_SELECT_OFF;
 }
 
 /**
