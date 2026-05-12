@@ -1458,7 +1458,7 @@ static g_item_t g_items[] = {
     .precaches = ""
   },
 
-  /*QUAKED item_quake_body_armor (.8 .2 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
+  /*QUAKED item_quake_armor_body (.8 .2 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
    Quake Red Armor (+200). Absorbs 80% of damage.
 
    -------- Keys --------
@@ -1473,7 +1473,7 @@ static g_item_t g_items[] = {
    model="models/armor/quake_body/tris.obj"
    */
   {
-    .classname = "item_quake_body_armor",
+    .classname = "item_quake_armor_body",
     .Pickup = G_PickupArmor,
     .Use = NULL,
     .Drop = NULL,
@@ -1492,7 +1492,7 @@ static g_item_t g_items[] = {
     .precaches = ""
   },
 
-  /*QUAKED item_quake_combat_armor (.8 .8 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
+  /*QUAKED item_quake_armor_combat (.8 .8 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
    Quake Yellow Armor (+150). Absorbs 60% of damage.
 
    -------- Keys --------
@@ -1507,7 +1507,7 @@ static g_item_t g_items[] = {
    model="models/armor/quake_combat/tris.obj"
    */
   {
-    .classname = "item_quake_combat_armor",
+    .classname = "item_quake_armor_combat",
     .Pickup = G_PickupArmor,
     .Use = NULL,
     .Drop = NULL,
@@ -1526,7 +1526,7 @@ static g_item_t g_items[] = {
     .precaches = ""
   },
 
-  /*QUAKED item_quake_jacket_armor (.2 .8 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
+  /*QUAKED item_quake_armor_jacket (.2 .8 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
    Quake Green Armor (+100). Absorbs 30% of damage.
 
    -------- Keys --------
@@ -1541,7 +1541,7 @@ static g_item_t g_items[] = {
    model="models/armor/quake_jacket/tris.obj"
    */
   {
-    .classname = "item_quake_jacket_armor",
+    .classname = "item_quake_armor_jacket",
     .Pickup = G_PickupArmor,
     .Use = NULL,
     .Drop = NULL,
