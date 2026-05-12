@@ -2446,7 +2446,7 @@ static g_item_t g_items[] = {
     .model = "models/health/quake_medium/tris.obj",
     .effects = 0,
     .icon = "pics/i_quake_health_medium",
-    .name = "Quake Medium Health",
+    .name = "Medium Health",
     .quantity = 15,
     .ammo = NULL,
     .type = ITEM_HEALTH,
@@ -2479,7 +2479,7 @@ static g_item_t g_items[] = {
     .model = "models/health/quake_large/tris.obj",
     .effects = 0,
     .icon = "pics/i_quake_health_large",
-    .name = "Quake Large Health",
+    .name = "Large Health",
     .quantity = 25,
     .ammo = NULL,
     .type = ITEM_HEALTH,
@@ -2512,7 +2512,7 @@ static g_item_t g_items[] = {
     .model = "models/health/quake_mega/tris.obj",
     .effects = 0,
     .icon = "pics/i_quake_health_mega",
-    .name = "Quake Mega Health",
+    .name = "Mega Health",
     .quantity = 100,
     .ammo = NULL,
     .type = ITEM_HEALTH,
@@ -3246,6 +3246,30 @@ bool G_ItemAvailable(const g_item_t *item) {
       return item->tag >= AMMO_QUAKE_SHELLS;
     } else {
       return item->tag < AMMO_QUAKE_SHELLS;
+    }
+  }
+
+  if (item->type == ITEM_ARMOR) {
+    if (g_level.items == ITEMS_QUAKE) {
+      return item->tag >= ARMOR_QUAKE_JACKET;
+    } else {
+      return item->tag < ARMOR_QUAKE_JACKET;
+    }
+  }
+
+  if (item->type == ITEM_HEALTH) {
+    if (g_level.items == ITEMS_QUAKE) {
+      return item->tag >= HEALTH_QUAKE_MEDIUM;
+    } else {
+      return item->tag < HEALTH_QUAKE_MEDIUM;
+    }
+  }
+
+  if (item->type == ITEM_POWERUP) {
+    if (g_level.items == ITEMS_QUAKE) {
+      return item->tag >= POWERUP_QUAKE_SHADOWS;
+    } else {
+      return item->tag < POWERUP_QUAKE_SHADOWS;
     }
   }
 
