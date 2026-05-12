@@ -28,7 +28,7 @@
  * @brief Game protocol version (protocol minor version). To be incremented
  * whenever the game protocol changes.
  */
-#define PROTOCOL_MINOR 1023
+#define PROTOCOL_MINOR 1024
 
 /**
  * @brief Game-specific server protocol commands. These are parsed directly by
@@ -147,6 +147,7 @@ typedef struct {
 #define CS_WEAPONS         (CS_GAME + 8)  // weapon list, for the change weapon UI
 #define CS_NAV_EDIT        (CS_GAME + 9)  // nav edit mode
 #define CS_ITEM_SET        (CS_GAME + 10) // active item set (g_items_t)
+#define CS_ITEMS           (CS_GAME + 11) // item names (MAX_ITEMS entries)
 
 /**
  * @brief Player state statistics (inventory, score, etc).

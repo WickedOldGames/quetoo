@@ -42,8 +42,7 @@
 #define CS_SOUNDS   (CS_MODELS + MAX_MODELS)
 #define CS_MUSICS   (CS_SOUNDS + MAX_SOUNDS)
 #define CS_IMAGES   (CS_MUSICS + MAX_MUSICS)
-#define CS_ITEMS    (CS_IMAGES + MAX_IMAGES)
-#define CS_CLIENTS  (CS_ITEMS  + MAX_ITEMS)
+#define CS_CLIENTS  (CS_IMAGES + MAX_IMAGES)
 #define CS_ENTITIES (CS_CLIENTS + MAX_CLIENTS) // for the in-game editor
 #define CS_GAME     (CS_ENTITIES + MAX_ENTITIES) // game-module specific config strings
 
