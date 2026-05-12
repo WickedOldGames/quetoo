@@ -1060,8 +1060,8 @@ void G_Init(void) {
   g_balance_quake_rocketlauncher_damage = gi.AddCvar("g_balance_quake_rocketlauncher_damage", "100", 0, NULL);
   g_balance_quake_rocketlauncher_knockback = gi.AddCvar("g_balance_quake_rocketlauncher_knockback", "75", 0, NULL);
   g_balance_quake_rocketlauncher_radius = gi.AddCvar("g_balance_quake_rocketlauncher_radius", "150", 0, NULL);
-  g_balance_quake_rocketlauncher_refire = gi.AddCvar("g_balance_quake_rocketlauncher_refire", "0.9", 0, NULL);
-  g_balance_quake_rocketlauncher_speed = gi.AddCvar("g_balance_quake_rocketlauncher_speed", "800", 0, NULL);
+  g_balance_quake_rocketlauncher_refire = gi.AddCvar("g_balance_quake_rocketlauncher_refire", "0.8", 0, NULL);
+  g_balance_quake_rocketlauncher_speed = gi.AddCvar("g_balance_quake_rocketlauncher_speed", "1000", 0, NULL);
   g_balance_quake_lightning_damage = gi.AddCvar("g_balance_quake_lightning_damage", "14", 0, NULL);
   g_balance_quake_lightning_knockback = gi.AddCvar("g_balance_quake_lightning_knockback", "8", 0, NULL);
   g_balance_quake_lightning_length = gi.AddCvar("g_balance_quake_lightning_length", "768", 0, NULL);
