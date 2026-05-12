@@ -148,28 +148,20 @@ void G_UseBestWeapon(g_client_t *cl) {
 
   const g_item_t *item = NULL;
 
-  if (G_HasWeapon(cl, g_media.items.weapons[WEAPON_BFG10K])) {
-    item = g_media.items.weapons[WEAPON_BFG10K];
-  } else if (G_HasWeapon(cl, g_media.items.weapons[WEAPON_RAILGUN])) {
-    item = g_media.items.weapons[WEAPON_RAILGUN];
-  } else if (G_HasWeapon(cl, g_media.items.weapons[WEAPON_LIGHTNING])) {
-    item = g_media.items.weapons[WEAPON_LIGHTNING];
-  } else if (G_HasWeapon(cl, g_media.items.weapons[WEAPON_HYPERBLASTER])) {
-    item = g_media.items.weapons[WEAPON_HYPERBLASTER];
-  } else if (G_HasWeapon(cl, g_media.items.weapons[WEAPON_ROCKET_LAUNCHER])) {
-    item = g_media.items.weapons[WEAPON_ROCKET_LAUNCHER];
-  } else if (G_HasWeapon(cl, g_media.items.weapons[WEAPON_GRENADE_LAUNCHER])) {
-    item = g_media.items.weapons[WEAPON_GRENADE_LAUNCHER];
-  } else if (G_HasWeapon(cl, g_media.items.weapons[WEAPON_HAND_GRENADE])) {
-    item = g_media.items.weapons[WEAPON_HAND_GRENADE];
-  } else if (G_HasWeapon(cl, g_media.items.weapons[WEAPON_MACHINEGUN])) {
-    item = g_media.items.weapons[WEAPON_MACHINEGUN];
-  } else if (G_HasWeapon(cl, g_media.items.weapons[WEAPON_SUPER_SHOTGUN])) {
-    item = g_media.items.weapons[WEAPON_SUPER_SHOTGUN];
-  } else if (G_HasWeapon(cl, g_media.items.weapons[WEAPON_SHOTGUN])) {
-    item = g_media.items.weapons[WEAPON_SHOTGUN];
-  } else if (G_HasWeapon(cl, g_media.items.weapons[WEAPON_BLASTER])) {
-    item = g_media.items.weapons[WEAPON_BLASTER];
+  for (int32_t t = WEAPON_NONE + 1; t < WEAPON_TOTAL; t++) {
+    const g_item_t *weapon = g_media.items.weapons[t];
+
+    if (!weapon) {
+      continue;
+    }
+
+    if (!G_HasWeapon(cl, weapon)) {
+      continue;
+    }
+
+    if (!item || weapon->priority > item->priority) {
+      item = weapon;
+    }
   }
 
   G_ChangeWeapon(cl, item);
