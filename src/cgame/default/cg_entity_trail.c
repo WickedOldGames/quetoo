@@ -1123,43 +1123,14 @@ static void Cg_CtfEffectTrail(cl_entity_t *ent, const vec3_t start, const vec3_t
  * @brief Determines the initial position and directional vectors of a projectile. This is a copy of G_InitProjectile.
  * If that function changes, make sure this one is modified too.
  */
-static void Cg_InitProjectile(const cl_entity_t *ent, vec3_t *forward, vec3_t *right, vec3_t *up, vec3_t *org, float hand) {
+static void Cg_InitProjectile(const cl_entity_t *ent, vec3_t *forward, vec3_t *right, vec3_t *up, vec3_t *org) {
 
-  // resolve the projectile destination
-  const vec3_t start = cgi.view->origin;
-  const vec3_t end = Vec3_Fmaf(start, MAX_WORLD_DIST, cgi.view->forward);
-  const cm_trace_t tr = cgi.Trace(start, end, Box3_Zero(), ent, CONTENTS_MASK_CLIP_PROJECTILE);
+  const cg_client_info_t *ci = &cg_state.clients[ent->current.client];
 
-  // resolve the projectile origin
-  *org = Vec3_Fmaf(start, 12.f, cgi.view->forward);
-
-  switch (cg_hand->integer) {
-    case HAND_RIGHT:
-      *org = Vec3_Fmaf(*org, 6.f * hand, cgi.view->right);
-      break;
-    case HAND_LEFT:
-      *org = Vec3_Fmaf(*org, -6.f * hand, cgi.view->right);
-      break;
-    default:
-      break;
-  }
-
-  if ((cgi.client->frame.ps.pm_state.flags & PMF_DUCKED)) {
-    *org = Vec3_Fmaf(*org, -6.f, cgi.view->up);
-  } else {
-    *org = Vec3_Fmaf(*org, -12.f, cgi.view->up);
-  }
-
-  // if the projected origin is invalid, use the entity's origin
-  if (cgi.Trace(*org, *org, Box3_Zero(), ent, CONTENTS_MASK_CLIP_PROJECTILE).start_solid) {
-    *org = ent->origin;
-  }
+  *org = ci->weapon_origin;
 
   if (forward) {
-    // return the projectile's directional vectors
-    *forward = Vec3_Subtract(tr.end, *org);
-    *forward = Vec3_Normalize(*forward);
-
+    *forward = cgi.view->forward;
     const vec3_t euler = Vec3_Euler(*forward);
     Vec3_Vectors(euler, NULL, right, up);
   }
@@ -1191,27 +1162,12 @@ void Cg_EntityTrail(cl_entity_t *ent) {
       if (s->trail == TRAIL_LIGHTNING) {
         vec3_t forward;
 
-        Cg_InitProjectile(ent, &forward, NULL, NULL, &start, 1.0);
+        Cg_InitProjectile(ent, &forward, NULL, NULL, &start);
 
         end = Vec3_Fmaf(start, dist, forward);
       } else {
-
-        start = Vec3_Fmaf(cgi.view->origin, 8.f, cgi.view->forward);
-
-        const float hand_scale = (ent->current.trail == TRAIL_HOOK ? -1.0 : 1.0);
-
-        switch (cg_hand->integer) {
-          case HAND_LEFT:
-            start = Vec3_Fmaf(start, -5.5 * hand_scale, cgi.view->right);
-            break;
-          case HAND_RIGHT:
-            start = Vec3_Fmaf(start, 5.5 * hand_scale, cgi.view->right);
-            break;
-          default:
-            break;
-        }
-
-        start = Vec3_Fmaf(start, -8.f, cgi.view->up);
+        const cg_client_info_t *ci = &cg_state.clients[ent->current.client];
+        start = ci->weapon_origin;
       }
     }
   } else {
