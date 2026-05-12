@@ -421,6 +421,14 @@ typedef enum {
  */
 #define MODEL_CLIENT 0xff
 
+/**
+ * @brief Weapon handedness.
+ */
+typedef enum {
+  HAND_CENTER,
+  HAND_RIGHT,
+  HAND_LEFT
+} g_hand_t;
 
 /**
  * @brief Game modes. These are selected via `g_gameplay` and sent to client via ConfigString.
@@ -1333,6 +1341,11 @@ typedef struct {
    * @brief Player model/skin path.
    */
   char skin[MAX_QPATH];
+
+  /**
+   * @brief Weapon handedness preference.
+   */
+  g_hand_t hand;
 
   /**
    * @brief Non-zero if weapons should auto-switch on pickup.

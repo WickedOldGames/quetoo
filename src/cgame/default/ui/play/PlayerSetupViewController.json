@@ -118,7 +118,19 @@
                             "min": 0.3
                           }
                         }
-                      },
+                      }
+                    ]
+                  }
+                },
+                {
+                  "class": "Box",
+                  "label": {
+                    "text": {
+                      "text": "Combat"
+                    }
+                  },
+                  "contentView": {
+                    "subviews": [
                       {
                         "class": "Input",
                         "label": {
@@ -132,6 +144,19 @@
                           "hueSlider": {
                             "min": -1
                           }
+                        }
+                      },
+                      {
+                        "class": "Input",
+                        "label": {
+                          "text": {
+                            "text": "Handedness"
+                          }
+                        },
+                        "control": {
+                          "class": "CvarSelect",
+                          "identifier": "hand",
+                          "var": "hand"
                         }
                       }
                     ]

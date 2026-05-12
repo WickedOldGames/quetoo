@@ -55,7 +55,7 @@ void G_InitPlayerSpawn(g_entity_t *ent) {
 /**
  * @brief Determines the initial position and directional vectors of a projectile.
  */
-void G_ClientProjectile(const g_client_t *cl, vec3_t *forward, vec3_t *right, vec3_t *up, vec3_t *org) {
+void G_ClientProjectile(const g_client_t *cl, vec3_t *forward, vec3_t *right, vec3_t *up, vec3_t *org, float hand) {
 
   // resolve the projectile destination
   const vec3_t start = Vec3_Add(cl->entity->s.origin, cl->ps.pm_state.view_offset);
@@ -67,6 +67,18 @@ void G_ClientProjectile(const g_client_t *cl, vec3_t *forward, vec3_t *right, ve
   Vec3_Vectors(cl->angles, &ent_forward, &ent_right, &ent_up);
 
   *org = Vec3_Fmaf(start, 24.f, ent_forward);
+
+  switch (cl->persistent.hand) {
+    case HAND_RIGHT:
+      *org = Vec3_Fmaf(*org, 6.f * hand, ent_right);
+      break;
+    case HAND_LEFT:
+      *org = Vec3_Fmaf(*org, -6.f * hand, ent_right);
+      break;
+    default:
+      break;
+  }
+
   *org = Vec3_Fmaf(*org, -12.f, ent_up);
 
   // if the projected origin is invalid, use the entity's origin

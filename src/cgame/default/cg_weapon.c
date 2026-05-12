@@ -146,6 +146,21 @@ void Cg_AddWeapon(cl_entity_t *ent, r_entity_t *self) {
 
   w.origin = Vec3_Add(w.origin, velocity);
 
+  w.model = cgi.client->models[ps->stats[STAT_WEAPON]];
+
+  if (w.model == NULL || g_str_has_prefix(w.model->media.name, "models/weapons/quake_") == FALSE) {
+    switch (cg_hand->integer) {
+      case HAND_LEFT:
+        offset.y -= 5.f;
+        break;
+      case HAND_RIGHT:
+        offset.y += 5.f;
+        break;
+      default:
+        break;
+    }
+  }
+
   w.origin = Vec3_Fmaf(w.origin, offset.z, cgi.view->up);
   w.origin = Vec3_Fmaf(w.origin, offset.y, cgi.view->right);
   w.origin = Vec3_Fmaf(w.origin, offset.x, cgi.view->forward);
@@ -163,8 +178,6 @@ void Cg_AddWeapon(cl_entity_t *ent, r_entity_t *self) {
 
   w.effects |= self->effects & EF_SHELL;
   w.shell = self->shell;
-
-  w.model = cgi.client->models[ps->stats[STAT_WEAPON]];
 
   w.abs_bounds = Box3_FromCenterSize(cgi.view->origin, Vec3(16.f, 16.f, 16.f));
 

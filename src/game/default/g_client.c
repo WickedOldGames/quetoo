@@ -523,7 +523,7 @@ static void G_ClientDie(g_entity_t *ent, g_entity_t *attacker, uint32_t mod) {
 
   if (nade_hold_time != 0) {
 
-    G_ClientProjectile(cl, NULL, NULL, NULL, &ent->s.origin);
+    G_ClientProjectile(cl, NULL, NULL, NULL, &ent->s.origin, 1.0);
 
     G_HandGrenadeProjectile(
         ent,          // player
@@ -1264,6 +1264,9 @@ void G_ClientUserInfoChanged(g_client_t *cl, const char *user_info) {
 
   // send it to clients
   gi.SetConfigString(CS_CLIENTS + cl->ps.client, client_info);
+
+  // set hand, if anything should go wrong, it defaults to 0 (centered)
+  cl->persistent.hand = (g_hand_t) strtol(InfoString_Get(user_info, "hand"), NULL, 10);
 
   if (cl->entity) {
     s = InfoString_Get(user_info, "active");
