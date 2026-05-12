@@ -803,7 +803,8 @@ void G_FireGrenadeLauncher(g_client_t *cl) {
 
     G_GrenadeProjectile(cl->entity, org, forward, g_balance_grenadelauncher_speed->integer,
       g_balance_grenadelauncher_damage->integer, g_balance_grenadelauncher_knockback->integer,
-      g_balance_grenadelauncher_radius->value, SECONDS_TO_MILLIS(g_balance_grenadelauncher_timer->value));
+      g_balance_grenadelauncher_radius->value, SECONDS_TO_MILLIS(g_balance_grenadelauncher_timer->value),
+      g_media.sounds.grenade_hit);
 
     G_MuzzleFlash(cl->entity, MZ_GRENADE_LAUNCHER);
 
@@ -916,7 +917,7 @@ void G_FireQuakeShotgun(g_client_t *cl) {
       g_balance_quake_shotgun_spread_y->integer, g_balance_quake_shotgun_pellets->integer,
       MOD_SHOTGUN);
 
-    G_MuzzleFlash(cl->entity, MZ_SHOTGUN);
+    G_MuzzleFlash(cl->entity, MZ_QUAKE_SHOTGUN);
 
     G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_shotgun_refire->value), cl->weapon->quantity);
   }
@@ -937,7 +938,7 @@ void G_FireQuakeSuperShotgun(g_client_t *cl) {
       g_balance_quake_supershotgun_spread_y->integer, g_balance_quake_supershotgun_pellets->integer,
       MOD_SUPER_SHOTGUN);
 
-    G_MuzzleFlash(cl->entity, MZ_SUPER_SHOTGUN);
+    G_MuzzleFlash(cl->entity, MZ_QUAKE_SUPER_SHOTGUN);
 
     G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_supershotgun_refire->value), cl->weapon->quantity);
   }
@@ -956,7 +957,7 @@ void G_FireQuakeNailgun(g_client_t *cl) {
     G_NailProjectile(cl->entity, org, forward, g_balance_quake_nailgun_speed->integer,
       g_balance_quake_nailgun_damage->integer, g_balance_quake_nailgun_knockback->integer);
 
-    G_MuzzleFlash(cl->entity, MZ_MACHINEGUN);
+    G_MuzzleFlash(cl->entity, MZ_QUAKE_NAILGUN);
 
     G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_nailgun_refire->value), cl->weapon->quantity);
   }
@@ -980,7 +981,7 @@ void G_FireQuakeSuperNailgun(g_client_t *cl) {
       g_balance_quake_supernailgun_speed->integer, g_balance_quake_supernailgun_damage->integer,
       g_balance_quake_supernailgun_knockback->integer);
 
-    G_MuzzleFlash(cl->entity, MZ_MACHINEGUN);
+    G_MuzzleFlash(cl->entity, MZ_QUAKE_SUPER_NAILGUN);
 
     G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_supernailgun_refire->value), cl->weapon->quantity);
   }
@@ -998,9 +999,10 @@ void G_FireQuakeGrenadeLauncher(g_client_t *cl) {
 
     G_GrenadeProjectile(cl->entity, org, forward, g_balance_quake_grenadelauncher_speed->integer,
       g_balance_quake_grenadelauncher_damage->integer, g_balance_quake_grenadelauncher_knockback->integer,
-      g_balance_quake_grenadelauncher_radius->value, SECONDS_TO_MILLIS(g_balance_quake_grenadelauncher_timer->value));
+      g_balance_quake_grenadelauncher_radius->value, SECONDS_TO_MILLIS(g_balance_quake_grenadelauncher_timer->value),
+      g_media.sounds.quake_grenade_hit);
 
-    G_MuzzleFlash(cl->entity, MZ_GRENADE_LAUNCHER);
+    G_MuzzleFlash(cl->entity, MZ_QUAKE_GRENADE_LAUNCHER);
 
     G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_grenadelauncher_refire->value), cl->weapon->quantity);
   }
@@ -1020,7 +1022,7 @@ void G_FireQuakeRocketLauncher(g_client_t *cl) {
       g_balance_quake_rocketlauncher_damage->integer, g_balance_quake_rocketlauncher_knockback->integer,
       g_balance_quake_rocketlauncher_radius->value);
 
-    G_MuzzleFlash(cl->entity, MZ_ROCKET_LAUNCHER);
+    G_MuzzleFlash(cl->entity, MZ_QUAKE_ROCKET_LAUNCHER);
 
     G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_rocketlauncher_refire->value), cl->weapon->quantity);
   }

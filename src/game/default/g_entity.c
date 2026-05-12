@@ -271,6 +271,8 @@ static void G_InitMedia(void) {
   g_media.sounds.bfg_prime = gi.SoundIndex("weapons/bfg/prime");
   g_media.sounds.grenade_hit = gi.SoundIndex("projectiles/grenade/hit");
   g_media.sounds.grenade_throw = gi.SoundIndex("weapons/handgrenades/hg_throw");
+  g_media.sounds.quake_grenade_hit = gi.SoundIndex("projectiles/quake_grenade/hit");
+  g_media.sounds.quake_nail_hit = gi.SoundIndex("projectiles/quake_nail/hit");
   g_media.sounds.rocket_fly = gi.SoundIndex("projectiles/rocket/fly");
   g_media.sounds.lightning_fly = gi.SoundIndex("weapons/lightning/fly");
   g_media.sounds.quad_attack = gi.SoundIndex("powerups/quad/attack");

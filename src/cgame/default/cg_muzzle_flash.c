@@ -617,6 +617,36 @@ void Cg_ParseMuzzleFlash(void) {
       Cg_LogoutFlash(ent);
       pitch = 4;
       break;
+    case MZ_QUAKE_SHOTGUN:
+      sample = cg_sample_quake_shotgun_fire;
+      Cg_ShotgunFlash(ent);
+      pitch = 3;
+      break;
+    case MZ_QUAKE_SUPER_SHOTGUN:
+      sample = cg_sample_quake_supershotgun_fire;
+      Cg_SuperShotgunFlash(ent);
+      pitch = 3;
+      break;
+    case MZ_QUAKE_NAILGUN:
+      sample = cg_sample_quake_nailgun_fire;
+      Cg_MachinegunFlash(ent);
+      pitch = 5;
+      break;
+    case MZ_QUAKE_SUPER_NAILGUN:
+      sample = cg_sample_quake_supernailgun_fire;
+      Cg_MachinegunFlash(ent);
+      pitch = 5;
+      break;
+    case MZ_QUAKE_GRENADE_LAUNCHER:
+      sample = cg_sample_quake_grenadelauncher_fire;
+      Cg_GrenadeFlash(ent);
+      pitch = 3;
+      break;
+    case MZ_QUAKE_ROCKET_LAUNCHER:
+      sample = cg_sample_quake_rocketlauncher_fire;
+      Cg_RocketFlash(ent);
+      pitch = 3;
+      break;
     default:
       sample = NULL;
       break;

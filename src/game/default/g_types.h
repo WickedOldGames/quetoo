@@ -203,6 +203,13 @@ typedef enum {
   MZ_RAILGUN,
   MZ_BFG10K,
   MZ_LOGOUT,
+
+  MZ_QUAKE_SHOTGUN,
+  MZ_QUAKE_SUPER_SHOTGUN,
+  MZ_QUAKE_NAILGUN,
+  MZ_QUAKE_SUPER_NAILGUN,
+  MZ_QUAKE_GRENADE_LAUNCHER,
+  MZ_QUAKE_ROCKET_LAUNCHER,
 } g_muzzle_flash_t;
 
 /**
@@ -916,6 +923,8 @@ typedef struct {
     uint16_t bfg_prime;
     uint16_t grenade_hit;
     uint16_t grenade_throw;
+    uint16_t quake_grenade_hit;
+    uint16_t quake_nail_hit;
     uint16_t rocket_fly;
     uint16_t lightning_fly;
     uint16_t quad_attack;
@@ -1915,6 +1924,11 @@ struct g_entity_s {
    * @brief Cooldown timer for Touch events.
    */
   uint32_t touch_time;
+
+  /**
+   * @brief Sound to play when this projectile hits a structural surface.
+   */
+  uint16_t hit_sound;
 
   /**
    * @brief Time of the last push interaction.

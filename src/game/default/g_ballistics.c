@@ -299,6 +299,13 @@ static void G_NailProjectile_Touch(g_entity_t *ent, g_entity_t *other, const cm_
 
     if (G_IsStructural(trace)) {
 
+      G_MulticastSound(&(const g_play_sound_t) {
+        .index = g_media.sounds.quake_nail_hit,
+        .entity = ent,
+        .atten = SOUND_ATTEN_LINEAR,
+        .pitch = (int8_t) (Randomf() * 5.0)
+      }, MULTICAST_PHS);
+
       gi.WriteByte(SV_CMD_TEMP_ENTITY);
       gi.WriteByte(TE_BULLET);
       gi.WritePosition(ent->s.origin);
@@ -476,7 +483,7 @@ void G_GrenadeProjectile_Touch(g_entity_t *ent, g_entity_t *other, const cm_trac
       if (g_level.time - ent->touch_time > 200) {
         if (Vec3_Length(ent->velocity) > 40.0) {
           G_MulticastSound(&(const g_play_sound_t) {
-            .index = g_media.sounds.grenade_hit,
+            .index = ent->hit_sound,
             .entity = ent,
             .atten = SOUND_ATTEN_LINEAR,
             .pitch = (int8_t) (Randomf() * 5.0)
@@ -497,7 +504,7 @@ void G_GrenadeProjectile_Touch(g_entity_t *ent, g_entity_t *other, const cm_trac
 /**
  * @brief Fires a grenade projectile with bounce physics and a timed fuse.
  */
-void G_GrenadeProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir, int32_t speed, int32_t damage, int32_t knockback, float damage_radius, uint32_t timer) {
+void G_GrenadeProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir, int32_t speed, int32_t damage, int32_t knockback, float damage_radius, uint32_t timer, uint16_t hit_sound) {
 
   const box3_t bounds = Box3f(6.f, 6.f, 6.f);
 
@@ -536,6 +543,7 @@ void G_GrenadeProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir, 
   projectile->Think = G_GrenadeProjectile_Explode;
   projectile->Touch = G_GrenadeProjectile_Touch;
   projectile->touch_time = g_level.time;
+  projectile->hit_sound = hit_sound;
   projectile->s.trail = TRAIL_GRENADE;
   projectile->s.model1 = g_media.models.grenade;
 
