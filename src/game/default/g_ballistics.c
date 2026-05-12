@@ -501,6 +501,43 @@ void G_GrenadeProjectile_Touch(g_entity_t *ent, g_entity_t *other, const cm_trac
   G_GrenadeProjectile_Explode(ent);
 }
 
+static void G_QuakeGrenadeProjectile_Touch(g_entity_t *ent, g_entity_t *other, const cm_trace_t *trace) {
+
+  if (other == ent->owner) {
+    return;
+  }
+
+  if (other->solid < SOLID_DEAD) {
+    return;
+  }
+
+  if (trace == NULL) {
+    return;
+  }
+
+  if (!G_TakesDamage(other)) { // bounce off of structural solids
+
+    if (G_IsStructural(trace)) {
+      if (g_level.time - ent->touch_time > 200) {
+        if (Vec3_Length(ent->velocity) > 40.0) {
+          G_MulticastSound(&(const g_play_sound_t) {
+            .index = ent->hit_sound,
+            .entity = ent,
+            .atten = SOUND_ATTEN_LINEAR,
+          }, MULTICAST_PHS);
+          ent->touch_time = g_level.time;
+        }
+      }
+    } else if (G_IsSky(trace)) {
+      G_FreeEntity(ent);
+    }
+
+    return;
+  }
+  ent->enemy = other;
+  G_GrenadeProjectile_Explode(ent);
+}
+
 /**
  * @brief Fires a grenade projectile with bounce physics and a timed fuse.
  */
@@ -590,7 +627,7 @@ void G_QuakeGrenadeProjectile(g_entity_t *ent, const vec3_t start, const vec3_t 
   projectile->next_think = g_level.time + timer;
   projectile->take_damage = true;
   projectile->Think = G_GrenadeProjectile_Explode;
-  projectile->Touch = G_GrenadeProjectile_Touch;
+  projectile->Touch = G_QuakeGrenadeProjectile_Touch;
   projectile->touch_time = g_level.time;
   projectile->hit_sound = g_media.sounds.quake_grenade_hit;
   projectile->s.trail = TRAIL_GRENADE;
