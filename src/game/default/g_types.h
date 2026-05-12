@@ -1037,9 +1037,9 @@ typedef struct {
   g_items_t items;
 
   /**
-   * @brief Bit index in STAT_WEAPONS for each weapon tag (-1 = not in active set).
+   * @brief Bitmask indexes in `STAT_WEAPONS` for each weapon tag (-1 = not in active set).
    */
-  int8_t weapon_bits[WEAPON_TOTAL];
+  int32_t weapons[WEAPON_TOTAL];
 
   /**
    * @brief True if team play is active.

@@ -301,7 +301,7 @@ void G_ClientStats(g_client_t *cl) {
   if (!cl->persistent.spectator && !cl->entity->dead) {
     for (int32_t i = WEAPON_NONE + 1; i < WEAPON_TOTAL; i++) {
 
-      const int8_t bit = g_level.weapon_bits[i];
+      const int32_t bit = g_level.weapons[i];
       if (bit < 0) {
         continue;
       }

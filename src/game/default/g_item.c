@@ -3218,7 +3218,7 @@ static void G_InitWeapons(void) {
   char weapon_info[MAX_STRING_CHARS] = { '\0' };
   int32_t bit = 0;
 
-  memset(g_level.weapon_bits, -1, sizeof(g_level.weapon_bits));
+  memset(g_level.weapons, -1, sizeof(g_level.weapons));
 
   // First pass: include all weapons in the active item set.
   for (int32_t t = WEAPON_NONE + 1; t < WEAPON_TOTAL; t++) {
@@ -3234,14 +3234,14 @@ static void G_InitWeapons(void) {
     }
 
     strcat(weapon_info, va("%i\\%i", weapon->icon_index, weapon->index));
-    g_level.weapon_bits[t] = (int8_t) bit++;
+    g_level.weapons[t] = bit++;
   }
 
   // Second pass: entity-promoted weapons placed by the mapper outside the
   // active item set (e.g. item_quake_nailgun in a default-items map).
   for (int32_t t = WEAPON_NONE + 1; t < WEAPON_TOTAL; t++) {
 
-    if (g_level.weapon_bits[t] >= 0) {
+    if (g_level.weapons[t] >= 0) {
       continue;
     }
 
@@ -3269,7 +3269,7 @@ static void G_InitWeapons(void) {
     }
 
     strcat(weapon_info, va("%i\\%i", weapon->icon_index, weapon->index));
-    g_level.weapon_bits[t] = (int8_t) bit++;
+    g_level.weapons[t] = bit++;
   }
 
   gi.SetConfigString(CS_WEAPONS, weapon_info);

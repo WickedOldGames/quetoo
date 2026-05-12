@@ -93,7 +93,7 @@ static void G_Give_f(g_client_t *cl) {
       if (it->type != ITEM_WEAPON) {
         continue;
       }
-      if (g_level.weapon_bits[it->tag] < 0) {
+      if (g_level.weapons[it->tag] < 0) {
         continue;
       }
       cl->inventory[i] += 1;
@@ -116,7 +116,7 @@ static void G_Give_f(g_client_t *cl) {
       bool available = G_ItemAvailable(it);
       if (!available) {
         for (int32_t t = WEAPON_NONE + 1; t < WEAPON_TOTAL; t++) {
-          if (g_level.weapon_bits[t] >= 0 &&
+          if (g_level.weapons[t] >= 0 &&
               g_media.items.weapons[t]->ammo_item == it) {
             available = true;
             break;
