@@ -803,8 +803,7 @@ void G_FireGrenadeLauncher(g_client_t *cl) {
 
     G_GrenadeProjectile(cl->entity, org, forward, g_balance_grenadelauncher_speed->integer,
       g_balance_grenadelauncher_damage->integer, g_balance_grenadelauncher_knockback->integer,
-      g_balance_grenadelauncher_radius->value, SECONDS_TO_MILLIS(g_balance_grenadelauncher_timer->value),
-      g_media.sounds.grenade_hit);
+      g_balance_grenadelauncher_radius->value, SECONDS_TO_MILLIS(g_balance_grenadelauncher_timer->value));
 
     G_MuzzleFlash(cl->entity, MZ_GRENADE_LAUNCHER);
 
@@ -997,10 +996,9 @@ void G_FireQuakeGrenadeLauncher(g_client_t *cl) {
 
     G_ClientProjectile(cl, &forward, &right, &up, &org);
 
-    G_GrenadeProjectile(cl->entity, org, forward, g_balance_quake_grenadelauncher_speed->integer,
+    G_QuakeGrenadeProjectile(cl->entity, org, forward, g_balance_quake_grenadelauncher_speed->integer,
       g_balance_quake_grenadelauncher_damage->integer, g_balance_quake_grenadelauncher_knockback->integer,
-      g_balance_quake_grenadelauncher_radius->value, SECONDS_TO_MILLIS(g_balance_quake_grenadelauncher_timer->value),
-      g_media.sounds.quake_grenade_hit);
+      g_balance_quake_grenadelauncher_radius->value, SECONDS_TO_MILLIS(g_balance_quake_grenadelauncher_timer->value));
 
     G_MuzzleFlash(cl->entity, MZ_QUAKE_GRENADE_LAUNCHER);
 
@@ -1018,7 +1016,7 @@ void G_FireQuakeRocketLauncher(g_client_t *cl) {
 
     G_ClientProjectile(cl, &forward, &right, &up, &org);
 
-    G_RocketProjectile(cl->entity, org, forward, g_balance_quake_rocketlauncher_speed->integer,
+    G_QuakeRocketProjectile(cl->entity, org, forward, g_balance_quake_rocketlauncher_speed->integer,
       g_balance_quake_rocketlauncher_damage->integer, g_balance_quake_rocketlauncher_knockback->integer,
       g_balance_quake_rocketlauncher_radius->value);
 

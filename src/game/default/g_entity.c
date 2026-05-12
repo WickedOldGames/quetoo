@@ -262,8 +262,10 @@ static void G_InitMedia(void) {
   gi.SoundIndex("*pain100_1");
 
   g_media.models.grenade = gi.ModelIndex("models/projectiles/grenade/tris");
+  g_media.models.quake_grenade = gi.ModelIndex("models/projectiles/quake_grenade/tris");
   g_media.models.nail = gi.ModelIndex("models/projectiles/quake_nail/tris");
   g_media.models.rocket = gi.ModelIndex("models/projectiles/rocket/tris");
+  g_media.models.quake_rocket = gi.ModelIndex("models/projectiles/quake_rocket/tris");
   g_media.models.hook = gi.ModelIndex("models/grapplehook/tris");
   g_media.models.fireball = gi.ModelIndex("models/fireball/tris");
 
