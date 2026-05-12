@@ -93,6 +93,9 @@ static void G_Give_f(g_client_t *cl) {
       if (it->type != ITEM_WEAPON) {
         continue;
       }
+      if (!G_ItemIsInSet(it)) {
+        continue;
+      }
       cl->inventory[i] += 1;
     }
     if (!give_all) {
@@ -107,6 +110,9 @@ static void G_Give_f(g_client_t *cl) {
         continue;
       }
       if (it->type != ITEM_AMMO) {
+        continue;
+      }
+      if (!G_ItemIsInSet(it)) {
         continue;
       }
       G_AddAmmo(cl, it, quantity);

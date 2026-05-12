@@ -3185,20 +3185,53 @@ const g_item_t *G_ItemByIndex(uint16_t index) {
 }
 
 /**
+ * @brief Returns true if the item belongs to the active item set.
+ */
+bool G_ItemIsInSet(const g_item_t *item) {
+
+  if (item->type == ITEM_WEAPON) {
+    if (g_level.items == ITEMS_QUAKE) {
+      return item->tag >= WEAPON_QUAKE_SHOTGUN;
+    } else {
+      return item->tag < WEAPON_QUAKE_SHOTGUN;
+    }
+  }
+
+  if (item->type == ITEM_AMMO) {
+    if (g_level.items == ITEMS_QUAKE) {
+      return item->tag >= AMMO_QUAKE_SHELLS;
+    } else {
+      return item->tag < AMMO_QUAKE_SHELLS;
+    }
+  }
+
+  return true;
+}
+
+/**
  * @brief Called to set up the special string for weapons usable by the player.
+ * Filters to the active item set and populates g_level.weapon_bits[].
  */
 static void G_InitWeapons(void) {
   char weapon_info[MAX_STRING_CHARS] = { '\0' };
+  int32_t bit = 0;
+
+  memset(g_level.weapon_bits, -1, sizeof(g_level.weapon_bits));
 
   for (int32_t t = WEAPON_NONE + 1; t < WEAPON_TOTAL; t++) {
 
-    if (t != WEAPON_NONE + 1) {
+    const g_item_t *weapon = g_media.items.weapons[t];
+
+    if (!G_ItemIsInSet(weapon)) {
+      continue;
+    }
+
+    if (bit > 0) {
       strcat(weapon_info, "\\");
     }
 
-    const g_item_t *weapon = g_media.items.weapons[t];
-
     strcat(weapon_info, va("%i\\%i", weapon->icon_index, weapon->index));
+    g_level.weapon_bits[t] = (int8_t) bit++;
   }
 
   gi.SetConfigString(CS_WEAPONS, weapon_info);

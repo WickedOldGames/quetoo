@@ -301,11 +301,15 @@ void G_ClientStats(g_client_t *cl) {
   if (!cl->persistent.spectator && !cl->entity->dead) {
     for (int32_t i = WEAPON_NONE + 1; i < WEAPON_TOTAL; i++) {
 
+      const int8_t bit = g_level.weapon_bits[i];
+      if (bit < 0) {
+        continue;
+      }
+
       const g_item_t *weapon = g_media.items.weapons[i];
       const g_item_t *ammo = weapon->ammo_item;
 
       if (cl->inventory[weapon->index] && (!ammo || cl->inventory[ammo->index] >= weapon->quantity)) {
-        const int32_t bit = i - 1;
         if (bit < 16) {
           cl->ps.stats[STAT_WEAPONS] |= 1 << bit;
         } else {

@@ -740,6 +740,7 @@ static void G_worldspawn_Music(void) {
  capturelimit : The capture limit (default 8).
  timelimit : The time limit in minutes (default 20).
  give : A comma-delimited item string to give each player on spawn.
+ items : The item set for this map: "default" (Quetoo weapons) or "quake" (Quake weapons).
  */
 static void G_worldspawn(g_entity_t *ent) {
 
@@ -792,6 +793,15 @@ static void G_worldspawn(g_entity_t *ent) {
   }
 
   gi.SetConfigString(CS_GAMEPLAY, va("%d", g_level.gameplay));
+
+  const cm_entity_t *items = gi.EntityValue(ent->def, "items");
+  if (g_ascii_strcasecmp(items->string, "quake") == 0) {
+    g_level.items = ITEMS_QUAKE;
+  } else {
+    g_level.items = ITEMS_DEFAULT;
+  }
+
+  gi.SetConfigString(CS_ITEM_SET, va("%d", g_level.items));
 
   if (map && map->teams > -1) { // prefer maps.lst teams
     g_level.teams = map->teams;

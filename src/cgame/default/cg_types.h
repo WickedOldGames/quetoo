@@ -149,6 +149,11 @@ typedef struct {
   g_gameplay_t gameplay;
 
   /**
+   * @brief Active item set.
+   */
+  g_items_t items;
+
+  /**
    * @brief Non-zero if CTF is enabled.
    */
   int32_t ctf;

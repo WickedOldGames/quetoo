@@ -145,7 +145,8 @@ typedef struct {
 #define CS_NUM_CLIENTS     (CS_GAME + 6)  // number of players in server
 #define CS_NUM_TEAMS       (CS_GAME + 7)  // number of teams (0 - MAX_TEAMS)
 #define CS_WEAPONS         (CS_GAME + 8)  // weapon list, for the change weapon UI
-#define CS_NAV_EDIT        (CS_GAME + 9) // nav edit mode
+#define CS_NAV_EDIT        (CS_GAME + 9)  // nav edit mode
+#define CS_ITEM_SET        (CS_GAME + 10) // active item set (g_items_t)
 
 /**
  * @brief Player state statistics (inventory, score, etc).
@@ -438,6 +439,14 @@ typedef enum {
   GAME_INSTAGIB,
   GAME_ARENA
 } g_gameplay_t;
+
+/**
+ * @brief Item sets select which weapon and ammo roster a map uses.
+ */
+typedef enum {
+  ITEMS_DEFAULT,
+  ITEMS_QUAKE
+} g_items_t;
 
 /**
  * @brief Hook style.
@@ -1020,6 +1029,16 @@ typedef struct {
    * @brief Active gameplay mode.
    */
   g_gameplay_t gameplay;
+
+  /**
+   * @brief Active item set.
+   */
+  g_items_t items;
+
+  /**
+   * @brief Bit index in STAT_WEAPONS for each weapon tag (-1 = not in active set).
+   */
+  int8_t weapon_bits[WEAPON_TOTAL];
 
   /**
    * @brief True if team play is active.
