@@ -1163,11 +1163,11 @@ void Cg_EntityTrail(cl_entity_t *ent) {
         vec3_t forward;
 
         Cg_InitProjectile(ent, &forward, NULL, NULL, &start);
+        start = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(-8.f, 0.f, 3.25f));
 
         end = Vec3_Fmaf(start, dist, forward);
       } else {
-        const cg_client_info_t *ci = &cg_state.clients[ent->current.client];
-        start = ci->weapon_origin;
+        start = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(-32.f, 0.f, -8.f));
       }
     }
   } else {

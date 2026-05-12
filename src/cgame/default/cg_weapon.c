@@ -183,11 +183,11 @@ void Cg_AddWeapon(cl_entity_t *ent, r_entity_t *self) {
 
   w.lerp = w.scale = 1.0;
 
-  r_entity_t *r_weapon = cgi.AddEntity(cgi.view, &w);
+  r_entity_t *weapon = cgi.AddEntity(cgi.view, &w);
 
-  // overwrite weapon_origin/angles for our own client so that Cg_MuzzleOrigin
-  // and beam trail start points use the actual rendered barrel position
   cg_client_info_t *ci = &cg_state.clients[cgi.client->frame.ps.client];
-  ci->weapon_origin = r_weapon->origin;
-  ci->weapon_angles = r_weapon->angles;
+
+  Mat4_Vectors(weapon->matrix, NULL, NULL, NULL, &ci->weapon_origin);
+
+  ci->weapon_angles = weapon->angles;
 }

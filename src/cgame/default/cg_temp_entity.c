@@ -1370,6 +1370,9 @@ void Cg_ParseTempEntity(void) {
       const int32_t client = cgi.ReadByte();
       float hue;
       Cg_ClientEffectColor(client, &hue, color_hue_cyan);
+      if (client == cgi.client->frame.ps.client && !cgi.client->third_person) {
+        pos = Cg_MuzzleOrigin(&cg_state.clients[client], Vec3(-6.f, 0.f, -2.f));
+      }
       Cg_RailEffect(pos, pos2, dir, flags, hue);
       break;
 
