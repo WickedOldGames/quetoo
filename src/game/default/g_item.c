@@ -1721,7 +1721,7 @@ static g_item_t g_items[] = {
     .tag = WEAPON_ROCKET_LAUNCHER,
     .flags = WF_PROJECTILE | WF_EXPLOSIVE | WF_MED_RANGE | WF_LONG_RANGE,
     .priority = 0.50,
-    .precaches = "models/projectiles/rocket/tris.obj rocket/fly.wav "
+    .precaches = "models/projectiles/rocket/tris.obj projectiles/rocket/fly.wav "
     "weapons/rocketlauncher/fire.wav"
   },
 
@@ -2878,7 +2878,7 @@ static g_item_t g_items[] = {
     .tag = WEAPON_QUAKE_NAILGUN,
     .flags = WF_HITSCAN | WF_MED_RANGE,
     .priority = 0.30,
-    .precaches = "weapons/machinegun/fire.wav"
+    .precaches = "weapons/machinegun/fire_1.wav"
   },
 
   /*QUAKED weapon_quake_supernailgun (.6 .6 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
@@ -2912,7 +2912,7 @@ static g_item_t g_items[] = {
     .tag = WEAPON_QUAKE_SUPER_NAILGUN,
     .flags = WF_HITSCAN | WF_MED_RANGE,
     .priority = 0.40,
-    .precaches = "weapons/machinegun/fire.wav"
+    .precaches = "weapons/machinegun/fire_1.wav"
   },
 
   /*QUAKED weapon_quake_grenadelauncher (.6 .6 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
@@ -3038,7 +3038,7 @@ static g_item_t g_items[] = {
     .Use = NULL,
     .Drop = NULL,
     .Think = NULL,
-    .pickup_sound = "items/powerup.wav",
+    .pickup_sound = "powerups/common/pickup.wav",
     .model = "models/powerups/quake_shadows/tris.obj",
     .effects = EF_ROTATE,
     .icon = "pics/i_quake_shadows",
@@ -3071,7 +3071,7 @@ static g_item_t g_items[] = {
     .Use = NULL,
     .Drop = NULL,
     .Think = NULL,
-    .pickup_sound = "items/powerup.wav",
+    .pickup_sound = "powerups/common/pickup.wav",
     .model = "models/powerups/quake_pentagram/tris.obj",
     .effects = EF_ROTATE,
     .icon = "pics/i_quake_pentagram",
