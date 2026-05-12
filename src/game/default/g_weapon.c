@@ -164,7 +164,9 @@ void G_UseBestWeapon(g_client_t *cl) {
     }
   }
 
-  G_ChangeWeapon(cl, item);
+  if (item) {
+    G_ChangeWeapon(cl, item);
+  }
 }
 
 /**

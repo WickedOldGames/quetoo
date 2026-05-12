@@ -2926,6 +2926,7 @@ static g_item_t g_items[] = {
     .effects = EF_ROTATE,
     .icon = "pics/w_quake_shotgun",
     .name = "Shotgun",
+    .quantity = 1,
     .ammo = "Shells",
     .type = ITEM_WEAPON,
     .tag = WEAPON_QUAKE_SHOTGUN,
