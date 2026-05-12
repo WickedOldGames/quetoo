@@ -73,6 +73,45 @@ const g_item_t *G_FindItem(const char *name) {
 }
 
 /**
+ * @brief Maps Quetoo weapon tags to their Quake equivalent, by gameplay role.
+ *  Used to redirect generic bindings (e.g. "use Rocket Launcher") to the
+ *  appropriate weapon when g_level.items == ITEMS_QUAKE.
+ *  WEAPON_NONE means no equivalent exists.
+ */
+static const g_weapon_tag_t g_quake_weapon_map[WEAPON_TOTAL] = {
+  [WEAPON_BLASTER]          = WEAPON_QUAKE_SHOTGUN,          // starting weapon → starting weapon
+  [WEAPON_SHOTGUN]          = WEAPON_QUAKE_SHOTGUN,
+  [WEAPON_SUPER_SHOTGUN]    = WEAPON_QUAKE_SUPER_SHOTGUN,
+  [WEAPON_MACHINEGUN]       = WEAPON_QUAKE_NAILGUN,          // rapid single-fire
+  [WEAPON_HAND_GRENADE]     = WEAPON_NONE,
+  [WEAPON_GRENADE_LAUNCHER] = WEAPON_QUAKE_GRENADE_LAUNCHER,
+  [WEAPON_ROCKET_LAUNCHER]  = WEAPON_QUAKE_ROCKET_LAUNCHER,
+  [WEAPON_HYPERBLASTER]     = WEAPON_QUAKE_SUPER_NAILGUN,    // rapid burst-fire
+  [WEAPON_LIGHTNING]        = WEAPON_QUAKE_LIGHTNING,
+  [WEAPON_RAILGUN]          = WEAPON_NONE,
+  [WEAPON_BFG10K]           = WEAPON_NONE,
+};
+
+/**
+ * @brief Returns the Quake equivalent of a Quetoo weapon item when
+ *  g_level.items == ITEMS_QUAKE, or NULL if no mapping exists or the item is
+ *  already a Quake weapon.
+ */
+const g_item_t *G_MappedWeapon(const g_item_t *weapon) {
+
+  if (weapon->tag == WEAPON_NONE || weapon->tag >= WEAPON_QUAKE_SHOTGUN) {
+    return NULL; // already a Quake weapon, or unmapped
+  }
+
+  const g_weapon_tag_t mapped = g_quake_weapon_map[weapon->tag];
+  if (mapped == WEAPON_NONE) {
+    return NULL;
+  }
+
+  return g_media.items.weapons[mapped];
+}
+
+/**
  * @return The strongest armor item held by the specified client, or `NULL`. This
  * will never return the shard armor, because shards are added to the currently
  * held armor type, or to jacket armor if no armor is held.

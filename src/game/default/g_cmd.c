@@ -262,6 +262,16 @@ static void G_Use_f(g_client_t *cl) {
     gi.ClientPrint(cl, PRINT_HIGH, "Unknown item: %s\n", s);
     return;
   }
+
+  // In Quake item set maps, redirect Quetoo weapon names to their Quake equivalents
+  // so that generic bindings (e.g. "use Rocket Launcher") work across both item sets.
+  if (g_level.items == ITEMS_QUAKE && it->type == ITEM_WEAPON) {
+    const g_item_t *mapped = G_MappedWeapon(it);
+    if (mapped) {
+      it = mapped;
+    }
+  }
+
   if (!it->Use) {
     gi.ClientPrint(cl, PRINT_HIGH, "Item is not usable\n");
     return;

@@ -77,6 +77,7 @@
   bool G_ItemAvailable(const g_item_t *item);
   const g_item_t *G_FindItem(const char *name);
   const g_item_t *G_FindItemByClassName(const char *classname);
+  const g_item_t *G_MappedWeapon(const g_item_t *weapon);
   const g_item_t *G_ItemByIndex(uint16_t index);
   const g_item_t *G_ClientArmor(const g_client_t *cl);
   const g_armor_info_t *G_ArmorInfo(const g_item_t *armor);
