@@ -860,7 +860,7 @@ static void G_LightningProjectile_Think(g_entity_t *ent) {
   }
 
   // re-calculate end points based on owner's movement
-  G_ClientProjectile(ent->owner->client, &forward, &right, &up, &start, 1.0);
+  G_ClientProjectile(ent->owner->client, &forward, &right, &up, &start);
   ent->s.origin = start;
 
   if (G_ImmediateWall(ent->owner, ent)) { // resolve start
@@ -1309,7 +1309,7 @@ static void G_HookTrail_Think(g_entity_t *ent) {
 
   vec3_t forward, right, up, org;
 
-  G_ClientProjectile(cl, &forward, &right, &up, &org, -1.0);
+  G_ClientProjectile(cl, &forward, &right, &up, &org);
 
   ent->s.origin = org;
   ent->s.termination = hook->s.origin;

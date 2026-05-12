@@ -62,7 +62,6 @@ const g_ai_roster_t *G_Ai_GetUserInfo(const g_client_t *cl, char *info) {
 
   InfoString_Set(info, "skin", entry->skin);
   InfoString_Set(info, "color", va("%u", RandomRangeu(0, 360)));
-  InfoString_Set(info, "hand", va("%u", RandomRangeu(0, 3)));
   InfoString_Set(info, "head", va("%02x%02x%02x", RandomRangeu(0, 256), RandomRangeu(0, 256), RandomRangeu(0, 256)));
   InfoString_Set(info, "shirt", va("%02x%02x%02x", RandomRangeu(0, 256), RandomRangeu(0, 256), RandomRangeu(0, 256)));
   InfoString_Set(info, "pants", va("%02x%02x%02x", RandomRangeu(0, 256), RandomRangeu(0, 256), RandomRangeu(0, 256)));

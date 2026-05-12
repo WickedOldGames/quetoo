@@ -83,11 +83,6 @@ struct PlayerSetupViewController {
    * @brief The effects HueColorPicker.
    */
   HueColorPicker *effectsColorPicker;
-
-  /**
-   * @brief The handedness Select.
-   */
-  Select *hand;
 };
 
 /**

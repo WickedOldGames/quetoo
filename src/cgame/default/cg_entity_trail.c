@@ -1133,17 +1133,6 @@ static void Cg_InitProjectile(const cl_entity_t *ent, vec3_t *forward, vec3_t *r
   // resolve the projectile origin
   *org = Vec3_Fmaf(start, 12.f, cgi.view->forward);
 
-  switch (cg_hand->integer) {
-    case HAND_RIGHT:
-      *org = Vec3_Fmaf(*org, 6.f * hand, cgi.view->right);
-      break;
-    case HAND_LEFT:
-      *org = Vec3_Fmaf(*org, -6.f * hand, cgi.view->right);
-      break;
-    default:
-      break;
-  }
-
   if ((cgi.client->frame.ps.pm_state.flags & PMF_DUCKED)) {
     *org = Vec3_Fmaf(*org, -6.f, cgi.view->up);
   } else {
@@ -1197,19 +1186,6 @@ void Cg_EntityTrail(cl_entity_t *ent) {
       } else {
 
         start = Vec3_Fmaf(cgi.view->origin, 8.f, cgi.view->forward);
-
-        const float hand_scale = (ent->current.trail == TRAIL_HOOK ? -1.0 : 1.0);
-
-        switch (cg_hand->integer) {
-          case HAND_LEFT:
-            start = Vec3_Fmaf(start, -5.5 * hand_scale, cgi.view->right);
-            break;
-          case HAND_RIGHT:
-            start = Vec3_Fmaf(start, 5.5 * hand_scale, cgi.view->right);
-            break;
-          default:
-            break;
-        }
 
         start = Vec3_Fmaf(start, -8.f, cgi.view->up);
       }

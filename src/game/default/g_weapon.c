@@ -506,7 +506,7 @@ static void G_HookCheckFire(g_client_t *cl, const bool refire) {
 
   // fire away!
   vec3_t forward, right, up, org;
-  G_ClientProjectile(cl, &forward, &right, &up, &org, -1.0);
+  G_ClientProjectile(cl, &forward, &right, &up, &org);
 
   cl->hook_pull = false;
   cl->hook_entity = G_HookProjectile(cl->entity, org, forward);
@@ -572,7 +572,7 @@ void G_FireBlaster(g_client_t *cl) {
   if (G_FireWeapon(cl)) {
     vec3_t forward, right, up, org;
 
-    G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+    G_ClientProjectile(cl, &forward, &right, &up, &org);
 
     G_BlasterProjectile(cl->entity, org, forward, g_balance_blaster_speed->integer,
       g_balance_blaster_damage->integer, g_balance_blaster_knockback->integer);
@@ -591,7 +591,7 @@ void G_FireShotgun(g_client_t *cl) {
   if (G_FireWeapon(cl)) {
     vec3_t forward, right, up, org;
 
-    G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+    G_ClientProjectile(cl, &forward, &right, &up, &org);
 
     G_ShotgunProjectiles(cl->entity, org, forward, g_balance_shotgun_damage->integer,
       g_balance_shotgun_knockback->integer, g_balance_shotgun_spread_x->integer,
@@ -611,7 +611,7 @@ void G_FireSuperShotgun(g_client_t *cl) {
   if (G_FireWeapon(cl)) {
     vec3_t forward, right, up, org;
 
-    G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+    G_ClientProjectile(cl, &forward, &right, &up, &org);
 
     G_ShotgunProjectiles(cl->entity, org, forward, g_balance_supershotgun_damage->integer,
       g_balance_supershotgun_knockback->integer, g_balance_supershotgun_spread_x->integer,
@@ -631,7 +631,7 @@ void G_FireMachinegun(g_client_t *cl) {
   if (G_FireWeapon(cl)) {
     vec3_t forward, right, up, org;
 
-    G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+    G_ClientProjectile(cl, &forward, &right, &up, &org);
 
     G_BulletProjectile(cl->entity, org, forward, g_balance_machinegun_damage->integer,
       g_balance_machinegun_knockback->integer, g_balance_machinegun_spread_x->integer,
@@ -763,7 +763,7 @@ void G_FireHandGrenade(g_client_t *cl) {
 
   vec3_t forward, right, up, org;
 
-  G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+  G_ClientProjectile(cl, &forward, &right, &up, &org);
   G_HandGrenadeProjectile(
       cl->entity,             // player
       cl->held_grenade,       // the grenade
@@ -799,7 +799,7 @@ void G_FireGrenadeLauncher(g_client_t *cl) {
   if (G_FireWeapon(cl)) {
     vec3_t forward, right, up, org;
 
-    G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+    G_ClientProjectile(cl, &forward, &right, &up, &org);
 
     G_GrenadeProjectile(cl->entity, org, forward, g_balance_grenadelauncher_speed->integer,
       g_balance_grenadelauncher_damage->integer, g_balance_grenadelauncher_knockback->integer,
@@ -819,7 +819,7 @@ void G_FireRocketLauncher(g_client_t *cl) {
   if (G_FireWeapon(cl)) {
     vec3_t forward, right, up, org;
 
-    G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+    G_ClientProjectile(cl, &forward, &right, &up, &org);
 
     G_RocketProjectile(cl->entity, org, forward, g_balance_rocketlauncher_speed->integer,
       g_balance_rocketlauncher_damage->integer, g_balance_rocketlauncher_knockback->integer,
@@ -839,7 +839,7 @@ void G_FireHyperblaster(g_client_t *cl) {
   if (G_FireWeapon(cl)) {
     vec3_t forward, right, up, org;
 
-    G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+    G_ClientProjectile(cl, &forward, &right, &up, &org);
 
     G_HyperblasterProjectile(cl->entity, org, forward, g_balance_hyperblaster_speed->integer,
       g_balance_hyperblaster_damage->integer, g_balance_hyperblaster_knockback->value);
@@ -870,7 +870,7 @@ void G_FireLightning(g_client_t *cl) {
       G_MuzzleFlash(cl->entity, MZ_LIGHTNING);
     }
 
-    G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+    G_ClientProjectile(cl, &forward, &right, &up, &org);
 
     G_LightningProjectile(cl->entity, org, forward, g_balance_lightning_damage->integer, g_balance_lightning_knockback->integer);
 
@@ -886,7 +886,7 @@ void G_FireRailgun(g_client_t *cl) {
   if (G_FireWeapon(cl)) {
     vec3_t forward, right, up, org;
 
-    G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+    G_ClientProjectile(cl, &forward, &right, &up, &org);
 
     const int16_t damage = (g_level.gameplay == GAME_INSTAGIB) ? 999 : g_balance_railgun_damage->integer;
 
@@ -909,7 +909,7 @@ void G_FireQuakeShotgun(g_client_t *cl) {
   if (G_FireWeapon(cl)) {
     vec3_t forward, right, up, org;
 
-    G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+    G_ClientProjectile(cl, &forward, &right, &up, &org);
 
     G_ShotgunProjectiles(cl->entity, org, forward, g_balance_quake_shotgun_damage->integer,
       g_balance_quake_shotgun_knockback->integer, g_balance_quake_shotgun_spread_x->integer,
@@ -930,7 +930,7 @@ void G_FireQuakeSuperShotgun(g_client_t *cl) {
   if (G_FireWeapon(cl)) {
     vec3_t forward, right, up, org;
 
-    G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+    G_ClientProjectile(cl, &forward, &right, &up, &org);
 
     G_ShotgunProjectiles(cl->entity, org, forward, g_balance_quake_supershotgun_damage->integer,
       g_balance_quake_supershotgun_knockback->integer, g_balance_quake_supershotgun_spread_x->integer,
@@ -951,7 +951,7 @@ void G_FireQuakeNailgun(g_client_t *cl) {
   if (G_FireWeapon(cl)) {
     vec3_t forward, right, up, org;
 
-    G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+    G_ClientProjectile(cl, &forward, &right, &up, &org);
 
     G_NailProjectile(cl->entity, org, forward, g_balance_quake_nailgun_speed->integer,
       g_balance_quake_nailgun_damage->integer, g_balance_quake_nailgun_knockback->integer);
@@ -970,7 +970,7 @@ void G_FireQuakeSuperNailgun(g_client_t *cl) {
   if (G_FireWeapon(cl)) {
     vec3_t forward, right, up, org;
 
-    G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+    G_ClientProjectile(cl, &forward, &right, &up, &org);
 
     G_NailProjectile(cl->entity, Vec3_Fmaf(org, -4.0, right), forward,
       g_balance_quake_supernailgun_speed->integer, g_balance_quake_supernailgun_damage->integer,
@@ -994,7 +994,7 @@ void G_FireQuakeGrenadeLauncher(g_client_t *cl) {
   if (G_FireWeapon(cl)) {
     vec3_t forward, right, up, org;
 
-    G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+    G_ClientProjectile(cl, &forward, &right, &up, &org);
 
     G_GrenadeProjectile(cl->entity, org, forward, g_balance_quake_grenadelauncher_speed->integer,
       g_balance_quake_grenadelauncher_damage->integer, g_balance_quake_grenadelauncher_knockback->integer,
@@ -1014,7 +1014,7 @@ void G_FireQuakeRocketLauncher(g_client_t *cl) {
   if (G_FireWeapon(cl)) {
     vec3_t forward, right, up, org;
 
-    G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+    G_ClientProjectile(cl, &forward, &right, &up, &org);
 
     G_RocketProjectile(cl->entity, org, forward, g_balance_quake_rocketlauncher_speed->integer,
       g_balance_quake_rocketlauncher_damage->integer, g_balance_quake_rocketlauncher_knockback->integer,
@@ -1046,7 +1046,7 @@ void G_FireQuakeLightning(g_client_t *cl) {
       G_MuzzleFlash(cl->entity, MZ_LIGHTNING);
     }
 
-    G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+    G_ClientProjectile(cl, &forward, &right, &up, &org);
 
     G_LightningProjectile(cl->entity, org, forward, g_balance_quake_lightning_damage->integer,
       g_balance_quake_lightning_knockback->integer);
@@ -1066,7 +1066,7 @@ static void G_FireBfg_(g_entity_t *ent) {
     if (cl->weapon == g_media.items.weapons[WEAPON_BFG10K]) {
       vec3_t forward, right, up, org;
 
-      G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+      G_ClientProjectile(cl, &forward, &right, &up, &org);
 
       G_BfgProjectile(ent->owner, org, forward, g_balance_bfg_speed->integer,
         g_balance_bfg_damage->integer, g_balance_bfg_knockback->integer,

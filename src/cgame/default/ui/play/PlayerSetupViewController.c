@@ -169,7 +169,6 @@ static void loadView(ViewController *self) {
     MakeOutlet("shirt", &this->shirtColorPicker),
     MakeOutlet("pants", &this->pantsColorPicker),
     MakeOutlet("effects", &this->effectsColorPicker),
-    MakeOutlet("hand", &this->hand),
     MakeOutlet("player", &this->playerModelView)
   );
 
@@ -196,10 +195,6 @@ static void loadView(ViewController *self) {
 
   this->pantsColorPicker->delegate.self = self;
   this->pantsColorPicker->delegate.didPickColor = didPickPlayerColor;
-
-  $(this->hand, addOption, "Center", (ident) 0);
-  $(this->hand, addOption, "Right", (ident) 1);
-  $(this->hand, addOption, "Left", (ident) 2);
 }
 
 /**
