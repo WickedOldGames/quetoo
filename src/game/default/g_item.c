@@ -2867,7 +2867,7 @@ static g_item_t g_items[] = {
    hover : Item will spawn where it was placed in the map and won't drop the floor.
 
    -------- Radiant config --------
-   model="models/weapons/quake_supershotgun/tris.obj"
+   model="models/weapons/quake_shotgun/tris.obj"
    */
   {
     .classname = "weapon_quake_shotgun",
@@ -2876,11 +2876,10 @@ static g_item_t g_items[] = {
     .Drop = G_DropWeapon,
     .Think = G_FireQuakeShotgun,
     .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/quake_supershotgun/tris.obj",
+    .model = "models/weapons/quake_shotgun/tris.obj",
     .effects = EF_ROTATE,
-    .icon = "pics/w_quake_supershotgun",
+    .icon = "pics/w_quake_shotgun",
     .name = "Shotgun (Quake)",
-    .quantity = 1,
     .ammo = "Shells (Quake)",
     .type = ITEM_WEAPON,
     .tag = WEAPON_QUAKE_SHOTGUN,
