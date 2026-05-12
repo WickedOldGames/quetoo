@@ -267,6 +267,84 @@ void G_BlasterProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir, 
 }
 
 /**
+ * @brief Touch callback for nail projectiles.
+ */
+static void G_NailProjectile_Touch(g_entity_t *ent, g_entity_t *other, const cm_trace_t *trace) {
+
+  if (other == ent->owner) {
+    return;
+  }
+
+  if (other->solid < SOLID_DEAD) {
+    return;
+  }
+
+  if (trace == NULL) {
+    return;
+  }
+
+  if (!G_IsSky(trace)) {
+
+    G_Damage(&(g_damage_t) {
+      .target = other,
+      .inflictor = ent,
+      .attacker = ent->owner,
+      .dir = ent->velocity,
+      .point = ent->s.origin,
+      .normal = trace->plane.normal,
+      .damage = ent->damage,
+      .knockback = ent->knockback,
+      .mod = MOD_MACHINEGUN
+    });
+
+    if (G_IsStructural(trace)) {
+
+      gi.WriteByte(SV_CMD_TEMP_ENTITY);
+      gi.WriteByte(TE_BULLET);
+      gi.WritePosition(ent->s.origin);
+      gi.WriteDir(trace->plane.normal);
+      gi.Multicast(ent->s.origin, MULTICAST_PHS);
+    }
+  }
+
+  G_FreeEntity(ent);
+}
+
+/**
+ * @brief Fires a nail projectile from the specified entity in the given direction.
+ */
+void G_NailProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir, int32_t speed, int32_t damage, int32_t knockback) {
+
+  const box3_t bounds = Box3f(1.f, 1.f, 1.f);
+
+  g_entity_t *projectile = G_AllocEntity(__func__);
+  projectile->owner = ent;
+
+  projectile->s.origin = start;
+  projectile->bounds = bounds;
+  projectile->s.angles = Vec3_Euler(dir);
+  projectile->velocity = Vec3_Scale(dir, speed);
+
+  if (G_ImmediateWall(ent, projectile)) {
+    projectile->s.origin = ent->s.origin;
+  }
+
+  projectile->solid = SOLID_PROJECTILE;
+  projectile->clip_mask = CONTENTS_MASK_CLIP_PROJECTILE;
+  projectile->damage = damage;
+  projectile->knockback = knockback;
+  projectile->move_type = MOVE_TYPE_FLY;
+  projectile->next_think = g_level.time + 8000;
+  projectile->Think = G_FreeEntity;
+  projectile->Touch = G_NailProjectile_Touch;
+  projectile->s.client = ent->s.client;
+  projectile->s.model1 = g_media.models.nail;
+  projectile->s.trail = TRAIL_NAIL;
+
+  gi.LinkEntity(projectile);
+}
+
+/**
  * @brief Fires a single bullet projectile with randomized spread, dealing damage and emitting impact effects.
  */
 void G_BulletProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir, int32_t damage, int32_t knockback, int32_t hspread, int32_t vspread, int32_t mod) {

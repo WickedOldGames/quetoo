@@ -953,9 +953,8 @@ void G_FireQuakeNailgun(g_client_t *cl) {
 
     G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
 
-    G_BulletProjectile(cl->entity, org, forward, g_balance_quake_nailgun_damage->integer,
-      g_balance_quake_nailgun_knockback->integer, g_balance_quake_nailgun_spread_x->integer,
-      g_balance_quake_nailgun_spread_y->integer, MOD_MACHINEGUN);
+    G_NailProjectile(cl->entity, org, forward, g_balance_quake_nailgun_speed->integer,
+      g_balance_quake_nailgun_damage->integer, g_balance_quake_nailgun_knockback->integer);
 
     G_MuzzleFlash(cl->entity, MZ_MACHINEGUN);
 
@@ -964,7 +963,7 @@ void G_FireQuakeNailgun(g_client_t *cl) {
 }
 
 /**
- * @brief Fires two nails per shot from the Quake super nailgun.
+ * @brief Fires two nails per shot from the Quake super nailgun, offset from parallel barrels.
  */
 void G_FireQuakeSuperNailgun(g_client_t *cl) {
 
@@ -973,13 +972,13 @@ void G_FireQuakeSuperNailgun(g_client_t *cl) {
 
     G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
 
-    G_BulletProjectile(cl->entity, org, forward, g_balance_quake_supernailgun_damage->integer,
-      g_balance_quake_supernailgun_knockback->integer, g_balance_quake_supernailgun_spread_x->integer,
-      g_balance_quake_supernailgun_spread_y->integer, MOD_MACHINEGUN);
+    G_NailProjectile(cl->entity, Vec3_Fmaf(org, -4.0, right), forward,
+      g_balance_quake_supernailgun_speed->integer, g_balance_quake_supernailgun_damage->integer,
+      g_balance_quake_supernailgun_knockback->integer);
 
-    G_BulletProjectile(cl->entity, org, forward, g_balance_quake_supernailgun_damage->integer,
-      g_balance_quake_supernailgun_knockback->integer, g_balance_quake_supernailgun_spread_x->integer,
-      g_balance_quake_supernailgun_spread_y->integer, MOD_MACHINEGUN);
+    G_NailProjectile(cl->entity, Vec3_Fmaf(org, 4.0, right), forward,
+      g_balance_quake_supernailgun_speed->integer, g_balance_quake_supernailgun_damage->integer,
+      g_balance_quake_supernailgun_knockback->integer);
 
     G_MuzzleFlash(cl->entity, MZ_MACHINEGUN);
 
