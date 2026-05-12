@@ -901,6 +901,30 @@ void G_FireRailgun(g_client_t *cl) {
 /**
  * @brief Fires a wider, Quake-style super shotgun spread.
  */
+/**
+ * @brief Fires a spread of pellets from the Quake Shotgun.
+ */
+void G_FireQuakeShotgun(g_client_t *cl) {
+
+  if (G_FireWeapon(cl)) {
+    vec3_t forward, right, up, org;
+
+    G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
+
+    G_ShotgunProjectiles(cl->entity, org, forward, g_balance_quake_shotgun_damage->integer,
+      g_balance_quake_shotgun_knockback->integer, g_balance_quake_shotgun_spread_x->integer,
+      g_balance_quake_shotgun_spread_y->integer, g_balance_quake_shotgun_pellets->integer,
+      MOD_SHOTGUN);
+
+    G_MuzzleFlash(cl->entity, MZ_SHOTGUN);
+
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_shotgun_refire->value), cl->weapon->quantity);
+  }
+}
+
+/**
+ * @brief Fires a wider spread of shells from the Quake Super Shotgun.
+ */
 void G_FireQuakeSuperShotgun(g_client_t *cl) {
 
   if (G_FireWeapon(cl)) {

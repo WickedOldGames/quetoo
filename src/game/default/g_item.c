@@ -2779,6 +2779,40 @@ static g_item_t g_items[] = {
     .precaches = ""
   },
 
+  /*QUAKED weapon_quake_shotgun (.6 .6 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Quake Shotgun. The starting weapon; fires a tight spread of pellets.
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/weapons/quake_supershotgun/tris.obj"
+   */
+  {
+    .classname = "weapon_quake_shotgun",
+    .Pickup = G_PickupWeapon,
+    .Use = G_UseWeapon,
+    .Drop = G_DropWeapon,
+    .Think = G_FireQuakeShotgun,
+    .pickup_sound = "weapons/common/pickup.wav",
+    .model = "models/weapons/quake_supershotgun/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/w_quake_supershotgun",
+    .name = "Shotgun (Quake)",
+    .quantity = 1,
+    .ammo = "Shells (Quake)",
+    .type = ITEM_WEAPON,
+    .tag = WEAPON_QUAKE_SHOTGUN,
+    .flags = WF_HITSCAN | WF_SHORT_RANGE,
+    .priority = 0.15,
+    .precaches = "weapons/shotgun/fire.wav"
+  },
+
   /*QUAKED weapon_quake_supershotgun (.6 .6 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
    Quake Super Shotgun. Fires a wider spread of shells than the standard super shotgun.
 

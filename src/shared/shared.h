@@ -311,7 +311,7 @@ typedef struct {
 /**
  * @brief The number of bits a stat can hold.
  */
-#define MAX_STAT_BITS 16
+#define MAX_STAT_BITS 32
 
 /**
  * @brief Player state structures contain authoritative snapshots of the

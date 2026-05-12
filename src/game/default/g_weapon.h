@@ -41,6 +41,7 @@ void G_FireGrenadeLauncher(g_client_t *cl);
 void G_FireLightning(g_client_t *cl);
 void G_FireRailgun(g_client_t *cl);
 void G_FireBfg(g_client_t *cl);
+void G_FireQuakeShotgun(g_client_t *cl);
 void G_FireQuakeSuperShotgun(g_client_t *cl);
 void G_FireQuakeNailgun(g_client_t *cl);
 void G_FireQuakeSuperNailgun(g_client_t *cl);
