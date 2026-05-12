@@ -3187,7 +3187,7 @@ const g_item_t *G_ItemByIndex(uint16_t index) {
 /**
  * @brief Returns true if the item belongs to the active item set.
  */
-bool G_ItemIsInSet(const g_item_t *item) {
+bool G_ItemAvailable(const g_item_t *item) {
 
   if (item->type == ITEM_WEAPON) {
     if (g_level.items == ITEMS_QUAKE) {
@@ -3210,7 +3210,9 @@ bool G_ItemIsInSet(const g_item_t *item) {
 
 /**
  * @brief Called to set up the special string for weapons usable by the player.
- * Filters to the active item set and populates g_level.weapon_bits[].
+ * Filters to the active item set, then scans for out-of-set weapons placed by
+ * the mapper. Populates g_level.weapon_bits[] and caps at 16 (STAT_WEAPONS
+ * is a uint16_t).
  */
 static void G_InitWeapons(void) {
   char weapon_info[MAX_STRING_CHARS] = { '\0' };
@@ -3218,11 +3220,47 @@ static void G_InitWeapons(void) {
 
   memset(g_level.weapon_bits, -1, sizeof(g_level.weapon_bits));
 
+  // First pass: include all weapons in the active item set.
   for (int32_t t = WEAPON_NONE + 1; t < WEAPON_TOTAL; t++) {
 
     const g_item_t *weapon = g_media.items.weapons[t];
 
-    if (!G_ItemIsInSet(weapon)) {
+    if (!G_ItemAvailable(weapon)) {
+      continue;
+    }
+
+    if (bit > 0) {
+      strcat(weapon_info, "\\");
+    }
+
+    strcat(weapon_info, va("%i\\%i", weapon->icon_index, weapon->index));
+    g_level.weapon_bits[t] = (int8_t) bit++;
+  }
+
+  // Second pass: entity-promoted weapons placed by the mapper outside the
+  // active item set (e.g. item_quake_nailgun in a default-items map).
+  for (int32_t t = WEAPON_NONE + 1; t < WEAPON_TOTAL; t++) {
+
+    if (g_level.weapon_bits[t] >= 0) {
+      continue;
+    }
+
+    const g_item_t *weapon = g_media.items.weapons[t];
+
+    bool found = false;
+    G_ForEachEntity(ent, {
+      if (!g_strcmp0(ent->classname, weapon->classname)) {
+        found = true;
+        break;
+      }
+    });
+
+    if (!found) {
+      continue;
+    }
+
+    if (bit >= 16) {
+      gi.Warn("Map exceeds 16 weapons; %s will not be selectable\n", weapon->name);
       continue;
     }
 

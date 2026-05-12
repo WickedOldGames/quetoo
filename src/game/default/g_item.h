@@ -74,7 +74,7 @@
   bool G_HasTech(const g_client_t *cl, const g_tech_t tech);
   bool G_AddAmmo(g_client_t *cl, const g_item_t *item, int16_t count);
   g_entity_t *G_DropItem(g_client_t *cl, const g_item_t *item);
-  bool G_ItemIsInSet(const g_item_t *item);
+  bool G_ItemAvailable(const g_item_t *item);
   const g_item_t *G_FindItem(const char *name);
   const g_item_t *G_FindItemByClassName(const char *classname);
   const g_item_t *G_ItemByIndex(uint16_t index);

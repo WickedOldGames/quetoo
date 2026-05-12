@@ -93,7 +93,7 @@ static void G_Give_f(g_client_t *cl) {
       if (it->type != ITEM_WEAPON) {
         continue;
       }
-      if (!G_ItemIsInSet(it)) {
+      if (g_level.weapon_bits[it->tag] < 0) {
         continue;
       }
       cl->inventory[i] += 1;
@@ -112,7 +112,18 @@ static void G_Give_f(g_client_t *cl) {
       if (it->type != ITEM_AMMO) {
         continue;
       }
-      if (!G_ItemIsInSet(it)) {
+      // Give ammo if it's in the active set or used by an entity-promoted weapon.
+      bool available = G_ItemAvailable(it);
+      if (!available) {
+        for (int32_t t = WEAPON_NONE + 1; t < WEAPON_TOTAL; t++) {
+          if (g_level.weapon_bits[t] >= 0 &&
+              g_media.items.weapons[t]->ammo_item == it) {
+            available = true;
+            break;
+          }
+        }
+      }
+      if (!available) {
         continue;
       }
       G_AddAmmo(cl, it, quantity);
