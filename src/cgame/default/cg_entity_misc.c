@@ -85,13 +85,14 @@ static const char *cg_dust_preset_embers =
 
 static const char *cg_dust_preset_bubbles =
   "sprite\\bubble"
-  "\\velocity\\0 0 21"
-  "\\acceleration\\0 0 -.2"
-  "\\color\\.7 .7 .7"
-  "\\size\\1"
-  "\\lifetime\\2"
-  "\\lighting\\.4"
-  "\\density\\.33"
+  "\\velocity\\0 0 32"
+  "\\acceleration\\.33 .33 .33"
+  "\\color\\1 1 1"
+  "\\size\\0.1"
+  "\\size_velocity\\1"
+  "\\lifetime\\1"
+  "\\lighting\\1"
+  "\\density\\12"
   "\\hz\\10";
 
 static const char *cg_dust_preset_fizz =
