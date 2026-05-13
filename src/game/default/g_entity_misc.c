@@ -41,6 +41,9 @@ static void G_misc_teleporter_Touch(g_entity_t *ent, g_entity_t *other, const cm
   // unlink to make sure it can't possibly interfere with G_KillBox
   gi.UnlinkEntity(other);
 
+  // capture entry position before the move
+  const vec3_t entry_origin = other->s.origin;
+
   other->s.origin = dest->s.origin;
   other->s.origin.z += 8.0;
 
@@ -71,14 +74,31 @@ static void G_misc_teleporter_Touch(g_entity_t *ent, g_entity_t *other, const cm
 
   other->velocity.z = 150.0;
 
-  // create the effects at the teleporter
+  // play the teleport sound at the entry point and 32 units in front of the destination
+  const char *sound = gi.EntityValue(ent->def, "sound")->nullable_string;
+  const int32_t sound_index = gi.SoundIndex(sound ? sound : "misc/teleport");
+
+  G_MulticastSound(&(const g_play_sound_t) {
+    .index = sound_index,
+    .origin = &entry_origin,
+    .atten = SOUND_ATTEN_LINEAR
+  }, MULTICAST_PHS);
+
+  const vec3_t dest_sound_origin = Vec3_Add(dest->s.origin, Vec3_Scale(forward, 32.0));
+  G_MulticastSound(&(const g_play_sound_t) {
+    .index = sound_index,
+    .origin = &dest_sound_origin,
+    .atten = SOUND_ATTEN_LINEAR
+  }, MULTICAST_PHS);
+
+  // create the particle effects at the teleporter
 
   gi.WriteByte(SV_CMD_TEMP_ENTITY);
   gi.WriteByte(TE_TELEPORT);
   gi.WritePosition(Box3_Center(ent->abs_bounds));
   gi.Multicast(ent->s.origin, MULTICAST_PHS);
 
-  // and set the event on the teleportee
+  // and set the event on the teleportee (visual burst at destination)
 
   other->s.event = EV_CLIENT_TELEPORT;
   other->s.angles = Vec3_Zero();
@@ -122,6 +142,9 @@ static void G_misc_teleporter_Think(g_entity_t *ent) {
 
 /*QUAKED misc_teleporter (1 0 0) (-32 -32 -24) (32 32 -16) no_effects
  Warps players who touch this entity to the targeted misc_teleporter_dest entity.
+
+ -------- Keys --------
+ sound : The sound to play at the teleporter and destination on use (default "misc/teleport").
 
  -------- Spawn flags --------
  no_effects : Suppress the default teleporter particle effects.
