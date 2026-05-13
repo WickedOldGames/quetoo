@@ -229,10 +229,10 @@ void G_Damage(const g_damage_t *dmg) {
     }
   }
 
-  if (target->client && !(dflags & DMG_NO_GOD)) { // pentagram of protection
-    if (target->client->inventory[g_media.items.powerups[POWERUP_QUAKE_PENTAGRAM]->index]) {
+  if (target->client && !(dflags & DMG_NO_GOD)) { // invulnerability
+    if (target->client->inventory[g_media.items.powerups[POWERUP_INVULNERABILITY]->index]) {
       G_MulticastSound(&(const g_play_sound_t) {
-        .index = g_media.sounds.quake_pentagram_protect,
+        .index = g_media.sounds.invulnerability_protect,
         .entity = target,
         .atten = SOUND_ATTEN_LINEAR
       }, MULTICAST_PHS);

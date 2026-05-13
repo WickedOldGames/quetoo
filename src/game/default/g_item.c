@@ -290,33 +290,33 @@ g_entity_t *G_TossShadows(g_client_t *cl) {
 }
 
 /**
- * @brief Handles pickup of the Pentagram of Protection, granting temporary invulnerability.
+ * @brief Handles pickup of the Invulnerability, granting temporary invulnerability.
  */
-static bool G_PickupPentagram(g_client_t *cl, g_entity_t *ent) {
+static bool G_PickupInvulnerability(g_client_t *cl, g_entity_t *ent) {
 
-  if (cl->inventory[g_media.items.powerups[POWERUP_QUAKE_PENTAGRAM]->index]) {
+  if (cl->inventory[g_media.items.powerups[POWERUP_INVULNERABILITY]->index]) {
     return false; // already have it
   }
 
-  cl->inventory[g_media.items.powerups[POWERUP_QUAKE_PENTAGRAM]->index] = 1;
+  cl->inventory[g_media.items.powerups[POWERUP_INVULNERABILITY]->index] = 1;
 
   uint32_t delta = 3000;
 
   if (ent->spawn_flags & SF_ITEM_DROPPED) {
     delta = Maxf(0, (ent->next_think - g_level.time) - 3000.f);
 
-    cl->pentagram_time = ent->next_think;
-    cl->pentagram_countdown_time = ent->next_think - delta;
+    cl->invulnerability_time = ent->next_think;
+    cl->invulnerability_countdown_time = ent->next_think - delta;
   } else {
-    cl->pentagram_time = g_level.time + SECONDS_TO_MILLIS(g_balance_quake_pentagram_time->value);
-    cl->pentagram_countdown_time = cl->pentagram_time - delta;
-    G_SetItemRespawn(ent, SECONDS_TO_MILLIS(g_balance_quake_pentagram_respawn_time->value));
+    cl->invulnerability_time = g_level.time + SECONDS_TO_MILLIS(g_balance_invulnerability_time->value);
+    cl->invulnerability_countdown_time = cl->invulnerability_time - delta;
+    G_SetItemRespawn(ent, SECONDS_TO_MILLIS(g_balance_invulnerability_respawn_time->value));
   }
 
-  cl->entity->s.effects |= EF_PROTECTION;
+  cl->entity->s.effects |= EF_INVULNERABILITY;
 
   G_MulticastSound(&(const g_play_sound_t) {
-    .index = g_media.sounds.quake_pentagram_pickup,
+    .index = g_media.sounds.invulnerability_pickup,
     .entity = cl->entity,
     .atten = SOUND_ATTEN_LINEAR
   }, MULTICAST_PHS);
@@ -325,26 +325,26 @@ static bool G_PickupPentagram(g_client_t *cl, g_entity_t *ent) {
 }
 
 /**
- * @brief Drops the Pentagram of Protection from the client's inventory as a world entity.
+ * @brief Drops the Invulnerability from the client's inventory as a world entity.
  */
-g_entity_t *G_TossPentagram(g_client_t *cl) {
+g_entity_t *G_TossInvulnerability(g_client_t *cl) {
 
-  if (!cl->inventory[g_media.items.powerups[POWERUP_QUAKE_PENTAGRAM]->index]) {
+  if (!cl->inventory[g_media.items.powerups[POWERUP_INVULNERABILITY]->index]) {
     return NULL;
   }
 
-  g_entity_t *pentagram = G_DropItem(cl, g_media.items.powerups[POWERUP_QUAKE_PENTAGRAM]);
+  g_entity_t *item = G_DropItem(cl, g_media.items.powerups[POWERUP_INVULNERABILITY]);
 
-  if (pentagram) {
-    pentagram->timestamp = cl->pentagram_time;
+  if (item) {
+    item->timestamp = cl->invulnerability_time;
   }
 
-  cl->pentagram_time = 0;
-  cl->pentagram_countdown_time = 0;
-  cl->inventory[g_media.items.powerups[POWERUP_QUAKE_PENTAGRAM]->index] = 0;
-  cl->entity->s.effects &= ~EF_PROTECTION;
+  cl->invulnerability_time = 0;
+  cl->invulnerability_countdown_time = 0;
+  cl->inventory[g_media.items.powerups[POWERUP_INVULNERABILITY]->index] = 0;
+  cl->entity->s.effects &= ~EF_INVULNERABILITY;
 
-  return pentagram;
+  return item;
 }
 
 /**
@@ -3187,8 +3187,8 @@ static g_item_t g_items[] = {
     .precaches = "models/powerups/quake_eyes/tris.obj powerups/quad/expire.wav"
   },
 
-  /*QUAKED item_quake_pentagram (.8 .1 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Pentagram of Protection. Grants full invulnerability for 30 seconds.
+  /*QUAKED item_invulnerability (.8 .1 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Invulnerability. Grants full invulnerability for 30 seconds.
 
    -------- Keys --------
    team : The team name for alternating item spawns.
@@ -3199,25 +3199,25 @@ static g_item_t g_items[] = {
    hover : Item will spawn where it was placed in the map and won't drop the floor.
 
    -------- Radiant config --------
-   model="models/powerups/quake_pentagram/tris.obj"
+   model="models/powerups/invulnerability/tris.obj"
    */
   {
-    .classname = "item_quake_pentagram",
-    .Pickup = G_PickupPentagram,
+    .classname = "item_invulnerability",
+    .Pickup = G_PickupInvulnerability,
     .Use = NULL,
     .Drop = NULL,
     .Think = NULL,
     .pickup_sound = "powerups/common/pickup.wav",
-    .model = "models/powerups/quake_pentagram/tris.obj",
+    .model = "models/powerups/invulnerability/tris.obj",
     .effects = EF_ROTATE,
-    .icon = "pics/i_quake_pentagram",
-    .name = "Pentagram of Protection",
+    .icon = "pics/i_invulnerability",
+    .name = "Invulnerability",
     .quantity = 0,
     .ammo = NULL,
     .type = ITEM_POWERUP,
-    .tag = POWERUP_QUAKE_PENTAGRAM,
+    .tag = POWERUP_INVULNERABILITY,
     .priority = 0.90,
-    .precaches = "powerups/quad/expire.wav"
+    .precaches = "powerups/invulnerability/expire.wav"
   },
 };
 

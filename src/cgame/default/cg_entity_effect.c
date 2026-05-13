@@ -117,7 +117,7 @@ void Cg_EntityEffects(cl_entity_t *ent, r_entity_t *e) {
     e->shell.w = fmaxf(e->shell.w, 0.666f);
   }
 
-  if (e->effects & EF_PROTECTION) {
+  if (e->effects & EF_INVULNERABILITY) {
     const float pulse = 4.f + sinf(cgi.client->unclamped_time * 0.006f) * .75f;
     const cg_light_t l = {
       .origin = e->origin,

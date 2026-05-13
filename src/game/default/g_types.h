@@ -28,7 +28,7 @@
  * @brief Game protocol version (protocol minor version). To be incremented
  * whenever the game protocol changes.
  */
-#define PROTOCOL_MINOR 1025
+#define PROTOCOL_MINOR 1026
 
 /**
  * @brief Game-specific server protocol commands. These are parsed directly by
@@ -367,7 +367,7 @@ typedef enum {
 #define EF_LIGHT      (EF_GAME << 12) // colored light
 #define EF_TEAM_TINT  (EF_GAME << 13) // tint by the team color provided
 #define EF_INVISIBILITY (EF_GAME << 14) // ring of shadows (invisible shell)
-#define EF_PROTECTION   (EF_GAME << 15) // pentagram of protection (invulnerability shell)
+#define EF_INVULNERABILITY   (EF_GAME << 15) // invulnerability shell
 
 #define EF_CTF_MASK   (EF_CTF_RED | EF_CTF_BLUE | EF_CTF_YELLOW | EF_CTF_GREEN)
 
@@ -595,9 +595,9 @@ typedef enum {
 typedef enum {
   POWERUP_QUAD,
   POWERUP_ADRENALINE,
+  POWERUP_INVULNERABILITY,
 
   POWERUP_QUAKE_SHADOWS,
-  POWERUP_QUAKE_PENTAGRAM,
 
   POWERUP_TOTAL
 } g_powerup_t;
@@ -975,9 +975,9 @@ typedef struct {
 
     uint16_t chat;
 
-    uint16_t quake_pentagram_pickup;
-    uint16_t quake_pentagram_expire;
-    uint16_t quake_pentagram_protect;
+    uint16_t invulnerability_pickup;
+    uint16_t invulnerability_expire;
+    uint16_t invulnerability_protect;
     uint16_t quake_shadows_pickup;
     uint16_t quake_shadows_expire;
   } sounds;
@@ -1730,14 +1730,14 @@ struct g_client_s {
   uint32_t shadows_time;
 
   /**
-   * @brief Pentagram of Protection is active while time is less than this.
+   * @brief Invulnerability is active while time is less than this.
    */
-  uint32_t pentagram_time;
+  uint32_t invulnerability_time;
 
   /**
    * @brief Pentagram countdown warning threshold.
    */
-  uint32_t pentagram_countdown_time;
+  uint32_t invulnerability_countdown_time;
 
   /**
    * @brief Client being chased in spectator mode.

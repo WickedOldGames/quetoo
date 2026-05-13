@@ -478,7 +478,7 @@ static void G_ClientDie(g_entity_t *ent, g_entity_t *attacker, uint32_t mod) {
 
   G_TossQuadDamage(cl);
   G_TossShadows(cl);
-  G_TossPentagram(cl);
+  G_TossInvulnerability(cl);
 
   if (g_level.gameplay == GAME_DEATHMATCH && mod != MOD_TRIGGER_HURT) {
     G_TossWeapon(cl);
@@ -1344,7 +1344,7 @@ void G_ClientDisconnect(g_client_t *cl) {
 
   G_TossQuadDamage(cl);
   G_TossShadows(cl);
-  G_TossPentagram(cl);
+  G_TossInvulnerability(cl);
   G_TossFlag(cl);
   G_TossTech(cl);
   G_HookDetach(cl);
@@ -1716,23 +1716,23 @@ static void G_ClientInventoryThink(g_client_t *cl) {
     }
   }
 
-  if (cl->inventory[g_media.items.powerups[POWERUP_QUAKE_PENTAGRAM]->index]) {
+  if (cl->inventory[g_media.items.powerups[POWERUP_INVULNERABILITY]->index]) {
 
-    if (cl->pentagram_countdown_time && cl->pentagram_countdown_time < g_level.time) {
+    if (cl->invulnerability_countdown_time && cl->invulnerability_countdown_time < g_level.time) {
       G_MulticastSound(&(const g_play_sound_t) {
-        .index = g_media.sounds.quake_pentagram_expire,
+        .index = g_media.sounds.invulnerability_expire,
         .entity = cl->entity,
         .atten = SOUND_ATTEN_LINEAR
       }, MULTICAST_PHS);
 
-      cl->pentagram_countdown_time += 1000;
+      cl->invulnerability_countdown_time += 1000;
     }
 
-    if (cl->pentagram_time < g_level.time) {
-      cl->pentagram_time = 0;
-      cl->pentagram_countdown_time = 0;
-      cl->inventory[g_media.items.powerups[POWERUP_QUAKE_PENTAGRAM]->index] = 0;
-      cl->entity->s.effects &= ~EF_PROTECTION;
+    if (cl->invulnerability_time < g_level.time) {
+      cl->invulnerability_time = 0;
+      cl->invulnerability_countdown_time = 0;
+      cl->inventory[g_media.items.powerups[POWERUP_INVULNERABILITY]->index] = 0;
+      cl->entity->s.effects &= ~EF_INVULNERABILITY;
     }
   }
 
