@@ -1214,16 +1214,9 @@ void Cg_EntityTrail(cl_entity_t *ent) {
     if (ent->current.client == cgi.client->frame.ps.client && !cgi.client->third_person) {
 
       // we own this beam (lightning, grapple, etc..)
-      // project start & end points based on our current view origin
-      float dist = Vec3_Distance(start, end);
-
+      // anchor start to the client-side muzzle; keep end as the server-authoritative termination
       if (s->trail == TRAIL_LIGHTNING) {
-        vec3_t forward;
-
-        Cg_InitProjectile(ent, &forward, NULL, NULL, &start);
         start = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(-8.f, 0.f, 3.25f));
-
-        end = Vec3_Fmaf(start, dist, forward);
       } else {
         start = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(-32.f, 0.f, -8.f));
       }
