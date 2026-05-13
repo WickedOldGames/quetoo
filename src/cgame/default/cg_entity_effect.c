@@ -98,14 +98,14 @@ void Cg_EntityEffects(cl_entity_t *ent, r_entity_t *e) {
   if (e->effects & EF_RESPAWN) {
     const vec3_t color = Cg_ClientEffectColor(ent->current.client, NULL, 0.167f);
     e->shell = Vec4_Fmaf(e->shell, 0.5f, Vec3_ToVec4(color, 0.f));
-    e->shell.w = fmaxf(e->shell.w, 0.40f);
+    e->shell.w = fmaxf(e->shell.w, 0.333f);
   }
 
   if (e->effects & EF_QUAD) {
-    const float pulse = 4.0f + sinf(cgi.client->unclamped_time * 0.006f) * .75f;
+    const float pulse = 4.f + sinf(cgi.client->unclamped_time * 0.006f) * .75f;
     const cg_light_t l = {
       .origin = e->origin,
-      .radius = 350.0,
+      .radius = 350.f,
       .color = Vec3(.3f, .7f, .7f),
       .intensity = pulse,
       .source = ent,
@@ -114,15 +114,15 @@ void Cg_EntityEffects(cl_entity_t *ent, r_entity_t *e) {
     Cg_AddLight(&l);
 
     e->shell = Vec4_Fmaf(e->shell, 1.f, Vec3_ToVec4(l.color, 0.f));
-    e->shell.w = fmaxf(e->shell.w, 0.65f);
+    e->shell.w = fmaxf(e->shell.w, 0.666f);
   }
 
   if (e->effects & EF_PENTAGRAM) {
-    const float pulse = 4.0f + sinf(cgi.client->unclamped_time * 0.006f) * .75f;
+    const float pulse = 4.f + sinf(cgi.client->unclamped_time * 0.006f) * .75f;
     const cg_light_t l = {
       .origin = e->origin,
-      .radius = 350.0,
-      .color = Vec3(.9f, .1f, .1f),
+      .radius = 350.f,
+      .color = Vec3(1.f, 0.f, 0.f),
       .intensity = pulse,
       .source = ent,
     };
@@ -130,7 +130,7 @@ void Cg_EntityEffects(cl_entity_t *ent, r_entity_t *e) {
     Cg_AddLight(&l);
 
     e->shell = Vec4_Fmaf(e->shell, 1.f, Vec3_ToVec4(l.color, 0.f));
-    e->shell.w = fmaxf(e->shell.w, 0.65f);
+    e->shell.w = fmaxf(e->shell.w, 0.666f);
   }
 
   if (e->effects & EF_CTF_MASK) {
@@ -151,7 +151,7 @@ void Cg_EntityEffects(cl_entity_t *ent, r_entity_t *e) {
         Cg_AddLight(&l);
 
         e->shell = Vec4_Fmaf(e->shell, 1.f, Vec3_ToVec4(l.color, 0.f));
-        e->shell.w = fmaxf(e->shell.w, 0.45f);
+        e->shell.w = fmaxf(e->shell.w, 0.666f);
       }
     }
   }
@@ -164,7 +164,7 @@ void Cg_EntityEffects(cl_entity_t *ent, r_entity_t *e) {
 
   e->color = Vec4_One();
 
-  if (ent->current.trail == TRAIL_NAIL) {
+  if (ent->current.trail == TRAIL_QUAKE_NAIL) {
     e->effects |= EF_NO_SHADOW;
   }
 

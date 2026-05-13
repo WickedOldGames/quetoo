@@ -346,7 +346,7 @@ void G_NailProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir, int
   projectile->Touch = G_NailProjectile_Touch;
   projectile->s.client = ent->s.client;
   projectile->s.model1 = g_media.models.nail;
-  projectile->s.trail = TRAIL_NAIL;
+  projectile->s.trail = TRAIL_QUAKE_NAIL;
 
   gi.LinkEntity(projectile);
 }

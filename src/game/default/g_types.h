@@ -393,7 +393,7 @@ typedef enum {
   TRAIL_FIREBALL,
   TRAIL_HOOK,
   TRAIL_PLAYER_SPAWN,
-  TRAIL_NAIL,
+  TRAIL_QUAKE_NAIL,
   TRAIL_QUAKE_GRENADE,
 } g_entity_trail_t;
 

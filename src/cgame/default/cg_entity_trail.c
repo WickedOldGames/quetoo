@@ -1162,13 +1162,6 @@ static void Cg_OrbitalTrail(cl_entity_t *ent, const vec3_t start, const vec3_t e
 }
 
 /**
- * @brief Renders the quad damage powerup orbital particle trail in cyan-teal.
- */
-static void Cg_QuadEffectTrail(cl_entity_t *ent, const vec3_t start, const vec3_t end) {
-  Cg_OrbitalTrail(ent, start, end, Vec3(.3f, .7f, .7f));
-}
-
-/**
  * @brief Renders the CTF flag carrier orbital particle trail in the carrier's team color.
  */
 static void Cg_CtfEffectTrail(cl_entity_t *ent, const vec3_t start, const vec3_t end) {
@@ -1278,15 +1271,11 @@ void Cg_EntityTrail(cl_entity_t *ent) {
     case TRAIL_FIREBALL:
       Cg_FireballTrail(ent, start, end);
       break;
-    case TRAIL_NAIL:
+    case TRAIL_QUAKE_NAIL:
       Cg_NailTrail(ent, start, end);
       break;
     default:
       break;
-  }
-
-  if (s->effects & EF_QUAD) {
-    Cg_QuadEffectTrail(ent, start, end);
   }
 
   if (s->effects & EF_CTF_MASK) {
