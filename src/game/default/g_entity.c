@@ -289,6 +289,10 @@ static void G_InitMedia(void) {
 
   g_media.sounds.teleport = gi.SoundIndex("misc/teleport");
 
+  for (i = 0; i < 5; i++) {
+    g_media.sounds.quake_teleport[i] = gi.SoundIndex(va("misc/quake_teleport%d", i + 1));
+  }
+
   g_media.sounds.water_in = gi.SoundIndex("misc/water_in");
   g_media.sounds.water_out = gi.SoundIndex("misc/water_out");
 

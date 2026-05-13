@@ -959,6 +959,7 @@ typedef struct {
     uint16_t hook_gibhit;
 
     uint16_t teleport;
+    uint16_t quake_teleport[5];
 
     uint16_t water_in;
     uint16_t water_out;
