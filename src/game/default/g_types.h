@@ -366,8 +366,8 @@ typedef enum {
 #define EF_DESPAWN    (EF_GAME << 11) // translucent
 #define EF_LIGHT      (EF_GAME << 12) // colored light
 #define EF_TEAM_TINT  (EF_GAME << 13) // tint by the team color provided
-#define EF_SHADOWS    (EF_GAME << 14) // ring of shadows (translucency)
-#define EF_PENTAGRAM  (EF_GAME << 15) // pentagram of protection (invulnerability shell)
+#define EF_INVISIBILITY (EF_GAME << 14) // ring of shadows (invisible shell)
+#define EF_PROTECTION   (EF_GAME << 15) // pentagram of protection (invulnerability shell)
 
 #define EF_CTF_MASK   (EF_CTF_RED | EF_CTF_BLUE | EF_CTF_YELLOW | EF_CTF_GREEN)
 
@@ -978,6 +978,8 @@ typedef struct {
     uint16_t quake_pentagram_pickup;
     uint16_t quake_pentagram_expire;
     uint16_t quake_pentagram_protect;
+    uint16_t quake_shadows_pickup;
+    uint16_t quake_shadows_expire;
   } sounds;
 
   struct g_media_images_t {

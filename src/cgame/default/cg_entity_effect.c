@@ -117,7 +117,7 @@ void Cg_EntityEffects(cl_entity_t *ent, r_entity_t *e) {
     e->shell.w = fmaxf(e->shell.w, 0.666f);
   }
 
-  if (e->effects & EF_PENTAGRAM) {
+  if (e->effects & EF_PROTECTION) {
     const float pulse = 4.f + sinf(cgi.client->unclamped_time * 0.006f) * .75f;
     const cg_light_t l = {
       .origin = e->origin,
@@ -163,6 +163,12 @@ void Cg_EntityEffects(cl_entity_t *ent, r_entity_t *e) {
   }
 
   e->color = Vec4_One();
+
+  if (e->effects & EF_INVISIBILITY) {
+    e->shell = Vec4(1.f, 1.f, 1.f, .125f);
+    e->effects |= EF_SHELL | EF_BLEND | EF_NO_SHADOW;
+    e->color = Vec4(1.f, 1.f, 1.f, 0.f);
+  }
 
   if (ent->current.trail == TRAIL_QUAKE_NAIL) {
     e->effects |= EF_NO_SHADOW;

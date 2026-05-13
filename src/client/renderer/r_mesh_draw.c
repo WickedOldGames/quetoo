@@ -422,8 +422,6 @@ void R_InitMeshProgram(void) {
 
   r_mesh_program.texture_shadow_atlas = glGetUniformLocation(r_mesh_program.name, "texture_shadow_atlas");
 
-  r_mesh_program.color = glGetUniformLocation(r_mesh_program.name, "color");
-
   r_mesh_program.material.surface = glGetUniformLocation(r_mesh_program.name, "material.surface");
   r_mesh_program.material.alpha_test = glGetUniformLocation(r_mesh_program.name, "material.alpha_test");
   r_mesh_program.material.roughness = glGetUniformLocation(r_mesh_program.name, "material.roughness");
@@ -432,6 +430,7 @@ void R_InitMeshProgram(void) {
 
   r_mesh_program.stage.flags = glGetUniformLocation(r_mesh_program.name, "stage.flags");
   r_mesh_program.stage.color = glGetUniformLocation(r_mesh_program.name, "stage.color");
+  r_mesh_program.color = glGetUniformLocation(r_mesh_program.name, "color");
   r_mesh_program.stage.pulse = glGetUniformLocation(r_mesh_program.name, "stage.pulse");
   r_mesh_program.stage.scroll = glGetUniformLocation(r_mesh_program.name, "stage.scroll");
   r_mesh_program.stage.scale = glGetUniformLocation(r_mesh_program.name, "stage.scale");

@@ -1706,7 +1706,13 @@ static void G_ClientInventoryThink(g_client_t *cl) {
     if (cl->shadows_time < g_level.time) {
       cl->shadows_time = 0;
       cl->inventory[g_media.items.powerups[POWERUP_QUAKE_SHADOWS]->index] = 0;
-      cl->entity->s.effects &= ~EF_SHADOWS;
+      cl->entity->s.effects &= ~EF_INVISIBILITY;
+
+      G_MulticastSound(&(const g_play_sound_t) {
+        .index = g_media.sounds.quake_shadows_expire,
+        .entity = cl->entity,
+        .atten = SOUND_ATTEN_LINEAR
+      }, MULTICAST_PHS);
     }
   }
 
@@ -1726,7 +1732,7 @@ static void G_ClientInventoryThink(g_client_t *cl) {
       cl->pentagram_time = 0;
       cl->pentagram_countdown_time = 0;
       cl->inventory[g_media.items.powerups[POWERUP_QUAKE_PENTAGRAM]->index] = 0;
-      cl->entity->s.effects &= ~EF_PENTAGRAM;
+      cl->entity->s.effects &= ~EF_PROTECTION;
     }
   }
 

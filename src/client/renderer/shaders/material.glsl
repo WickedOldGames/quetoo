@@ -243,7 +243,7 @@ void stage_vertex(in stage_t stage, in vec3 in_position, in vec3 position, inout
   }
 
   if ((stage.flags & STAGE_COLOR) == STAGE_COLOR) {
-	  color *= stage.color;
+	  color = stage.color;
   }
 
   if ((stage.flags & STAGE_PULSE) == STAGE_PULSE) {

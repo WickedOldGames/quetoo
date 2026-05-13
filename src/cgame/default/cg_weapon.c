@@ -179,6 +179,11 @@ void Cg_AddWeapon(cl_entity_t *ent, r_entity_t *self) {
   w.effects |= self->effects & EF_SHELL;
   w.shell = self->shell;
 
+  if (self->effects & EF_INVISIBILITY) {
+    w.effects |= EF_BLEND | EF_NO_SHADOW;
+    w.color = Vec4(1.f, 1.f, 1.f, 0.f);
+  }
+
   w.abs_bounds = Box3_FromCenterSize(cgi.view->origin, Vec3(16.f, 16.f, 16.f));
 
   w.lerp = w.scale = 1.0;

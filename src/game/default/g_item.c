@@ -256,7 +256,14 @@ static bool G_PickupShadows(g_client_t *cl, g_entity_t *ent) {
     G_SetItemRespawn(ent, SECONDS_TO_MILLIS(g_balance_quake_shadows_respawn_time->value));
   }
 
-  cl->entity->s.effects |= EF_SHADOWS;
+  cl->entity->s.effects |= EF_INVISIBILITY;
+
+  G_MulticastSound(&(const g_play_sound_t) {
+    .index = g_media.sounds.quake_shadows_pickup,
+    .entity = cl->entity,
+    .atten = SOUND_ATTEN_LINEAR
+  }, MULTICAST_PHS);
+
   return true;
 }
 
@@ -277,7 +284,7 @@ g_entity_t *G_TossShadows(g_client_t *cl) {
 
   cl->shadows_time = 0;
   cl->inventory[g_media.items.powerups[POWERUP_QUAKE_SHADOWS]->index] = 0;
-  cl->entity->s.effects &= ~EF_SHADOWS;
+  cl->entity->s.effects &= ~EF_INVISIBILITY;
 
   return shadows;
 }
@@ -306,7 +313,7 @@ static bool G_PickupPentagram(g_client_t *cl, g_entity_t *ent) {
     G_SetItemRespawn(ent, SECONDS_TO_MILLIS(g_balance_quake_pentagram_respawn_time->value));
   }
 
-  cl->entity->s.effects |= EF_PENTAGRAM;
+  cl->entity->s.effects |= EF_PROTECTION;
 
   G_MulticastSound(&(const g_play_sound_t) {
     .index = g_media.sounds.quake_pentagram_pickup,
@@ -335,7 +342,7 @@ g_entity_t *G_TossPentagram(g_client_t *cl) {
   cl->pentagram_time = 0;
   cl->pentagram_countdown_time = 0;
   cl->inventory[g_media.items.powerups[POWERUP_QUAKE_PENTAGRAM]->index] = 0;
-  cl->entity->s.effects &= ~EF_PENTAGRAM;
+  cl->entity->s.effects &= ~EF_PROTECTION;
 
   return pentagram;
 }
