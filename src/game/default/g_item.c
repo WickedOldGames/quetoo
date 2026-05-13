@@ -307,6 +307,13 @@ static bool G_PickupPentagram(g_client_t *cl, g_entity_t *ent) {
   }
 
   cl->entity->s.effects |= EF_PENTAGRAM;
+
+  G_MulticastSound(&(const g_play_sound_t) {
+    .index = g_media.sounds.quake_pentagram_pickup,
+    .entity = cl->entity,
+    .atten = SOUND_ATTEN_LINEAR
+  }, MULTICAST_PHS);
+
   return true;
 }
 

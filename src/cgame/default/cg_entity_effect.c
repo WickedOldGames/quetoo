@@ -115,6 +115,21 @@ void Cg_EntityEffects(cl_entity_t *ent, r_entity_t *e) {
     e->shell = Vec3_Fmaf(e->shell, 1.f, l.color);
   }
 
+  if (e->effects & EF_PENTAGRAM) {
+    const float pulse = 2.5f + sinf(cgi.client->unclamped_time * 0.006f) * .5f;
+    const cg_light_t l = {
+      .origin = e->origin,
+      .radius = 250.0,
+      .color = Vec3(.9f, .1f, .1f),
+      .intensity = pulse,
+      .source = ent,
+    };
+
+    Cg_AddLight(&l);
+
+    e->shell = Vec3_Fmaf(e->shell, 1.f, l.color);
+  }
+
   if (e->effects & EF_CTF_MASK) {
 
     for (g_team_id_t team = TEAM_RED; team < MAX_TEAMS; team++) {

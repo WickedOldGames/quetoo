@@ -231,7 +231,13 @@ void G_Damage(const g_damage_t *dmg) {
 
   if (target->client && !(dflags & DMG_NO_GOD)) { // pentagram of protection
     if (target->client->inventory[g_media.items.powerups[POWERUP_QUAKE_PENTAGRAM]->index]) {
-      return;
+      G_MulticastSound(&(const g_play_sound_t) {
+        .index = g_media.sounds.quake_pentagram_defend,
+        .entity = target,
+        .atten = SOUND_ATTEN_LINEAR
+      }, MULTICAST_PHS);
+      damage = 0;
+      // knockback is intentionally preserved so rocket jumping still works
     }
   }
 

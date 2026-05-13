@@ -974,6 +974,10 @@ typedef struct {
     uint16_t techs[TECH_TOTAL];
 
     uint16_t chat;
+
+    uint16_t quake_pentagram_pickup;
+    uint16_t quake_pentagram_expire;
+    uint16_t quake_pentagram_defend;
   } sounds;
 
   struct g_media_images_t {

@@ -280,6 +280,10 @@ static void G_InitMedia(void) {
   g_media.sounds.quad_attack = gi.SoundIndex("powerups/quad/attack");
   g_media.sounds.quad_expire = gi.SoundIndex("powerups/quad/expire");
 
+  g_media.sounds.quake_pentagram_pickup = gi.SoundIndex("powerups/quake_pentagram/pickup");
+  g_media.sounds.quake_pentagram_expire = gi.SoundIndex("powerups/quake_pentagram/expire");
+  g_media.sounds.quake_pentagram_defend = gi.SoundIndex("powerups/quake_pentagram/defend");
+
   g_media.sounds.hook_fire = gi.SoundIndex("grapplehook/fire");
   g_media.sounds.hook_fly = gi.SoundIndex("grapplehook/fly");
   g_media.sounds.hook_hit = gi.SoundIndex("grapplehook/hit");

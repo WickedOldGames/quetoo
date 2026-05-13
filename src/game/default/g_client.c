@@ -1714,7 +1714,7 @@ static void G_ClientInventoryThink(g_client_t *cl) {
 
     if (cl->pentagram_countdown_time && cl->pentagram_countdown_time < g_level.time) {
       G_MulticastSound(&(const g_play_sound_t) {
-        .index = g_media.sounds.quad_expire,
+        .index = g_media.sounds.quake_pentagram_expire,
         .entity = cl->entity,
         .atten = SOUND_ATTEN_LINEAR
       }, MULTICAST_PHS);
