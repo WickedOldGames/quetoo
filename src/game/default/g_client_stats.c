@@ -296,6 +296,18 @@ void G_ClientStats(g_client_t *cl) {
     cl->ps.stats[STAT_QUAD_TIME] = 0;
   }
 
+  if (g_level.time <= cl->invisibility_time) {
+    cl->ps.stats[STAT_INVISIBILITY_TIME] = ceil((cl->invisibility_time - g_level.time) / 1000.0);
+  } else {
+    cl->ps.stats[STAT_INVISIBILITY_TIME] = 0;
+  }
+
+  if (g_level.time <= cl->invulnerability_time) {
+    cl->ps.stats[STAT_INVULNERABILITY_TIME] = ceil((cl->invulnerability_time - g_level.time) / 1000.0);
+  } else {
+    cl->ps.stats[STAT_INVULNERABILITY_TIME] = 0;
+  }
+
   // change-able weapons (split across two int16_t stats for >16 weapons)
   cl->ps.stats[STAT_WEAPONS] = 0;
   cl->ps.stats[STAT_WEAPONS_2] = 0;

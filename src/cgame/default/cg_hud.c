@@ -92,6 +92,8 @@ static struct {
 
 static r_image_t *cg_pickup_blend_image;
 static r_image_t *cg_quad_blend_image;
+static r_image_t *cg_invisibility_blend_image;
+static r_image_t *cg_invulnerability_blend_image;
 static r_image_t *cg_damage_blend_image;
 
 static r_image_t *cg_select_weapon_image;
@@ -892,6 +894,20 @@ static void Cg_DrawBlend(const player_state_t *ps) {
       fabsf(sinf(Radians(cgi.client->unclamped_time * 0.2))) * cg_draw_blend_powerup->value);
   }
 
+  // invisibility powerup
+
+  if (ps->stats[STAT_INVISIBILITY_TIME] > 0 && cg_draw_blend_powerup->value) {
+    Cg_DrawBlendFlashImage(cg_invisibility_blend_image,
+      fabsf(sinf(Radians(cgi.client->unclamped_time * 0.2))) * cg_draw_blend_powerup->value);
+  }
+
+  // invulnerability powerup
+
+  if (ps->stats[STAT_INVULNERABILITY_TIME] > 0 && cg_draw_blend_powerup->value) {
+    Cg_DrawBlendFlashImage(cg_invulnerability_blend_image,
+      fabsf(sinf(Radians(cgi.client->unclamped_time * 0.2))) * cg_draw_blend_powerup->value);
+  }
+
   // taken damage
 
   const int16_t d = ps->stats[STAT_DAMAGE_ARMOR] + ps->stats[STAT_DAMAGE_HEALTH];
@@ -1321,6 +1337,8 @@ void Cg_LoadHudMedia(void) {
   cg_select_weapon_image = cgi.LoadImage("pics/w_select", IMG_PIC);
   cg_pickup_blend_image = cgi.LoadImage("pics/bf_pickup", IMG_PIC);
   cg_quad_blend_image = cgi.LoadImage("pics/bf_powerup_quad", IMG_PIC);
+  cg_invisibility_blend_image = cgi.LoadImage("pics/bf_powerup_invisibility", IMG_PIC);
+  cg_invulnerability_blend_image = cgi.LoadImage("pics/bf_powerup_invulnerability", IMG_PIC);
   cg_damage_blend_image = cgi.LoadImage("pics/bf_damage", IMG_PIC);
 }
 
