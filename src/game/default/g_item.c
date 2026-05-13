@@ -974,6 +974,12 @@ g_entity_t *G_DropItem(g_client_t *cl, const g_item_t *item) {
   it->move_type = MOVE_TYPE_BOUNCE;
   it->Touch = G_TouchItem;
   it->s.effects = item->effects;
+
+  if (item->light_radius) {
+    it->s.effects |= EF_LIGHT | EF_LIGHT_PULSE;
+    it->s.color = Color_Color32(Color3fv(item->light_color));
+    it->s.termination.x = item->light_radius;
+  }
   it->touch_time = g_level.time + 1000;
 
   it->s.model1 = item->model_index;
