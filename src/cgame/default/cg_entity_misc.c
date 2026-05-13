@@ -87,21 +87,21 @@ static const char *cg_dust_preset_bubbles =
   "sprite\\bubble"
   "\\velocity\\0 0 21"
   "\\acceleration\\0 0 -.2"
-  "\\color\\1 1 1"
-  "\\size\\2"
+  "\\color\\.7 .7 .7"
+  "\\size\\1"
   "\\lifetime\\2"
-  "\\lighting\\1"
+  "\\lighting\\.4"
   "\\density\\.33"
   "\\hz\\10";
 
 static const char *cg_dust_preset_fizz =
   "sprite\\ripple_0"
   "\\velocity\\0 0 10"
-  "\\color\\1 1 1"
-  "\\size\\3"
-  "\\size_velocity\\8"
+  "\\color\\.6 .6 .6"
+  "\\size\\2"
+  "\\size_velocity\\4"
   "\\lifetime\\.5"
-  "\\lighting\\1"
+  "\\lighting\\.4"
   "\\density\\.1"
   "\\hz\\10";
 
