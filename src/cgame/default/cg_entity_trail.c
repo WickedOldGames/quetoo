@@ -334,6 +334,50 @@ static void Cg_GrenadeTrail(cl_entity_t *ent, const vec3_t start, const vec3_t e
   });
 }
 
+/**
+ * @brief Renders the Quake grenade projectile trail with smoke and a warm fuse-ember glow.
+ */
+static void Cg_QuakeGrenadeTrail(cl_entity_t *ent, const vec3_t start, const vec3_t end) {
+
+  if (Cg_TrailContents(start, end) & CONTENTS_MASK_LIQUID) {
+    Cg_BubbleTrail(ent, start, end, 6.f);
+  }
+
+  // Smoke trail
+  vec3_t origin, dir;
+  const int32_t count = Cg_TrailCount(end, 12.f, ent, TRAIL_PRIMARY, &origin, &dir);
+
+  if (count) {
+    const float step = 1.f / count;
+
+    for (int32_t i = 0; i <= count; i++) {
+      Cg_AddSprite(&(cg_sprite_t) {
+        .atlas_image = cg_sprite_smoke,
+        .origin = Vec3_Mix(end, origin, (step * i) + RandomRangef(-.5f, .5f)),
+        .velocity = Vec3(RandomRangef(-5.f, 5.f), RandomRangef(-5.f, 5.f), RandomRangef(10.f, 20.f)),
+        .lifetime = RandomRangef(600.f, 900.f),
+        .color = Vec3(.6f, .6f, .6f),
+        .size = 1.5f,
+        .size_velocity = 10.f,
+        .rotation = RandomRadian(),
+        .rotation_velocity = RandomRangef(.2f, .8f),
+        .lighting = 1.f,
+      });
+    }
+  }
+
+  // Dynamic light — warm orange ember pulse from the burning fuse
+  const float pulse = sinf(cgi.client->unclamped_time * .025f) * .5f + .5f;
+
+  Cg_AddLight(&(cg_light_t) {
+    .origin = end,
+    .radius = 120.f + 40.f * pulse,
+    .color = Vec3(.9f, .5f, .1f),
+    .intensity = 1.5f + .5f * pulse,
+    .source = ent,
+  });
+}
+
 static void Cg_FireFlyTrail_Think(cg_sprite_t *sprite, float life, float delta) {
 
   sprite->velocity = Vec3_Fmaf(sprite->velocity, delta * 1000.f, Vec3_RandomDir());
@@ -1203,6 +1247,9 @@ void Cg_EntityTrail(cl_entity_t *ent) {
       break;
     case TRAIL_GRENADE:
       Cg_GrenadeTrail(ent, start, end);
+      break;
+    case TRAIL_QUAKE_GRENADE:
+      Cg_QuakeGrenadeTrail(ent, start, end);
       break;
     case TRAIL_ROCKET:
       Cg_RocketTrail(ent, start, end);

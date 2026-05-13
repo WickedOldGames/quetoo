@@ -632,10 +632,8 @@ void G_QuakeGrenadeProjectile(g_entity_t *ent, const vec3_t start, const vec3_t 
   projectile->Touch = G_QuakeGrenadeProjectile_Touch;
   projectile->touch_time = g_level.time;
   projectile->hit_sound = g_media.sounds.quake_grenade_hit;
-  projectile->s.trail = TRAIL_GRENADE;
+  projectile->s.trail = TRAIL_QUAKE_GRENADE;
   projectile->s.model1 = g_media.models.quake_grenade;
-
-  gi.LinkEntity(projectile);
 }
 
 // tossing a hand grenade
