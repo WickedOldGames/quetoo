@@ -84,10 +84,9 @@ static void G_misc_teleporter_Touch(g_entity_t *ent, g_entity_t *other, const cm
     .atten = SOUND_ATTEN_LINEAR
   }, MULTICAST_PHS);
 
-  const vec3_t dest_sound_origin = Vec3_Add(dest->s.origin, Vec3_Scale(forward, 32.0));
   G_MulticastSound(&(const g_play_sound_t) {
     .index = sound_index,
-    .origin = &dest_sound_origin,
+    .origin = &dest->s.origin,
     .atten = SOUND_ATTEN_LINEAR
   }, MULTICAST_PHS);
 
