@@ -3199,7 +3199,7 @@ static g_item_t g_items[] = {
     .tag = POWERUP_INVISIBILITY,
     .priority = 0.80,
     .precaches = "powerups/invisibility/expire.wav",
-    .light_color = { { .6f, .8f, 1.f } },
+    .light_color = { { 1.f, .9f, 0.f } },
     .light_radius = 120.f
   },
 
