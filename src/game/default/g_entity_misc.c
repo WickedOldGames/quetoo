@@ -77,7 +77,7 @@ static void G_misc_teleporter_Touch(g_entity_t *ent, g_entity_t *other, const cm
   // play the teleport sound at the entry point and at the destination
   const char *sound = gi.EntityValue(ent->def, "sound")->nullable_string;
   if (!sound) {
-    if (g_level.items == ITEMS_QUAKE) {
+    if (g_level.items == ITEMS_QUAKE && !g_strcmp0(ent->classname, "trigger_teleporter")) {
       sound = va("misc/quake_teleport%d", RandomRangei(1, 6));
     } else {
       sound = "misc/teleport";
