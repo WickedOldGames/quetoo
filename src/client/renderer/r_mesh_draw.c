@@ -136,7 +136,7 @@ static void R_DrawMeshEntityShellEffect(const r_entity_t *e, const r_mesh_face_t
   R_DrawMeshEntityMaterialStage(e, face, mesh, &(const r_stage_t) {
     .cm = &(const cm_stage_t) {
       .flags = STAGE_COLOR | STAGE_SHELL | STAGE_SCROLL_S | STAGE_SCROLL_T,
-      .color = Color4fv(Vec3_ToVec4(e->shell, .33f)),
+      .color = Color4fv(Vec3_ToVec4(e->shell, .55f)),
       .blend = { GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA },
       .scroll = { 0.25f, 0.25f },
       .shell = { (e->effects & EF_WEAPON) ? .33f : 1.f }

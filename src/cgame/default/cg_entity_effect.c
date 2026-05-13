@@ -101,10 +101,10 @@ void Cg_EntityEffects(cl_entity_t *ent, r_entity_t *e) {
   }
 
   if (e->effects & EF_QUAD) {
-    const float pulse = 2.5f + sinf(cgi.client->unclamped_time * 0.006f) * .5f;
+    const float pulse = 4.0f + sinf(cgi.client->unclamped_time * 0.006f) * .75f;
     const cg_light_t l = {
       .origin = e->origin,
-      .radius = 250.0,
+      .radius = 350.0,
       .color = Vec3(.3f, .7f, .7f),
       .intensity = pulse,
       .source = ent,
@@ -116,10 +116,10 @@ void Cg_EntityEffects(cl_entity_t *ent, r_entity_t *e) {
   }
 
   if (e->effects & EF_PENTAGRAM) {
-    const float pulse = 2.5f + sinf(cgi.client->unclamped_time * 0.006f) * .5f;
+    const float pulse = 4.0f + sinf(cgi.client->unclamped_time * 0.006f) * .75f;
     const cg_light_t l = {
       .origin = e->origin,
-      .radius = 250.0,
+      .radius = 350.0,
       .color = Vec3(.9f, .1f, .1f),
       .intensity = pulse,
       .source = ent,
