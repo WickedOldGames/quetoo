@@ -27,6 +27,7 @@ DATADIR   = $(INSTALL)/Contents/Resources
 SNAPSHOT        = $(TARGET)/Quetoo-$(BUILD).dmg
 BUNDLE_SNAPSHOT = $(TARGET)/Quetoo-bundle-$(BUILD).dmg
 VOLUME_NAME     = "Quetoo"
+DMG_ROOT        = $(TARGET)/dmg-root
 
 all: configure compile pre-install install install-lib move-resources
 
@@ -93,8 +94,14 @@ sign:
 		--sign $(CODESIGN_IDENTITY) $(INSTALL)
 	codesign --verify --deep $(INSTALL)
 
-dmg:
-	hdiutil create -volname $(VOLUME_NAME) -srcfolder $(INSTALL) \
+dmg-layout:
+	rm -rf "$(DMG_ROOT)"
+	mkdir -p "$(DMG_ROOT)"
+	cp -R "$(INSTALL)" "$(DMG_ROOT)/"
+	ln -s /Applications "$(DMG_ROOT)/Applications"
+
+dmg: dmg-layout
+	hdiutil create -volname $(VOLUME_NAME) -srcfolder "$(DMG_ROOT)" \
 		-ov -format UDZO $(SNAPSHOT)
 
 # Notarize and staple the binary DMG.
@@ -118,8 +125,8 @@ bundle-sign:
 		--sign $(CODESIGN_IDENTITY) $(INSTALL)
 	codesign --verify --deep $(INSTALL)
 
-bundle-dmg:
-	hdiutil create -volname $(VOLUME_NAME) -srcfolder $(INSTALL) \
+bundle-dmg: dmg-layout
+	hdiutil create -volname $(VOLUME_NAME) -srcfolder "$(DMG_ROOT)" \
 		-ov -format UDZO $(BUNDLE_SNAPSHOT)
 
 # Notarize and staple the bundle DMG.
@@ -136,4 +143,5 @@ clean:
 	rm -rf $(TARGET)/*
 
 .PHONY: all configure compile pre-install install install-lib move-resources \
-        sign dmg notarize bundle-data bundle-sign bundle-dmg bundle-notarize clean
+        sign dmg-layout dmg notarize bundle-data bundle-sign \
+        bundle-dmg bundle-notarize clean
