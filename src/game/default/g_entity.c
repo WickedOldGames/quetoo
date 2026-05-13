@@ -677,6 +677,9 @@ static void G_worldspawn_EnumerateMusic(const char *path, void *data) {
   GArray *tracks = (GArray *) data;
   char name[MAX_QPATH];
   StripExtension(Basename(path), name);
+  if (g_strcmp0(name, "gtdstudio-explore") == 0) {
+    return;
+  }
   g_array_append_val(tracks, name);
 }
 
