@@ -110,8 +110,9 @@ bool G_PickupWeapon(g_client_t *cl, g_entity_t *ent) {
   // auto-switch the weapon if applicable
   const uint16_t auto_switch = cl->persistent.auto_switch;
 
-  if (auto_switch == 1) { // switch from blaster
-    if (cl->weapon == g_media.items.weapons[WEAPON_BLASTER]) {
+  if (auto_switch == 1) { // switch from starting weapon
+    const g_weapon_tag_t starting_tag = (g_level.items == ITEMS_QUAKE) ? WEAPON_QUAKE_SHOTGUN : WEAPON_BLASTER;
+    if (cl->weapon == g_media.items.weapons[starting_tag]) {
       G_ChangeWeapon(cl, ent->item);
     }
   } else if (auto_switch == 2) { // switch to all
