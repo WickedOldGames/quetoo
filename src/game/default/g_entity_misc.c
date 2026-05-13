@@ -74,9 +74,16 @@ static void G_misc_teleporter_Touch(g_entity_t *ent, g_entity_t *other, const cm
 
   other->velocity.z = 150.0;
 
-  // play the teleport sound at the entry point and 32 units in front of the destination
+  // play the teleport sound at the entry point and at the destination
   const char *sound = gi.EntityValue(ent->def, "sound")->nullable_string;
-  const int32_t sound_index = gi.SoundIndex(sound ? sound : "misc/teleport");
+  if (!sound) {
+    if (g_level.items == ITEMS_QUAKE) {
+      sound = va("misc/quake_teleport%d", RandomRangei(1, 6));
+    } else {
+      sound = "misc/teleport";
+    }
+  }
+  const int32_t sound_index = gi.SoundIndex(sound);
 
   G_MulticastSound(&(const g_play_sound_t) {
     .index = sound_index,
