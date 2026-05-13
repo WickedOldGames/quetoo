@@ -97,13 +97,15 @@ static const char *cg_dust_preset_bubbles =
 
 static const char *cg_dust_preset_fizz =
   "sprite\\ripple_0"
-  "\\velocity\\0 0 10"
+  "\\velocity\\0 0 8"
+  "\\acceleration\\4 -4 0"
   "\\color\\.6 .6 .6"
-  "\\size\\2"
+  "\\size\\.1"
   "\\size_velocity\\4"
+  "\\size_acceleration\\16"
   "\\lifetime\\.5"
-  "\\lighting\\.4"
-  "\\density\\.1"
+  "\\lighting\\1"
+  "\\density\\4"
   "\\hz\\10";
 
 // Sprite is assigned from cg_sprite_flame (atlas image) — no "sprite" key needed.
