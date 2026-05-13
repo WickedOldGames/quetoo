@@ -401,7 +401,7 @@ static void Cg_misc_flame_Think(cg_entity_t *self) {
         .lifetime = Cg_AnimationLifetime(anim, RandomRangef(10.f, 20.f)),
         .size = sz,
         .size_velocity = sz * .5f,
-        .color = Vec3_Scale(Vec3_One(), RandomRangef(.35f, .65f)),
+        .color = Vec3_Scale(Vec3_One(), RandomRangef(.15f, .65f)),
         .lighting = 1.f,
       })) {
       break;

@@ -468,7 +468,7 @@ static void Cg_RocketTrail(cl_entity_t *ent, const vec3_t start, const vec3_t en
           .rotation = RandomRadian(),
           .size = Randomf() * 5.f + 10.f,
           .size_velocity = Randomf() * 5.f + 10.f,
-          .color = Vec3(1.f, 1.f, 1.f),
+          .color = Vec3(.5f, .5f, .5f),
           .lighting = 1.f
         })) {
         break;
@@ -483,7 +483,7 @@ static void Cg_RocketTrail(cl_entity_t *ent, const vec3_t start, const vec3_t en
           .rotation = RandomRadian(),
           .size = Randomf() * 5.f + 10.f,
           .size_velocity = Randomf() * 5.f + 10.f,
-          .color = Vec3(1.f, 1.f, 1.f),
+          .color = Vec3(.5f, .5f, .5f),
           .lighting = 1.f
         })) {
         break;

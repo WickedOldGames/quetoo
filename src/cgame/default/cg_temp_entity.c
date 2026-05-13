@@ -643,7 +643,7 @@ static void Cg_ExplosionEffect(const vec3_t org, const vec3_t dir) {
     .size = 150.f,
     .size_velocity = 40.f,
     .rotation = RandomRadian(),
-    .color = Vec3(1.f, 1.f, 1.f),
+    .color = Vec3(.5f, .5f, .5f),
   });
 
   // billboard explosion 2
@@ -654,7 +654,7 @@ static void Cg_ExplosionEffect(const vec3_t org, const vec3_t dir) {
     .size = 250.f,
     .size_velocity = 40.f,
     .rotation = RandomRadian(),
-    .color = Vec3(1.f, 1.f, 1.f),
+    .color = Vec3(.5f, .5f, .5f),
   });
 
   // decal explosion
@@ -665,7 +665,7 @@ static void Cg_ExplosionEffect(const vec3_t org, const vec3_t dir) {
     .size = 250.f,
     .size_velocity = 40.f,
     .rotation = RandomRadian(),
-    .color = Vec3(1.f, 1.f, 1.f),
+    .color = Vec3(.5f, .5f, .5f),
     .dir = dir
   });
 
@@ -678,7 +678,7 @@ static void Cg_ExplosionEffect(const vec3_t org, const vec3_t dir) {
     .size_velocity = 700.f,
     .size_acceleration = -700.f,
     .rotation = RandomRadian(),
-    .color = Vec3(1.f, 1.f, 1.f),
+    .color = Vec3(.5f, .5f, .5f),
     .dir = dir
   });
 
@@ -689,7 +689,7 @@ static void Cg_ExplosionEffect(const vec3_t org, const vec3_t dir) {
     .size = 300.f,
     .rotation = RandomRadian(),
     .atlas_image = cg_sprite_explosion_glow,
-    .color = Vec3(1.f, 1.f, 1.f),
+    .color = Vec3(.5f, .5f, .5f),
     .lighting = 1.f
   });
 
