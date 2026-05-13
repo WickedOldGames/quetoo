@@ -163,6 +163,79 @@ static void Cg_ShotgunFlash(const cl_entity_t *ent) {
 }
 
 /**
+ * @brief Quake shotgun muzzle flash.
+ */
+static void Cg_QuakeShotgunFlash(const cl_entity_t *ent) {
+
+  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(6.f, 0.f, 8.f));
+
+  vec3_t forward, right;
+  Vec3_Vectors(ent->angles, &forward, &right, NULL);
+
+  Cg_AddLight(&(cg_light_t) {
+    .origin = org,
+    .radius = 120.f,
+    .color = Vec3(.9f, .7f, .4f),
+    .intensity = 3.f,
+    .decay = 250,
+  });
+
+  if (cgi.PointContents(ent->origin) & CONTENTS_MASK_LIQUID) {
+    Cg_BubbleTrail(NULL, org, Vec3_Fmaf(ent->origin, 40.f, forward), 4.f);
+    return;
+  }
+
+  // flash burst
+  Cg_AddSprite(&(cg_sprite_t) {
+    .animation = cg_sprite_impact_spark_01,
+    .origin = Vec3_Fmaf(org, 4.f, forward),
+    .rotation = RandomRadian(),
+    .size = 30.f,
+    .lifetime = 180.f,
+    .color = Vec3(1.f, .9f, .7f),
+  });
+
+  // flame lick
+  Cg_AddSprite(&(cg_sprite_t) {
+    .atlas_image = cg_sprite_flame,
+    .origin = Vec3_Fmaf(org, 6.f, forward),
+    .velocity = Vec3_Scale(forward, 60.f),
+    .lifetime = 200.f,
+    .size = 10.f,
+    .size_velocity = -30.f,
+    .rotation = RandomRadian(),
+    .color = ColorHSV(RandomRangef(25.f, 45.f), 1.f, 1.f).vec3,
+  });
+
+  // spark dots
+  for (int32_t i = 0; i < 4; i++) {
+    Cg_AddSprite(&(cg_sprite_t) {
+      .atlas_image = cg_sprite_impact_spark_01_dot,
+      .origin = Vec3_Fmaf(org, 4.f, forward),
+      .velocity = Vec3_Scale(Vec3_Mix(Vec3_RandomDir(), forward, .5f), RandomRangef(60.f, 120.f)),
+      .size = RandomRangef(2.f, 4.f),
+      .size_velocity = -8.f,
+      .lifetime = RandomRangef(150.f, 300.f),
+      .color = Vec3(1.f, .9f, .7f),
+    });
+  }
+
+  // smoke
+  Cg_AddSprite(&(cg_sprite_t) {
+    .atlas_image = cg_sprite_smoke,
+    .origin = org,
+    .velocity = Vec3_Scale(forward, 20.f),
+    .lifetime = 800,
+    .size = 3.f,
+    .size_velocity = 20.f,
+    .rotation = RandomRadian(),
+    .rotation_velocity = RandomRangef(.2f, .6f),
+    .color = Vec3(.6f, .6f, .6f),
+    .lighting = 1.f,
+  });
+}
+
+/**
  * @brief Super shotgun muzzle flash.
  */
 static void Cg_SuperShotgunFlash(const cl_entity_t *ent) {
@@ -442,7 +515,7 @@ static void Cg_GrenadeFlash(const cl_entity_t *ent) {
  */
 static void Cg_QuakeGrenadeFlash(const cl_entity_t *ent) {
 
-  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(4.f, 0.f, 29.f));
+  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(8.f, 0.f, 6.f));
 
   vec3_t forward, right;
   Vec3_Vectors(ent->angles, &forward, &right, NULL);
@@ -932,7 +1005,7 @@ void Cg_ParseMuzzleFlash(void) {
       break;
     case MZ_QUAKE_SHOTGUN:
       sample = cg_sample_quake_shotgun_fire;
-      Cg_ShotgunFlash(ent);
+      Cg_QuakeShotgunFlash(ent);
       pitch = 3;
       break;
     case MZ_QUAKE_SUPER_SHOTGUN:
