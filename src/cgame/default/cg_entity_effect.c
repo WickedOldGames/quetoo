@@ -188,9 +188,13 @@ void Cg_EntityEffects(cl_entity_t *ent, r_entity_t *e) {
 
   if (e->effects & EF_LIGHT) {
     const color_t color = Color32_Color(ent->current.color);
+    float radius = e->termination.x;
+    if (e->effects & EF_LIGHT_PULSE) {
+      radius *= 1.f + .25f * sinf(cgi.client->unclamped_time * .003f);
+    }
     const cg_light_t l = {
       .origin = e->origin,
-      .radius = e->termination.x,
+      .radius = radius,
       .color = color.vec3,
       .intensity = 1.f,
       .source = ent

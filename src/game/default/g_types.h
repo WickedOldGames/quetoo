@@ -368,6 +368,7 @@ typedef enum {
 #define EF_TEAM_TINT  (EF_GAME << 13) // tint by the team color provided
 #define EF_INVISIBILITY (EF_GAME << 14) // ring of shadows (invisible shell)
 #define EF_INVULNERABILITY   (EF_GAME << 15) // invulnerability shell
+#define EF_LIGHT_PULSE (EF_GAME << 16) // pulse EF_LIGHT radius
 
 #define EF_CTF_MASK   (EF_CTF_RED | EF_CTF_BLUE | EF_CTF_YELLOW | EF_CTF_GREEN)
 
@@ -761,6 +762,16 @@ typedef struct g_item_s {
    * @brief Space-separated list of assets to precache.
    */
   const char *precaches;
+
+  /**
+   * @brief RGB color for EF_LIGHT emission. Ignored if light_radius is 0.
+   */
+  vec3_t light_color;
+
+  /**
+   * @brief Base radius for EF_LIGHT emission. 0 means no light.
+   */
+  float light_radius;
 
   /**
    * @brief Index in the global item list; calculated at init.

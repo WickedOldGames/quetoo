@@ -1358,6 +1358,12 @@ void G_SpawnItem(g_entity_t *ent, const g_item_t *item) {
 
   ent->s.effects = item->effects;
 
+  if (item->light_radius) {
+    ent->s.effects |= EF_LIGHT | EF_LIGHT_PULSE;
+    ent->s.color = Color_Color32(Color3fv(item->light_color));
+    ent->s.termination.x = item->light_radius;
+  }
+
   // weapons override the health field to store their ammo count
   if (ent->item->type == ITEM_WEAPON) {
     const g_item_t *ammo = ent->item->ammo_item;
@@ -2673,7 +2679,7 @@ static g_item_t g_items[] = {
     .Think = NULL,
     .pickup_sound = "powerups/quad/pickup.wav",
     .model = "models/powerups/quad/tris.obj",
-    .effects = EF_BOB | EF_ROTATE ,
+    .effects = EF_BOB | EF_ROTATE,
     .icon = "pics/i_quad",
     .name = "Quad Damage",
     .quantity = 0,
@@ -2681,7 +2687,9 @@ static g_item_t g_items[] = {
     .type = ITEM_POWERUP,
     .tag = POWERUP_QUAD,
     .priority = 0.80,
-    .precaches = "powerups/quad/attack.wav powerups/quad/expire.wav"
+    .precaches = "powerups/quad/attack.wav powerups/quad/expire.wav",
+    .light_color = { { .2f, .4f, 1.f } },
+    .light_radius = 160.f
   },
 
   {
@@ -3184,7 +3192,9 @@ static g_item_t g_items[] = {
     .type = ITEM_POWERUP,
     .tag = POWERUP_INVISIBILITY,
     .priority = 0.80,
-    .precaches = "powerups/invisibility/expire.wav"
+    .precaches = "powerups/invisibility/expire.wav",
+    .light_color = { { .6f, .8f, 1.f } },
+    .light_radius = 120.f
   },
 
   /*QUAKED item_invulnerability (.8 .1 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
@@ -3217,7 +3227,9 @@ static g_item_t g_items[] = {
     .type = ITEM_POWERUP,
     .tag = POWERUP_INVULNERABILITY,
     .priority = 0.90,
-    .precaches = "powerups/invulnerability/expire.wav"
+    .precaches = "powerups/invulnerability/expire.wav",
+    .light_color = { { 1.f, .2f, .2f } },
+    .light_radius = 160.f
   },
 };
 
