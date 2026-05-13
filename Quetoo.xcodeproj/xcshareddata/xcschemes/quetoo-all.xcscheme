@@ -144,8 +144,12 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "+map claustrophobopolis"
+            argument = "+map abase"
             isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "+map claustrophobopolis"
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "+give all"

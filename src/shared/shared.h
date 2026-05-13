@@ -203,7 +203,7 @@ typedef struct {
   /**
    * @brief Bit mask of active visual effects (EF_ROTATE, EF_BOB, etc.).
    */
-  uint16_t effects;
+  uint32_t effects;
 
   /**
    * @brief Trail effect identifier (`entity_trail_t`).

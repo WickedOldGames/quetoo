@@ -479,7 +479,7 @@ void Net_WriteDeltaEntity(mem_buf_t *msg, const entity_state_t *from, const enti
   }
 
   if (bits & U_EFFECTS) {
-    Net_WriteShort(msg, to->effects);
+    Net_WriteLong(msg, (int32_t) to->effects);
   }
 
   if (bits & U_TRAIL) {
@@ -870,7 +870,7 @@ void Net_ReadDeltaEntity(mem_buf_t *msg, const entity_state_t *from, entity_stat
   }
 
   if (bits & U_EFFECTS) {
-    to->effects = Net_ReadShort(msg);
+    to->effects = (uint32_t) Net_ReadLong(msg);
   }
 
   if (bits & U_TRAIL) {

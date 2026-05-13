@@ -28,7 +28,7 @@
  * @brief Game protocol version (protocol minor version). To be incremented
  * whenever the game protocol changes.
  */
-#define PROTOCOL_MINOR 1024
+#define PROTOCOL_MINOR 1025
 
 /**
  * @brief Game-specific server protocol commands. These are parsed directly by
@@ -361,8 +361,8 @@ typedef enum {
 #define EF_QUAD       (EF_GAME << 6) // blue-green shell
 #define EF_CTF_RED    (EF_GAME << 7) // carrying the red flag
 #define EF_CTF_BLUE   (EF_GAME << 8) // carrying the blue flag
-#define EF_CTF_YELLOW (EF_GAME << 9) // carrying the yellow flag
-#define EF_CTF_GREEN  (EF_GAME << 10) // carrying the green flag
+#define EF_CTF_GREEN  (EF_GAME << 9) // carrying the green flag
+#define EF_CTF_YELLOW (EF_GAME << 10) // carrying the yellow flag
 #define EF_DESPAWN    (EF_GAME << 11) // translucent
 #define EF_LIGHT      (EF_GAME << 12) // colored light
 #define EF_TEAM_TINT  (EF_GAME << 13) // tint by the team color provided
