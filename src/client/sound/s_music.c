@@ -113,6 +113,20 @@ void S_ClearPlaylist(void) {
 }
 
 /**
+ * @brief Returns the currently playing music track, or NULL if none.
+ */
+s_music_t *S_CurrentMusic(void) {
+  return s_music_state.current_music;
+}
+
+/**
+ * @brief Returns true if @p music is in the current playlist.
+ */
+bool S_PlaylistContains(const s_music_t *music) {
+  return g_list_find(s_music_state.playlist, (gconstpointer) music) != NULL;
+}
+
+/**
  * @brief Loads the music by the specified name.
  */
 s_music_t *S_LoadMusic(const char *name) {
