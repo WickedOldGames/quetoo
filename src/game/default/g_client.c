@@ -947,6 +947,16 @@ static void G_ClientRespawn_(g_client_t *cl) {
     ent->s.model1 = MODEL_CLIENT;
     ent->s.event = EV_CLIENT_TELEPORT;
 
+    const int32_t teleport_sound = g_level.items == ITEMS_QUAKE
+      ? gi.SoundIndex(va("misc/quake_teleport%d", RandomRangei(1, 6)))
+      : g_media.sounds.teleport;
+
+    G_MulticastSound(&(const g_play_sound_t) {
+      .index = teleport_sound,
+      .origin = &ent->s.origin,
+      .atten = SOUND_ATTEN_LINEAR
+    }, MULTICAST_PHS);
+
     G_SetAnimation(cl, ANIM_TORSO_STAND1, true);
     G_SetAnimation(cl, ANIM_LEGS_JUMP1, true);
 
