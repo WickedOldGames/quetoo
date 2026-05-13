@@ -1849,7 +1849,7 @@ typedef struct r_entity_s {
   /**
    * @brief The entity shell color for flag carriers, etc.
    */
-  vec3_t shell;
+  vec4_t shell;
 
   /**
    * @brief Tint maps allow users to customize their player skins.

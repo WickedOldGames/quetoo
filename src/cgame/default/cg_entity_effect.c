@@ -97,7 +97,8 @@ void Cg_EntityEffects(cl_entity_t *ent, r_entity_t *e) {
 
   if (e->effects & EF_RESPAWN) {
     const vec3_t color = Cg_ClientEffectColor(ent->current.client, NULL, 0.167f);
-    e->shell = Vec3_Fmaf(e->shell, 0.5f, color);
+    e->shell = Vec4_Fmaf(e->shell, 0.5f, Vec3_ToVec4(color, 0.f));
+    e->shell.w = fmaxf(e->shell.w, 0.40f);
   }
 
   if (e->effects & EF_QUAD) {
@@ -112,7 +113,8 @@ void Cg_EntityEffects(cl_entity_t *ent, r_entity_t *e) {
 
     Cg_AddLight(&l);
 
-    e->shell = Vec3_Fmaf(e->shell, 1.f, l.color);
+    e->shell = Vec4_Fmaf(e->shell, 1.f, Vec3_ToVec4(l.color, 0.f));
+    e->shell.w = fmaxf(e->shell.w, 0.65f);
   }
 
   if (e->effects & EF_PENTAGRAM) {
@@ -127,7 +129,8 @@ void Cg_EntityEffects(cl_entity_t *ent, r_entity_t *e) {
 
     Cg_AddLight(&l);
 
-    e->shell = Vec3_Fmaf(e->shell, 1.f, l.color);
+    e->shell = Vec4_Fmaf(e->shell, 1.f, Vec3_ToVec4(l.color, 0.f));
+    e->shell.w = fmaxf(e->shell.w, 0.65f);
   }
 
   if (e->effects & EF_CTF_MASK) {
@@ -147,13 +150,15 @@ void Cg_EntityEffects(cl_entity_t *ent, r_entity_t *e) {
 
         Cg_AddLight(&l);
 
-        e->shell = Vec3_Fmaf(e->shell, 1.f, l.color);
+        e->shell = Vec4_Fmaf(e->shell, 1.f, Vec3_ToVec4(l.color, 0.f));
+        e->shell.w = fmaxf(e->shell.w, 0.45f);
       }
     }
   }
 
-  if (Vec3_Length(e->shell) > 0.0) {
-    e->shell = Vec3_Normalize(e->shell);
+  const vec3_t shell_rgb = Vec3(e->shell.x, e->shell.y, e->shell.z);
+  if (Vec3_Length(shell_rgb) > 0.0f) {
+    e->shell = Vec3_ToVec4(Vec3_Normalize(shell_rgb), e->shell.w);
     e->effects |= EF_SHELL;
   }
 
