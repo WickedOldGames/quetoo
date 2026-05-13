@@ -545,7 +545,7 @@ jobs:
           --title "Quetoo ${{ github.ref_name }}" \
           --notes "Quetoo ${{ github.ref_name }}
 
-        ### Bundles (binaries + game data, ready to play)
+        ### New Install
         | Platform | Download |
         |----------|----------|
         | macOS (Universal) | quetoo-bundle-universal-apple-darwin.dmg |
@@ -553,7 +553,7 @@ jobs:
         | Linux (arm64 archive) | quetoo-bundle-aarch64-pc-linux.tar.gz |
         | Windows (x86_64) | quetoo-bundle-x86_64-pc-windows.zip |
 
-        ### Binaries only (for updates)
+        ### Update from Existing Install
         | Platform | Download |
         |----------|----------|
         | macOS (Universal) | quetoo-universal-apple-darwin.dmg |
