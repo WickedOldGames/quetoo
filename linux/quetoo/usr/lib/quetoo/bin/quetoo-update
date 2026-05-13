@@ -112,11 +112,20 @@ EOF
   done
 fi
 
-# Capture enabled instances now, before the package install stops them.
+# Capture dedicated instances now, before package scripts stop services.
+# Include both enabled and currently loaded instances, but skip the
+# template unit itself (quetoo-dedicated@.service).
 INSTANCES=()
 while IFS= read -r unit; do
   INSTANCES+=("${unit}")
-done < <(systemctl list-unit-files --plain --no-legend 'quetoo-dedicated@*.service' | awk '$2 == "enabled" {print $1}')
+done < <(
+  {
+    systemctl list-unit-files --plain --no-legend 'quetoo-dedicated@*.service' \
+      | awk '$1 ~ /^quetoo-dedicated@.+\.service$/ && $2 == "enabled" {print $1}'
+    systemctl list-units --all --plain --no-legend 'quetoo-dedicated@*.service' \
+      | awk '$1 ~ /^quetoo-dedicated@.+\.service$/ {print $1}'
+  } | sort -u
+)
 
 # Download and install packages.
 TMPDIR=$(mktemp -d)
