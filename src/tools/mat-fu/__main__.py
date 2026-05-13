@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Normalmap-fu: comprehensive GUI tool for authoring Quetoo per-pixel material
+Mat-fu: comprehensive GUI tool for authoring Quetoo per-pixel material
 assets (diffuse, normalmap+heightmap, specularmap).
 
 Run with:
@@ -641,7 +641,7 @@ PARAM_GROUPS = {
 class NormalmapFuApp:
   def __init__(self, root: tk.Tk):
     self.root = root
-    self.root.title("Normalmap-fu")
+    self.root.title("Mat-fu")
     self.root.configure(bg="#2b2b2b")
     self.root.geometry("1700x1000")
     self.root.minsize(1100, 750)
