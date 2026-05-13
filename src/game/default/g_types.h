@@ -977,7 +977,7 @@ typedef struct {
 
     uint16_t quake_pentagram_pickup;
     uint16_t quake_pentagram_expire;
-    uint16_t quake_pentagram_defend;
+    uint16_t quake_pentagram_protect;
   } sounds;
 
   struct g_media_images_t {
