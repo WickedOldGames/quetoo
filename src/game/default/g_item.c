@@ -239,27 +239,27 @@ g_entity_t *G_TossQuadDamage(g_client_t *cl) {
 }
 
 /**
- * @brief Handles pickup of the Ring of Shadows, granting temporary invisibility.
+ * @brief Handles pickup of the Invisibility, granting temporary invisibility.
  */
-static bool G_PickupShadows(g_client_t *cl, g_entity_t *ent) {
+static bool G_PickupInvisibility(g_client_t *cl, g_entity_t *ent) {
 
-  if (cl->inventory[g_media.items.powerups[POWERUP_QUAKE_SHADOWS]->index]) {
+  if (cl->inventory[g_media.items.powerups[POWERUP_INVISIBILITY]->index]) {
     return false; // already have it
   }
 
-  cl->inventory[g_media.items.powerups[POWERUP_QUAKE_SHADOWS]->index] = 1;
+  cl->inventory[g_media.items.powerups[POWERUP_INVISIBILITY]->index] = 1;
 
   if (ent->spawn_flags & SF_ITEM_DROPPED) {
-    cl->shadows_time = ent->next_think;
+    cl->invisibility_time = ent->next_think;
   } else {
-    cl->shadows_time = g_level.time + SECONDS_TO_MILLIS(g_balance_quake_shadows_time->value);
-    G_SetItemRespawn(ent, SECONDS_TO_MILLIS(g_balance_quake_shadows_respawn_time->value));
+    cl->invisibility_time = g_level.time + SECONDS_TO_MILLIS(g_balance_invisibility_time->value);
+    G_SetItemRespawn(ent, SECONDS_TO_MILLIS(g_balance_invisibility_respawn_time->value));
   }
 
   cl->entity->s.effects |= EF_INVISIBILITY;
 
   G_MulticastSound(&(const g_play_sound_t) {
-    .index = g_media.sounds.quake_shadows_pickup,
+    .index = g_media.sounds.invisibility_pickup,
     .entity = cl->entity,
     .atten = SOUND_ATTEN_LINEAR
   }, MULTICAST_PHS);
@@ -268,25 +268,25 @@ static bool G_PickupShadows(g_client_t *cl, g_entity_t *ent) {
 }
 
 /**
- * @brief Drops the Ring of Shadows from the client's inventory as a world entity.
+ * @brief Drops the Invisibility from the client's inventory as a world entity.
  */
-g_entity_t *G_TossShadows(g_client_t *cl) {
+g_entity_t *G_TossInvisibility(g_client_t *cl) {
 
-  if (!cl->inventory[g_media.items.powerups[POWERUP_QUAKE_SHADOWS]->index]) {
+  if (!cl->inventory[g_media.items.powerups[POWERUP_INVISIBILITY]->index]) {
     return NULL;
   }
 
-  g_entity_t *shadows = G_DropItem(cl, g_media.items.powerups[POWERUP_QUAKE_SHADOWS]);
+  g_entity_t *item = G_DropItem(cl, g_media.items.powerups[POWERUP_INVISIBILITY]);
 
-  if (shadows) {
-    shadows->timestamp = cl->shadows_time;
+  if (item) {
+    item->timestamp = cl->invisibility_time;
   }
 
-  cl->shadows_time = 0;
-  cl->inventory[g_media.items.powerups[POWERUP_QUAKE_SHADOWS]->index] = 0;
+  cl->invisibility_time = 0;
+  cl->inventory[g_media.items.powerups[POWERUP_INVISIBILITY]->index] = 0;
   cl->entity->s.effects &= ~EF_INVISIBILITY;
 
-  return shadows;
+  return item;
 }
 
 /**
@@ -3154,8 +3154,8 @@ static g_item_t g_items[] = {
     "weapons/lightning/discharge.wav"
   },
 
-  /*QUAKED item_quake_shadows (.2 .2 .4) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Ring of Shadows. Makes the player nearly invisible for 30 seconds.
+  /*QUAKED item_invisibility (.2 .2 .4) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Invisibility. Makes the player nearly invisible for 30 seconds.
 
    -------- Keys --------
    team : The team name for alternating item spawns.
@@ -3166,25 +3166,25 @@ static g_item_t g_items[] = {
    hover : Item will spawn where it was placed in the map and won't drop the floor.
 
    -------- Radiant config --------
-   model="models/powerups/quake_shadows/tris.obj"
+   model="models/powerups/invisibility/tris.obj"
    */
   {
-    .classname = "item_quake_shadows",
-    .Pickup = G_PickupShadows,
+    .classname = "item_invisibility",
+    .Pickup = G_PickupInvisibility,
     .Use = NULL,
     .Drop = NULL,
     .Think = NULL,
     .pickup_sound = "powerups/common/pickup.wav",
-    .model = "models/powerups/quake_shadows/tris.obj",
+    .model = "models/powerups/invisibility/tris.obj",
     .effects = EF_ROTATE,
-    .icon = "pics/i_quake_shadows",
-    .name = "Ring of Shadows",
+    .icon = "pics/i_invisibility",
+    .name = "Invisibility",
     .quantity = 0,
     .ammo = NULL,
     .type = ITEM_POWERUP,
-    .tag = POWERUP_QUAKE_SHADOWS,
+    .tag = POWERUP_INVISIBILITY,
     .priority = 0.80,
-    .precaches = "models/powerups/quake_eyes/tris.obj powerups/quad/expire.wav"
+    .precaches = "powerups/invisibility/expire.wav"
   },
 
   /*QUAKED item_invulnerability (.8 .1 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
@@ -3283,11 +3283,7 @@ bool G_ItemAvailable(const g_item_t *item) {
   }
 
   if (item->type == ITEM_POWERUP) {
-    if (g_level.items == ITEMS_QUAKE) {
-      return item->tag >= POWERUP_QUAKE_SHADOWS;
-    } else {
-      return item->tag < POWERUP_QUAKE_SHADOWS;
-    }
+    return true;
   }
 
   return true;

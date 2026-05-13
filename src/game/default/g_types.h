@@ -596,8 +596,7 @@ typedef enum {
   POWERUP_QUAD,
   POWERUP_ADRENALINE,
   POWERUP_INVULNERABILITY,
-
-  POWERUP_QUAKE_SHADOWS,
+  POWERUP_INVISIBILITY,
 
   POWERUP_TOTAL
 } g_powerup_t;
@@ -978,8 +977,8 @@ typedef struct {
     uint16_t invulnerability_pickup;
     uint16_t invulnerability_expire;
     uint16_t invulnerability_protect;
-    uint16_t quake_shadows_pickup;
-    uint16_t quake_shadows_expire;
+    uint16_t invisibility_pickup;
+    uint16_t invisibility_expire;
   } sounds;
 
   struct g_media_images_t {
@@ -1725,9 +1724,9 @@ struct g_client_s {
   uint32_t quad_attack_time;
 
   /**
-   * @brief Ring of Shadows is active while time is less than this.
+   * @brief Invisibility is active while time is less than this.
    */
-  uint32_t shadows_time;
+  uint32_t invisibility_time;
 
   /**
    * @brief Invulnerability is active while time is less than this.

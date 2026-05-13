@@ -283,8 +283,8 @@ static void G_InitMedia(void) {
   g_media.sounds.invulnerability_pickup = gi.SoundIndex("powerups/invulnerability/pickup");
   g_media.sounds.invulnerability_expire = gi.SoundIndex("powerups/invulnerability/expire");
   g_media.sounds.invulnerability_protect = gi.SoundIndex("powerups/invulnerability/protect");
-  g_media.sounds.quake_shadows_pickup = gi.SoundIndex("powerups/quake_shadows/pickup");
-  g_media.sounds.quake_shadows_expire = gi.SoundIndex("powerups/quake_shadows/expire");
+  g_media.sounds.invisibility_pickup = gi.SoundIndex("powerups/invisibility/pickup");
+  g_media.sounds.invisibility_expire = gi.SoundIndex("powerups/invisibility/expire");
 
   g_media.sounds.hook_fire = gi.SoundIndex("grapplehook/fire");
   g_media.sounds.hook_fly = gi.SoundIndex("grapplehook/fly");
