@@ -186,6 +186,11 @@ void G_misc_teleporter(g_entity_t *ent) {
   }
 
   ent->Touch = G_misc_teleporter_Touch;
+
+  const char *custom_sound = gi.EntityValue(ent->def, "sound")->nullable_string;
+  if (custom_sound) {
+    gi.SoundIndex(custom_sound);
+  }
   
   // create link to destination
   if (!G_Ai_InDeveloperMode()) {
