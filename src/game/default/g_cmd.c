@@ -93,6 +93,9 @@ static void G_Give_f(g_client_t *cl) {
       if (it->type != ITEM_WEAPON) {
         continue;
       }
+      if (g_level.weapons[it->tag] < 0) {
+        continue;
+      }
       cl->inventory[i] += 1;
     }
     if (!give_all) {
@@ -107,6 +110,20 @@ static void G_Give_f(g_client_t *cl) {
         continue;
       }
       if (it->type != ITEM_AMMO) {
+        continue;
+      }
+      // Give ammo if it's in the active set or used by an entity-promoted weapon.
+      bool available = G_ItemAvailable(it);
+      if (!available) {
+        for (int32_t t = WEAPON_NONE + 1; t < WEAPON_TOTAL; t++) {
+          if (g_level.weapons[t] >= 0 &&
+              g_media.items.weapons[t]->ammo_item == it) {
+            available = true;
+            break;
+          }
+        }
+      }
+      if (!available) {
         continue;
       }
       G_AddAmmo(cl, it, quantity);
@@ -245,6 +262,16 @@ static void G_Use_f(g_client_t *cl) {
     gi.ClientPrint(cl, PRINT_HIGH, "Unknown item: %s\n", s);
     return;
   }
+
+  // In Quake item set maps, redirect Quetoo weapon names to their Quake equivalents
+  // so that generic bindings (e.g. "use Rocket Launcher") work across both item sets.
+  if (g_level.items == ITEMS_QUAKE && it->type == ITEM_WEAPON) {
+    const g_item_t *mapped = G_MappedWeapon(it);
+    if (mapped) {
+      it = mapped;
+    }
+  }
+
   if (!it->Use) {
     gi.ClientPrint(cl, PRINT_HIGH, "Item is not usable\n");
     return;

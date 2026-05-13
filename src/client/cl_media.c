@@ -239,6 +239,8 @@ static void Cl_LoadMusics(void) {
 
   Cl_LoadingProgress(-1, "music");
 
+  s_music_t *const current = S_CurrentMusic();
+
   S_ClearPlaylist();
 
   for (int32_t i = 0; i < MAX_MUSICS; i++) {
@@ -251,7 +253,9 @@ static void Cl_LoadMusics(void) {
     cl.musics[i] = S_LoadMusic(str);
   }
 
-  S_NextTrack_f();
+  if (!S_PlaylistContains(current)) {
+    S_NextTrack_f();
+  }
 }
 
 /**

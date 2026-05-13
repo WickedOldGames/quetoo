@@ -477,6 +477,8 @@ static void G_ClientDie(g_entity_t *ent, g_entity_t *attacker, uint32_t mod) {
   G_HookDetach(cl);
 
   G_TossQuadDamage(cl);
+  G_TossShadows(cl);
+  G_TossPentagram(cl);
 
   if (g_level.gameplay == GAME_DEATHMATCH && mod != MOD_TRIGGER_HURT) {
     G_TossWeapon(cl);
@@ -676,8 +678,12 @@ static void G_InitClientInventory(g_client_t *cl) {
 
     item = g_media.items.weapons[WEAPON_ROCKET_LAUNCHER];
   }
-  // dm gets the blaster
-  else {
+  // dm gets the blaster, or the quake shotgun + shells in quake item sets
+  else if (g_level.items == ITEMS_QUAKE) {
+    G_Give(cl, "Shotgun", 1);
+    G_Give(cl, "Shells", 10);
+    item = g_media.items.weapons[WEAPON_QUAKE_SHOTGUN];
+  } else {
     G_Give(cl, "Blaster", -1);
     item = g_media.items.weapons[WEAPON_BLASTER];
   }
@@ -940,6 +946,16 @@ static void G_ClientRespawn_(g_client_t *cl) {
 
     ent->s.model1 = MODEL_CLIENT;
     ent->s.event = EV_CLIENT_TELEPORT;
+
+    const int32_t teleport_sound = g_level.items == ITEMS_QUAKE
+      ? g_media.sounds.quake_teleport[RandomRangei(0, 5)]
+      : g_media.sounds.teleport;
+
+    G_MulticastSound(&(const g_play_sound_t) {
+      .index = teleport_sound,
+      .origin = &ent->s.origin,
+      .atten = SOUND_ATTEN_LINEAR
+    }, MULTICAST_PHS);
 
     G_SetAnimation(cl, ANIM_TORSO_STAND1, true);
     G_SetAnimation(cl, ANIM_LEGS_JUMP1, true);
@@ -1327,6 +1343,8 @@ bool G_ClientConnect(g_client_t *cl, char *user_info) {
 void G_ClientDisconnect(g_client_t *cl) {
 
   G_TossQuadDamage(cl);
+  G_TossShadows(cl);
+  G_TossPentagram(cl);
   G_TossFlag(cl);
   G_TossTech(cl);
   G_HookDetach(cl);
@@ -1682,6 +1700,35 @@ static void G_ClientInventoryThink(g_client_t *cl) {
   }
 
   // other power-ups and things can be timed out here as well
+
+  if (cl->inventory[g_media.items.powerups[POWERUP_QUAKE_SHADOWS]->index]) {
+
+    if (cl->shadows_time < g_level.time) {
+      cl->shadows_time = 0;
+      cl->inventory[g_media.items.powerups[POWERUP_QUAKE_SHADOWS]->index] = 0;
+      cl->entity->s.effects &= ~EF_SHADOWS;
+    }
+  }
+
+  if (cl->inventory[g_media.items.powerups[POWERUP_QUAKE_PENTAGRAM]->index]) {
+
+    if (cl->pentagram_countdown_time && cl->pentagram_countdown_time < g_level.time) {
+      G_MulticastSound(&(const g_play_sound_t) {
+        .index = g_media.sounds.quad_expire,
+        .entity = cl->entity,
+        .atten = SOUND_ATTEN_LINEAR
+      }, MULTICAST_PHS);
+
+      cl->pentagram_countdown_time += 1000;
+    }
+
+    if (cl->pentagram_time < g_level.time) {
+      cl->pentagram_time = 0;
+      cl->pentagram_countdown_time = 0;
+      cl->inventory[g_media.items.powerups[POWERUP_QUAKE_PENTAGRAM]->index] = 0;
+      cl->entity->s.effects &= ~EF_PENTAGRAM;
+    }
+  }
 
   if (cl->respawn_protection_time > g_level.time) {
     cl->entity->s.effects |= EF_RESPAWN;

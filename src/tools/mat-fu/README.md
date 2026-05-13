@@ -1,4 +1,4 @@
-# normalmap-fu
+# mat-fu
 
 Tool for authoring per-pixel material assets used by Quetoo:
 diffuse + normalmap (with packed heightmap in the alpha channel) + specular.
@@ -46,9 +46,9 @@ before writing.
 ## GUI
 
 ```bash
-python -m src.tools.normalmap-fu       # from repo root
+python -m src.tools.mat-fu       # from repo root
 # or:
-python src/tools/normalmap-fu/__main__.py gui
+python src/tools/mat-fu/__main__.py gui
 ```
 
 Browse to a texture directory; thumbnails of every diffuse base appear in
@@ -62,18 +62,18 @@ between texture sets.
 ## Batch / CLI
 
 ```bash
-python src/tools/normalmap-fu/__main__.py batch \
+python src/tools/mat-fu/__main__.py batch \
     --preset path/to/preset.json \
     --directory ~/Coding/quetoo-data/target/default/textures/quake \
     --save normal,height,spec
 
 # Or process specific files:
-python src/tools/normalmap-fu/__main__.py batch \
+python src/tools/mat-fu/__main__.py batch \
     --preset preset.json \
     --files texture1_d.jpg texture2_norm.png
 
 # Preview without writing:
-python src/tools/normalmap-fu/__main__.py batch \
+python src/tools/mat-fu/__main__.py batch \
     --preset preset.json -d /textures --dry-run
 ```
 

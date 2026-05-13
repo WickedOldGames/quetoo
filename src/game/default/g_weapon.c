@@ -109,9 +109,13 @@ bool G_PickupWeapon(g_client_t *cl, g_entity_t *ent) {
 
   // auto-switch the weapon if applicable
   const uint16_t auto_switch = cl->persistent.auto_switch;
+  if (auto_switch == 1) { // switch from starting weapon
 
-  if (auto_switch == 1) { // switch from blaster
-    if (cl->weapon == g_media.items.weapons[WEAPON_BLASTER]) {
+    const g_weapon_tag_t tag = (g_level.items == ITEMS_QUAKE)
+      ? WEAPON_QUAKE_SHOTGUN
+      : WEAPON_BLASTER;
+
+    if (cl->weapon == g_media.items.weapons[tag]) {
       G_ChangeWeapon(cl, ent->item);
     }
   } else if (auto_switch == 2) { // switch to all
@@ -148,31 +152,25 @@ void G_UseBestWeapon(g_client_t *cl) {
 
   const g_item_t *item = NULL;
 
-  if (G_HasWeapon(cl, g_media.items.weapons[WEAPON_BFG10K])) {
-    item = g_media.items.weapons[WEAPON_BFG10K];
-  } else if (G_HasWeapon(cl, g_media.items.weapons[WEAPON_RAILGUN])) {
-    item = g_media.items.weapons[WEAPON_RAILGUN];
-  } else if (G_HasWeapon(cl, g_media.items.weapons[WEAPON_LIGHTNING])) {
-    item = g_media.items.weapons[WEAPON_LIGHTNING];
-  } else if (G_HasWeapon(cl, g_media.items.weapons[WEAPON_HYPERBLASTER])) {
-    item = g_media.items.weapons[WEAPON_HYPERBLASTER];
-  } else if (G_HasWeapon(cl, g_media.items.weapons[WEAPON_ROCKET_LAUNCHER])) {
-    item = g_media.items.weapons[WEAPON_ROCKET_LAUNCHER];
-  } else if (G_HasWeapon(cl, g_media.items.weapons[WEAPON_GRENADE_LAUNCHER])) {
-    item = g_media.items.weapons[WEAPON_GRENADE_LAUNCHER];
-  } else if (G_HasWeapon(cl, g_media.items.weapons[WEAPON_HAND_GRENADE])) {
-    item = g_media.items.weapons[WEAPON_HAND_GRENADE];
-  } else if (G_HasWeapon(cl, g_media.items.weapons[WEAPON_MACHINEGUN])) {
-    item = g_media.items.weapons[WEAPON_MACHINEGUN];
-  } else if (G_HasWeapon(cl, g_media.items.weapons[WEAPON_SUPER_SHOTGUN])) {
-    item = g_media.items.weapons[WEAPON_SUPER_SHOTGUN];
-  } else if (G_HasWeapon(cl, g_media.items.weapons[WEAPON_SHOTGUN])) {
-    item = g_media.items.weapons[WEAPON_SHOTGUN];
-  } else if (G_HasWeapon(cl, g_media.items.weapons[WEAPON_BLASTER])) {
-    item = g_media.items.weapons[WEAPON_BLASTER];
+  for (int32_t t = WEAPON_NONE + 1; t < WEAPON_TOTAL; t++) {
+    const g_item_t *weapon = g_media.items.weapons[t];
+
+    if (!weapon) {
+      continue;
+    }
+
+    if (!G_HasWeapon(cl, weapon)) {
+      continue;
+    }
+
+    if (!item || weapon->priority > item->priority) {
+      item = weapon;
+    }
   }
 
-  G_ChangeWeapon(cl, item);
+  if (item) {
+    G_ChangeWeapon(cl, item);
+  }
 }
 
 /**
@@ -895,6 +893,159 @@ void G_FireRailgun(g_client_t *cl) {
     G_MuzzleFlash(cl->entity, MZ_RAILGUN);
 
     G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_railgun_refire->value), cl->weapon->quantity);
+  }
+}
+
+/**
+ * @brief Fires a wider, Quake-style super shotgun spread.
+ */
+/**
+ * @brief Fires a spread of pellets from the Quake Shotgun.
+ */
+void G_FireQuakeShotgun(g_client_t *cl) {
+
+  if (G_FireWeapon(cl)) {
+    vec3_t forward, right, up, org;
+
+    G_ClientProjectile(cl, &forward, &right, &up, &org, 0.0);
+
+    G_ShotgunProjectiles(cl->entity, org, forward, g_balance_quake_shotgun_damage->integer,
+      g_balance_quake_shotgun_knockback->integer, g_balance_quake_shotgun_spread_x->integer,
+      g_balance_quake_shotgun_spread_y->integer, g_balance_quake_shotgun_pellets->integer,
+      MOD_SHOTGUN);
+
+    G_MuzzleFlash(cl->entity, MZ_QUAKE_SHOTGUN);
+
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_shotgun_refire->value), cl->weapon->quantity);
+  }
+}
+
+/**
+ * @brief Fires a wider spread of shells from the Quake Super Shotgun.
+ */
+void G_FireQuakeSuperShotgun(g_client_t *cl) {
+
+  if (G_FireWeapon(cl)) {
+    vec3_t forward, right, up, org;
+
+    G_ClientProjectile(cl, &forward, &right, &up, &org, 0.0);
+
+    G_ShotgunProjectiles(cl->entity, org, forward, g_balance_quake_supershotgun_damage->integer,
+      g_balance_quake_supershotgun_knockback->integer, g_balance_quake_supershotgun_spread_x->integer,
+      g_balance_quake_supershotgun_spread_y->integer, g_balance_quake_supershotgun_pellets->integer,
+      MOD_SUPER_SHOTGUN);
+
+    G_MuzzleFlash(cl->entity, MZ_QUAKE_SUPER_SHOTGUN);
+
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_supershotgun_refire->value), cl->weapon->quantity);
+  }
+}
+
+/**
+ * @brief Fires a single nail from the Quake nailgun.
+ */
+void G_FireQuakeNailgun(g_client_t *cl) {
+
+  if (G_FireWeapon(cl)) {
+    vec3_t forward, right, up, org;
+
+    G_ClientProjectile(cl, &forward, &right, &up, &org, 0.0);
+
+    G_NailProjectile(cl->entity, org, forward, g_balance_quake_nailgun_speed->integer,
+      g_balance_quake_nailgun_damage->integer, g_balance_quake_nailgun_knockback->integer);
+
+    G_MuzzleFlash(cl->entity, MZ_QUAKE_NAILGUN);
+
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_nailgun_refire->value), cl->weapon->quantity);
+  }
+}
+
+/**
+ * @brief Fires two nails per shot from the Quake super nailgun, offset from parallel barrels.
+ */
+void G_FireQuakeSuperNailgun(g_client_t *cl) {
+
+  if (G_FireWeapon(cl)) {
+    vec3_t forward, org;
+
+    G_ClientProjectile(cl, &forward, NULL, NULL, &org, 0.0);
+
+    G_NailProjectile(cl->entity, org, forward,
+      g_balance_quake_supernailgun_speed->integer, g_balance_quake_supernailgun_damage->integer,
+      g_balance_quake_supernailgun_knockback->integer);
+
+    G_MuzzleFlash(cl->entity, MZ_QUAKE_SUPER_NAILGUN);
+
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_supernailgun_refire->value), cl->weapon->quantity);
+  }
+}
+
+/**
+ * @brief Fires a bouncing grenade from the Quake grenade launcher.
+ */
+void G_FireQuakeGrenadeLauncher(g_client_t *cl) {
+
+  if (G_FireWeapon(cl)) {
+    vec3_t forward, right, up, org;
+
+    G_ClientProjectile(cl, &forward, &right, &up, &org, 0.0);
+
+    G_QuakeGrenadeProjectile(cl->entity, org, forward, g_balance_quake_grenadelauncher_speed->integer,
+      g_balance_quake_grenadelauncher_damage->integer, g_balance_quake_grenadelauncher_knockback->integer,
+      g_balance_quake_grenadelauncher_radius->value, SECONDS_TO_MILLIS(g_balance_quake_grenadelauncher_timer->value));
+
+    G_MuzzleFlash(cl->entity, MZ_QUAKE_GRENADE_LAUNCHER);
+
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_grenadelauncher_refire->value), cl->weapon->quantity);
+  }
+}
+
+/**
+ * @brief Fires a rocket from the Quake rocket launcher.
+ */
+void G_FireQuakeRocketLauncher(g_client_t *cl) {
+
+  if (G_FireWeapon(cl)) {
+    vec3_t forward, right, up, org;
+
+    G_ClientProjectile(cl, &forward, &right, &up, &org, 0.0);
+
+    G_QuakeRocketProjectile(cl->entity, org, forward, g_balance_quake_rocketlauncher_speed->integer,
+      g_balance_quake_rocketlauncher_damage->integer, g_balance_quake_rocketlauncher_knockback->integer,
+      g_balance_quake_rocketlauncher_radius->value);
+
+    G_MuzzleFlash(cl->entity, MZ_QUAKE_ROCKET_LAUNCHER);
+
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_rocketlauncher_refire->value), cl->weapon->quantity);
+  }
+}
+
+/**
+ * @brief Fires a continuous lightning beam from the Quake thunderbolt.
+ */
+void G_FireQuakeLightning(g_client_t *cl) {
+
+  if (G_FireWeapon(cl)) {
+    vec3_t forward, right, up, org;
+
+    g_entity_t *projectile = NULL;
+
+    while ((projectile = G_Find(projectile, EOFS(classname), "G_LightningProjectile"))) {
+      if (projectile->owner == cl->entity) {
+        break;
+      }
+    }
+
+    if (projectile == NULL) {
+      G_MuzzleFlash(cl->entity, MZ_LIGHTNING);
+    }
+
+    G_ClientProjectile(cl, &forward, &right, &up, &org, 0.0);
+
+    G_LightningProjectile(cl->entity, org, forward, g_balance_quake_lightning_damage->integer,
+      g_balance_quake_lightning_knockback->integer);
+
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_lightning_refire->value), cl->weapon->quantity);
   }
 }
 

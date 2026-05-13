@@ -334,6 +334,50 @@ static void Cg_GrenadeTrail(cl_entity_t *ent, const vec3_t start, const vec3_t e
   });
 }
 
+/**
+ * @brief Renders the Quake grenade projectile trail with smoke and a warm fuse-ember glow.
+ */
+static void Cg_QuakeGrenadeTrail(cl_entity_t *ent, const vec3_t start, const vec3_t end) {
+
+  if (Cg_TrailContents(start, end) & CONTENTS_MASK_LIQUID) {
+    Cg_BubbleTrail(ent, start, end, 6.f);
+  }
+
+  // Smoke trail
+  vec3_t origin, dir;
+  const int32_t count = Cg_TrailCount(end, 12.f, ent, TRAIL_PRIMARY, &origin, &dir);
+
+  if (count) {
+    const float step = 1.f / count;
+
+    for (int32_t i = 0; i <= count; i++) {
+      Cg_AddSprite(&(cg_sprite_t) {
+        .atlas_image = cg_sprite_smoke,
+        .origin = Vec3_Mix(end, origin, (step * i) + RandomRangef(-.5f, .5f)),
+        .velocity = Vec3(RandomRangef(-5.f, 5.f), RandomRangef(-5.f, 5.f), RandomRangef(10.f, 20.f)),
+        .lifetime = RandomRangef(600.f, 900.f),
+        .color = Vec3(.6f, .6f, .6f),
+        .size = 1.5f,
+        .size_velocity = 10.f,
+        .rotation = RandomRadian(),
+        .rotation_velocity = RandomRangef(.2f, .8f),
+        .lighting = 1.f,
+      });
+    }
+  }
+
+  // Dynamic light — warm orange ember pulse from the burning fuse
+  const float pulse = sinf(cgi.client->unclamped_time * .025f) * .5f + .5f;
+
+  Cg_AddLight(&(cg_light_t) {
+    .origin = end,
+    .radius = 120.f + 40.f * pulse,
+    .color = Vec3(.9f, .5f, .1f),
+    .intensity = 1.5f + .5f * pulse,
+    .source = ent,
+  });
+}
+
 static void Cg_FireFlyTrail_Think(cg_sprite_t *sprite, float life, float delta) {
 
   sprite->velocity = Vec3_Fmaf(sprite->velocity, delta * 1000.f, Vec3_RandomDir());
@@ -971,6 +1015,27 @@ static void Cg_GibTrail(cl_entity_t *ent, const vec3_t start, const vec3_t end) 
 }
 
 /**
+ * @brief Renders the nail projectile trail as a thin metallic streak.
+ */
+static void Cg_NailTrail(cl_entity_t *ent, const vec3_t start, const vec3_t end) {
+
+  float len;
+  const vec3_t dir = Vec3_NormalizeLength(Vec3_Subtract(end, start), &len);
+
+  if (len < 1.f) {
+    return;
+  }
+
+  cgi.AddBeam(cgi.view, &(r_beam_t) {
+    .start = Vec3_Fmaf(end, -Minf(len, 40.f), dir),
+    .end = end,
+    .color = Vec3(1.f, .9f, .6f),
+    .image = cg_beam_tracer,
+    .size = 1.5f,
+  });
+}
+
+/**
  * @brief Renders the fireball projectile trail with flame sprites and a decaying dynamic light.
  */
 static void Cg_FireballTrail(cl_entity_t *ent, const vec3_t start, const vec3_t end) {
@@ -1123,43 +1188,14 @@ static void Cg_CtfEffectTrail(cl_entity_t *ent, const vec3_t start, const vec3_t
  * @brief Determines the initial position and directional vectors of a projectile. This is a copy of G_InitProjectile.
  * If that function changes, make sure this one is modified too.
  */
-static void Cg_InitProjectile(const cl_entity_t *ent, vec3_t *forward, vec3_t *right, vec3_t *up, vec3_t *org, float hand) {
+static void Cg_InitProjectile(const cl_entity_t *ent, vec3_t *forward, vec3_t *right, vec3_t *up, vec3_t *org) {
 
-  // resolve the projectile destination
-  const vec3_t start = cgi.view->origin;
-  const vec3_t end = Vec3_Fmaf(start, MAX_WORLD_DIST, cgi.view->forward);
-  const cm_trace_t tr = cgi.Trace(start, end, Box3_Zero(), ent, CONTENTS_MASK_CLIP_PROJECTILE);
+  const cg_client_info_t *ci = &cg_state.clients[ent->current.client];
 
-  // resolve the projectile origin
-  *org = Vec3_Fmaf(start, 12.f, cgi.view->forward);
-
-  switch (cg_hand->integer) {
-    case HAND_RIGHT:
-      *org = Vec3_Fmaf(*org, 6.f * hand, cgi.view->right);
-      break;
-    case HAND_LEFT:
-      *org = Vec3_Fmaf(*org, -6.f * hand, cgi.view->right);
-      break;
-    default:
-      break;
-  }
-
-  if ((cgi.client->frame.ps.pm_state.flags & PMF_DUCKED)) {
-    *org = Vec3_Fmaf(*org, -6.f, cgi.view->up);
-  } else {
-    *org = Vec3_Fmaf(*org, -12.f, cgi.view->up);
-  }
-
-  // if the projected origin is invalid, use the entity's origin
-  if (cgi.Trace(*org, *org, Box3_Zero(), ent, CONTENTS_MASK_CLIP_PROJECTILE).start_solid) {
-    *org = ent->origin;
-  }
+  *org = ci->weapon_origin;
 
   if (forward) {
-    // return the projectile's directional vectors
-    *forward = Vec3_Subtract(tr.end, *org);
-    *forward = Vec3_Normalize(*forward);
-
+    *forward = cgi.view->forward;
     const vec3_t euler = Vec3_Euler(*forward);
     Vec3_Vectors(euler, NULL, right, up);
   }
@@ -1191,27 +1227,12 @@ void Cg_EntityTrail(cl_entity_t *ent) {
       if (s->trail == TRAIL_LIGHTNING) {
         vec3_t forward;
 
-        Cg_InitProjectile(ent, &forward, NULL, NULL, &start, 1.0);
+        Cg_InitProjectile(ent, &forward, NULL, NULL, &start);
+        start = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(-8.f, 0.f, 3.25f));
 
         end = Vec3_Fmaf(start, dist, forward);
       } else {
-
-        start = Vec3_Fmaf(cgi.view->origin, 8.f, cgi.view->forward);
-
-        const float hand_scale = (ent->current.trail == TRAIL_HOOK ? -1.0 : 1.0);
-
-        switch (cg_hand->integer) {
-          case HAND_LEFT:
-            start = Vec3_Fmaf(start, -5.5 * hand_scale, cgi.view->right);
-            break;
-          case HAND_RIGHT:
-            start = Vec3_Fmaf(start, 5.5 * hand_scale, cgi.view->right);
-            break;
-          default:
-            break;
-        }
-
-        start = Vec3_Fmaf(start, -8.f, cgi.view->up);
+        start = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(-32.f, 0.f, -8.f));
       }
     }
   } else {
@@ -1226,6 +1247,9 @@ void Cg_EntityTrail(cl_entity_t *ent) {
       break;
     case TRAIL_GRENADE:
       Cg_GrenadeTrail(ent, start, end);
+      break;
+    case TRAIL_QUAKE_GRENADE:
+      Cg_QuakeGrenadeTrail(ent, start, end);
       break;
     case TRAIL_ROCKET:
       Cg_RocketTrail(ent, start, end);
@@ -1253,6 +1277,9 @@ void Cg_EntityTrail(cl_entity_t *ent) {
       break;
     case TRAIL_FIREBALL:
       Cg_FireballTrail(ent, start, end);
+      break;
+    case TRAIL_NAIL:
+      Cg_NailTrail(ent, start, end);
       break;
     default:
       break;

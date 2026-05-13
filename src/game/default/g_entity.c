@@ -261,28 +261,37 @@ static void G_InitMedia(void) {
   gi.SoundIndex("*pain75_1");
   gi.SoundIndex("*pain100_1");
 
-  g_media.models.grenade = gi.ModelIndex("models/grenade/tris");
-  g_media.models.rocket = gi.ModelIndex("models/rocket/tris");
+  g_media.models.grenade = gi.ModelIndex("models/projectiles/grenade/tris");
+  g_media.models.quake_grenade = gi.ModelIndex("models/projectiles/quake_grenade/tris");
+  g_media.models.nail = gi.ModelIndex("models/projectiles/quake_nail/tris");
+  g_media.models.rocket = gi.ModelIndex("models/projectiles/rocket/tris");
+  g_media.models.quake_rocket = gi.ModelIndex("models/projectiles/quake_rocket/tris");
   g_media.models.hook = gi.ModelIndex("models/grapplehook/tris");
   g_media.models.fireball = gi.ModelIndex("models/fireball/tris");
 
   g_media.sounds.bfg_hit = gi.SoundIndex("weapons/bfg/hit");
   g_media.sounds.bfg_prime = gi.SoundIndex("weapons/bfg/prime");
-  g_media.sounds.grenade_hit = gi.SoundIndex("grenade/hit");
+  g_media.sounds.grenade_hit = gi.SoundIndex("projectiles/grenade/hit");
   g_media.sounds.grenade_throw = gi.SoundIndex("weapons/handgrenades/hg_throw");
-  g_media.sounds.rocket_fly = gi.SoundIndex("rocket/fly");
+  g_media.sounds.quake_grenade_hit = gi.SoundIndex("projectiles/quake_grenade/hit");
+  g_media.sounds.quake_nail_hit = gi.SoundIndex("projectiles/quake_nail/hit");
+  g_media.sounds.rocket_fly = gi.SoundIndex("projectiles/rocket/fly");
   g_media.sounds.lightning_fly = gi.SoundIndex("weapons/lightning/fly");
-  g_media.sounds.quad_attack = gi.SoundIndex("quad/attack");
-  g_media.sounds.quad_expire = gi.SoundIndex("quad/expire");
+  g_media.sounds.quad_attack = gi.SoundIndex("powerups/quad/attack");
+  g_media.sounds.quad_expire = gi.SoundIndex("powerups/quad/expire");
 
-  g_media.sounds.hook_fire = gi.SoundIndex("hook/fire");
-  g_media.sounds.hook_fly = gi.SoundIndex("hook/fly");
-  g_media.sounds.hook_hit = gi.SoundIndex("hook/hit");
-  g_media.sounds.hook_pull = gi.SoundIndex("hook/pull");
-  g_media.sounds.hook_detach = gi.SoundIndex("hook/detach");
-  g_media.sounds.hook_gibhit = gi.SoundIndex("hook/gibhit");
+  g_media.sounds.hook_fire = gi.SoundIndex("grapplehook/fire");
+  g_media.sounds.hook_fly = gi.SoundIndex("grapplehook/fly");
+  g_media.sounds.hook_hit = gi.SoundIndex("grapplehook/hit");
+  g_media.sounds.hook_pull = gi.SoundIndex("grapplehook/pull");
+  g_media.sounds.hook_detach = gi.SoundIndex("grapplehook/detach");
+  g_media.sounds.hook_gibhit = gi.SoundIndex("grapplehook/gibhit");
 
   g_media.sounds.teleport = gi.SoundIndex("misc/teleport");
+
+  for (i = 0; i < 5; i++) {
+    g_media.sounds.quake_teleport[i] = gi.SoundIndex(va("misc/quake_teleport%d", i + 1));
+  }
 
   g_media.sounds.water_in = gi.SoundIndex("misc/water_in");
   g_media.sounds.water_out = gi.SoundIndex("misc/water_out");
@@ -306,11 +315,11 @@ static void G_InitMedia(void) {
 
   g_media.sounds.roar = gi.SoundIndex("misc/ominous_bwah");
 
-  g_media.sounds.techs[TECH_HASTE] = gi.SoundIndex("tech/haste");
-  g_media.sounds.techs[TECH_REGEN] = gi.SoundIndex("tech/regen");
-  g_media.sounds.techs[TECH_RESIST] = gi.SoundIndex("tech/resist");
-  g_media.sounds.techs[TECH_STRENGTH] = gi.SoundIndex("tech/strength");
-  g_media.sounds.techs[TECH_VAMPIRE] = gi.SoundIndex("tech/vampire");
+  g_media.sounds.techs[TECH_HASTE] = gi.SoundIndex("powerups/haste/haste");
+  g_media.sounds.techs[TECH_REGEN] = gi.SoundIndex("powerups/regen/regen");
+  g_media.sounds.techs[TECH_RESIST] = gi.SoundIndex("powerups/resist/resist");
+  g_media.sounds.techs[TECH_STRENGTH] = gi.SoundIndex("powerups/strength/strength");
+  g_media.sounds.techs[TECH_VAMPIRE] = gi.SoundIndex("powerups/vampire/vampire");
 
   g_media.images.health = gi.ImageIndex("pics/i_health");
 }
@@ -672,6 +681,9 @@ static void G_worldspawn_EnumerateMusic(const char *path, void *data) {
   GArray *tracks = (GArray *) data;
   char name[MAX_QPATH];
   StripExtension(Basename(path), name);
+  if (g_strcmp0(name, "gtdstudio-explore") == 0) {
+    return;
+  }
   g_array_append_val(tracks, name);
 }
 
@@ -735,6 +747,7 @@ static void G_worldspawn_Music(void) {
  capturelimit : The capture limit (default 8).
  timelimit : The time limit in minutes (default 20).
  give : A comma-delimited item string to give each player on spawn.
+ items : The item set for this map: "default" (Quetoo weapons) or "quake" (Quake weapons).
  */
 static void G_worldspawn(g_entity_t *ent) {
 
@@ -787,6 +800,15 @@ static void G_worldspawn(g_entity_t *ent) {
   }
 
   gi.SetConfigString(CS_GAMEPLAY, va("%d", g_level.gameplay));
+
+  const cm_entity_t *items = gi.EntityValue(ent->def, "items");
+  if (g_ascii_strcasecmp(items->string, "quake") == 0) {
+    g_level.items = ITEMS_QUAKE;
+  } else {
+    g_level.items = ITEMS_DEFAULT;
+  }
+
+  gi.SetConfigString(CS_ITEM_SET, va("%d", g_level.items));
 
   if (map && map->teams > -1) { // prefer maps.lst teams
     g_level.teams = map->teams;

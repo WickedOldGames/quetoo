@@ -24,6 +24,8 @@
 extern cvar_t *s_music_volume;
 
 s_music_t *S_LoadMusic(const char *name);
+s_music_t *S_CurrentMusic(void);
+bool S_PlaylistContains(const s_music_t *music);
 void S_StopMusic(void);
 void S_ClearPlaylist(void);
 void S_NextTrack_f(void);

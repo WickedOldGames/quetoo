@@ -146,15 +146,19 @@ void Cg_AddWeapon(cl_entity_t *ent, r_entity_t *self) {
 
   w.origin = Vec3_Add(w.origin, velocity);
 
-  switch (cg_hand->integer) {
-    case HAND_LEFT:
-      offset.y -= 5.f;
-      break;
-    case HAND_RIGHT:
-      offset.y += 5.f;
-      break;
-    default:
-      break;
+  w.model = cgi.client->models[ps->stats[STAT_WEAPON]];
+
+  if (w.model == NULL || g_str_has_prefix(w.model->media.name, "models/weapons/quake_") == FALSE) {
+    switch (cg_hand->integer) {
+      case HAND_LEFT:
+        offset.y -= 5.f;
+        break;
+      case HAND_RIGHT:
+        offset.y += 5.f;
+        break;
+      default:
+        break;
+    }
   }
 
   w.origin = Vec3_Fmaf(w.origin, offset.z, cgi.view->up);
@@ -175,11 +179,15 @@ void Cg_AddWeapon(cl_entity_t *ent, r_entity_t *self) {
   w.effects |= self->effects & EF_SHELL;
   w.shell = self->shell;
 
-  w.model = cgi.client->models[ps->stats[STAT_WEAPON]];
-
   w.abs_bounds = Box3_FromCenterSize(cgi.view->origin, Vec3(16.f, 16.f, 16.f));
 
   w.lerp = w.scale = 1.0;
 
-  cgi.AddEntity(cgi.view, &w);
+  r_entity_t *weapon = cgi.AddEntity(cgi.view, &w);
+
+  cg_client_info_t *ci = &cg_state.clients[cgi.client->frame.ps.client];
+
+  Mat4_Vectors(weapon->matrix, NULL, NULL, NULL, &ci->weapon_origin);
+
+  ci->weapon_angles = weapon->angles;
 }

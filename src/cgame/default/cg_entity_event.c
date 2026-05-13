@@ -140,12 +140,6 @@ void Cg_TeleporterEffect(const vec3_t org) {
     .intensity = 1.f,
     .decay = 1000
   });
-
-  Cg_AddSample(cgi.stage, &(const s_play_sample_t) {
-    .origin = org,
-    .sample = cg_sample_teleport,
-    .atten = SOUND_ATTEN_LINEAR,
-  });
 }
 
 /**

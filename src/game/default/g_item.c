@@ -57,6 +57,8 @@ const g_item_t *G_FindItem(const char *name) {
     return NULL;
   }
 
+  const g_item_t *fallback = NULL;
+
   for (size_t i = 0; i < g_num_items; i++) {
     const g_item_t *it = G_ItemByIndex(i);
 
@@ -65,11 +67,55 @@ const g_item_t *G_FindItem(const char *name) {
     }
 
     if (!g_ascii_strcasecmp(it->name, name)) {
-      return it;
+      if (G_ItemAvailable(it)) {
+        return it;
+      }
+      if (!fallback) {
+        fallback = it;
+      }
     }
   }
 
-  return NULL;
+  return fallback;
+}
+
+/**
+ * @brief Maps Quetoo weapon tags to their Quake equivalent, by gameplay role.
+ *  Used to redirect generic bindings (e.g. "use Rocket Launcher") to the
+ *  appropriate weapon when g_level.items == ITEMS_QUAKE.
+ *  WEAPON_NONE means no equivalent exists.
+ */
+static const g_weapon_tag_t g_quake_weapon_map[WEAPON_TOTAL] = {
+  [WEAPON_BLASTER]          = WEAPON_QUAKE_SHOTGUN,
+  [WEAPON_SHOTGUN]          = WEAPON_QUAKE_SHOTGUN,
+  [WEAPON_SUPER_SHOTGUN]    = WEAPON_QUAKE_SUPER_SHOTGUN,
+  [WEAPON_MACHINEGUN]       = WEAPON_QUAKE_NAILGUN,
+  [WEAPON_HAND_GRENADE]     = WEAPON_NONE,
+  [WEAPON_GRENADE_LAUNCHER] = WEAPON_QUAKE_GRENADE_LAUNCHER,
+  [WEAPON_ROCKET_LAUNCHER]  = WEAPON_QUAKE_ROCKET_LAUNCHER,
+  [WEAPON_HYPERBLASTER]     = WEAPON_QUAKE_SUPER_NAILGUN,
+  [WEAPON_LIGHTNING]        = WEAPON_QUAKE_LIGHTNING,
+  [WEAPON_RAILGUN]          = WEAPON_QUAKE_LIGHTNING,
+  [WEAPON_BFG10K]           = WEAPON_NONE,
+};
+
+/**
+ * @brief Returns the Quake equivalent of a Quetoo weapon item when
+ *  g_level.items == ITEMS_QUAKE, or NULL if no mapping exists or the item is
+ *  already a Quake weapon.
+ */
+const g_item_t *G_MappedWeapon(const g_item_t *weapon) {
+
+  if (weapon->tag == WEAPON_NONE || weapon->tag >= WEAPON_QUAKE_SHOTGUN) {
+    return NULL; // already a Quake weapon, or unmapped
+  }
+
+  const g_weapon_tag_t mapped = g_quake_weapon_map[weapon->tag];
+  if (mapped == WEAPON_NONE) {
+    return NULL;
+  }
+
+  return g_media.items.weapons[mapped];
 }
 
 /**
@@ -80,7 +126,7 @@ const g_item_t *G_FindItem(const char *name) {
 const g_item_t *G_ClientArmor(const g_client_t *cl) {
 
 
-  for (g_armor_t armor = ARMOR_BODY; armor > ARMOR_SHARD; armor--) {
+  for (g_armor_t armor = ARMOR_QUAKE_BODY; armor > ARMOR_SHARD; armor--) {
 
     if (cl->inventory[g_media.items.armor[armor]->index]) {
       return g_media.items.armor[armor];
@@ -190,6 +236,101 @@ g_entity_t *G_TossQuadDamage(g_client_t *cl) {
   cl->inventory[g_media.items.powerups[POWERUP_QUAD]->index] = 0;
 
   return quad;
+}
+
+/**
+ * @brief Handles pickup of the Ring of Shadows, granting temporary invisibility.
+ */
+static bool G_PickupShadows(g_client_t *cl, g_entity_t *ent) {
+
+  if (cl->inventory[g_media.items.powerups[POWERUP_QUAKE_SHADOWS]->index]) {
+    return false; // already have it
+  }
+
+  cl->inventory[g_media.items.powerups[POWERUP_QUAKE_SHADOWS]->index] = 1;
+
+  if (ent->spawn_flags & SF_ITEM_DROPPED) {
+    cl->shadows_time = ent->next_think;
+  } else {
+    cl->shadows_time = g_level.time + SECONDS_TO_MILLIS(g_balance_quake_shadows_time->value);
+    G_SetItemRespawn(ent, SECONDS_TO_MILLIS(g_balance_quake_shadows_respawn_time->value));
+  }
+
+  cl->entity->s.effects |= EF_SHADOWS;
+  return true;
+}
+
+/**
+ * @brief Drops the Ring of Shadows from the client's inventory as a world entity.
+ */
+g_entity_t *G_TossShadows(g_client_t *cl) {
+
+  if (!cl->inventory[g_media.items.powerups[POWERUP_QUAKE_SHADOWS]->index]) {
+    return NULL;
+  }
+
+  g_entity_t *shadows = G_DropItem(cl, g_media.items.powerups[POWERUP_QUAKE_SHADOWS]);
+
+  if (shadows) {
+    shadows->timestamp = cl->shadows_time;
+  }
+
+  cl->shadows_time = 0;
+  cl->inventory[g_media.items.powerups[POWERUP_QUAKE_SHADOWS]->index] = 0;
+  cl->entity->s.effects &= ~EF_SHADOWS;
+
+  return shadows;
+}
+
+/**
+ * @brief Handles pickup of the Pentagram of Protection, granting temporary invulnerability.
+ */
+static bool G_PickupPentagram(g_client_t *cl, g_entity_t *ent) {
+
+  if (cl->inventory[g_media.items.powerups[POWERUP_QUAKE_PENTAGRAM]->index]) {
+    return false; // already have it
+  }
+
+  cl->inventory[g_media.items.powerups[POWERUP_QUAKE_PENTAGRAM]->index] = 1;
+
+  uint32_t delta = 3000;
+
+  if (ent->spawn_flags & SF_ITEM_DROPPED) {
+    delta = Maxf(0, (ent->next_think - g_level.time) - 3000.f);
+
+    cl->pentagram_time = ent->next_think;
+    cl->pentagram_countdown_time = ent->next_think - delta;
+  } else {
+    cl->pentagram_time = g_level.time + SECONDS_TO_MILLIS(g_balance_quake_pentagram_time->value);
+    cl->pentagram_countdown_time = cl->pentagram_time - delta;
+    G_SetItemRespawn(ent, SECONDS_TO_MILLIS(g_balance_quake_pentagram_respawn_time->value));
+  }
+
+  cl->entity->s.effects |= EF_PENTAGRAM;
+  return true;
+}
+
+/**
+ * @brief Drops the Pentagram of Protection from the client's inventory as a world entity.
+ */
+g_entity_t *G_TossPentagram(g_client_t *cl) {
+
+  if (!cl->inventory[g_media.items.powerups[POWERUP_QUAKE_PENTAGRAM]->index]) {
+    return NULL;
+  }
+
+  g_entity_t *pentagram = G_DropItem(cl, g_media.items.powerups[POWERUP_QUAKE_PENTAGRAM]);
+
+  if (pentagram) {
+    pentagram->timestamp = cl->pentagram_time;
+  }
+
+  cl->pentagram_time = 0;
+  cl->pentagram_countdown_time = 0;
+  cl->inventory[g_media.items.powerups[POWERUP_QUAKE_PENTAGRAM]->index] = 0;
+  cl->entity->s.effects &= ~EF_PENTAGRAM;
+
+  return pentagram;
 }
 
 /**
@@ -313,7 +454,7 @@ static bool G_PickupHealth(g_client_t *cl, g_entity_t *ent) {
   const uint16_t tag = ent->item->tag;
 
   const bool always_add = tag == HEALTH_SMALL;
-  const bool always_pickup = (tag == HEALTH_SMALL || tag == HEALTH_MEGA);
+  const bool always_pickup = (tag == HEALTH_SMALL || tag == HEALTH_MEGA || tag == HEALTH_QUAKE_MEGA);
 
   if (cl->entity->health < cl->entity->max_health || always_add || always_pickup) {
 
@@ -322,7 +463,7 @@ static bool G_PickupHealth(g_client_t *cl, g_entity_t *ent) {
 
     if (always_pickup) { // resolve max
       if (h > max && cl) {
-        if (tag == HEALTH_MEGA) {
+        if (tag == HEALTH_MEGA || tag == HEALTH_QUAKE_MEGA) {
           cl->boost_time = g_level.time + 1000;
         }
         max = cl->max_boost_health;
@@ -349,6 +490,15 @@ static bool G_PickupHealth(g_client_t *cl, g_entity_t *ent) {
       case HEALTH_MEGA:
         G_SetItemRespawn(ent, g_balance_health_mega_respawn->integer * 1000);
         break;
+      case HEALTH_QUAKE_MEDIUM:
+        G_SetItemRespawn(ent, g_balance_health_medium_respawn->integer * 1000);
+        break;
+      case HEALTH_QUAKE_LARGE:
+        G_SetItemRespawn(ent, g_balance_health_large_respawn->integer * 1000);
+        break;
+      case HEALTH_QUAKE_MEGA:
+        G_SetItemRespawn(ent, g_balance_health_mega_respawn->integer * 1000);
+        break;
     }
 
     return true;
@@ -362,7 +512,10 @@ static bool G_PickupHealth(g_client_t *cl, g_entity_t *ent) {
  */
 const g_armor_info_t *G_ArmorInfo(const g_item_t *armor) {
   static const g_armor_info_t armor_info[] = {
-    { ARMOR_BODY, 0.8, 0.6 },
+    { ARMOR_QUAKE_JACKET, 0.3, 0.0 },
+    { ARMOR_QUAKE_COMBAT, 0.6, 0.3 },
+    { ARMOR_QUAKE_BODY,   0.8, 0.6 },
+    { ARMOR_BODY,         0.8, 0.6 },
     { ARMOR_COMBAT, 0.6, 0.3 },
     { ARMOR_JACKET, 0.3, 0.0 }
   };
@@ -459,6 +612,15 @@ static bool G_PickupArmor(g_client_t *cl, g_entity_t *ent) {
         G_SetItemRespawn(ent, g_balance_armor_combat_respawn->integer * 1000);
         break;
       case ARMOR_BODY:
+        G_SetItemRespawn(ent, g_balance_armor_body_respawn->integer * 1000);
+        break;
+      case ARMOR_QUAKE_JACKET:
+        G_SetItemRespawn(ent, g_balance_armor_jacket_respawn->integer * 1000);
+        break;
+      case ARMOR_QUAKE_COMBAT:
+        G_SetItemRespawn(ent, g_balance_armor_combat_respawn->integer * 1000);
+        break;
+      case ARMOR_QUAKE_BODY:
         G_SetItemRespawn(ent, g_balance_armor_body_respawn->integer * 1000);
         break;
       default:
@@ -1342,6 +1504,108 @@ static g_item_t g_items[] = {
     .precaches = ""
   },
 
+  /*QUAKED item_quake_armor_body (.8 .2 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Quake Red Armor (+200). Absorbs 80% of damage.
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/armor/quake_body/tris.obj"
+   */
+  {
+    .classname = "item_quake_armor_body",
+    .Pickup = G_PickupArmor,
+    .Use = NULL,
+    .Drop = NULL,
+    .Think = NULL,
+    .pickup_sound = "armor/body/pickup.wav",
+    .model = "models/armor/quake_body/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/i_quake_body_armor",
+    .name = "Red Armor",
+    .quantity = 200,
+    .max = 200,
+    .ammo = NULL,
+    .type = ITEM_ARMOR,
+    .tag = ARMOR_QUAKE_BODY,
+    .priority = 0.90,
+    .precaches = ""
+  },
+
+  /*QUAKED item_quake_armor_combat (.8 .8 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Quake Yellow Armor (+150). Absorbs 60% of damage.
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/armor/quake_combat/tris.obj"
+   */
+  {
+    .classname = "item_quake_armor_combat",
+    .Pickup = G_PickupArmor,
+    .Use = NULL,
+    .Drop = NULL,
+    .Think = NULL,
+    .pickup_sound = "armor/combat/pickup.wav",
+    .model = "models/armor/quake_combat/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/i_quake_combat_armor",
+    .name = "Yellow Armor",
+    .quantity = 150,
+    .max = 150,
+    .ammo = NULL,
+    .type = ITEM_ARMOR,
+    .tag = ARMOR_QUAKE_COMBAT,
+    .priority = 0.75,
+    .precaches = ""
+  },
+
+  /*QUAKED item_quake_armor_jacket (.2 .8 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Quake Green Armor (+100). Absorbs 30% of damage.
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/armor/quake_jacket/tris.obj"
+   */
+  {
+    .classname = "item_quake_armor_jacket",
+    .Pickup = G_PickupArmor,
+    .Use = NULL,
+    .Drop = NULL,
+    .Think = NULL,
+    .pickup_sound = "armor/jacket/pickup.wav",
+    .model = "models/armor/quake_jacket/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/i_quake_jacket_armor",
+    .name = "Green Armor",
+    .quantity = 100,
+    .max = 100,
+    .ammo = NULL,
+    .type = ITEM_ARMOR,
+    .tag = ARMOR_QUAKE_JACKET,
+    .priority = 0.60,
+    .precaches = ""
+  },
+
   /*QUAKED weapon_blaster (.8 .8 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
    Blaster.
 
@@ -1491,7 +1755,7 @@ static g_item_t g_items[] = {
    hover : Item will spawn where it was placed in the map and won't drop the floor.
 
    -------- Radiant config --------
-   model="models/grenade/tris.md3"
+   model="models/projectiles/grenade/tris.md3"
    */
   {
     .classname = "weapon_handgrenades",
@@ -1500,7 +1764,7 @@ static g_item_t g_items[] = {
     .Drop = NULL,
     .Think = G_FireHandGrenade,
     .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/grenade/tris.md3",
+    .model = "models/projectiles/grenade/tris.md3",
     .effects = EF_ROTATE | EF_BOB,
     .icon = "pics/a_handgrenades",
     .name = "Hand Grenades",
@@ -1545,7 +1809,7 @@ static g_item_t g_items[] = {
     .tag = WEAPON_GRENADE_LAUNCHER,
     .flags = WF_PROJECTILE | WF_EXPLOSIVE,
     .priority = 0.40,
-    .precaches = "models/grenade/tris.md3 weapons/grenadelauncher/fire.wav"
+    .precaches = "models/projectiles/grenade/tris.md3 weapons/grenadelauncher/fire.wav"
   },
 
   /*QUAKED weapon_rocketlauncher (.8 .2 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
@@ -1579,7 +1843,7 @@ static g_item_t g_items[] = {
     .tag = WEAPON_ROCKET_LAUNCHER,
     .flags = WF_PROJECTILE | WF_EXPLOSIVE | WF_MED_RANGE | WF_LONG_RANGE,
     .priority = 0.50,
-    .precaches = "models/rocket/tris.obj rocket/fly.wav "
+    .precaches = "models/projectiles/rocket/tris.obj projectiles/rocket/fly.wav "
     "weapons/rocketlauncher/fire.wav"
   },
 
@@ -2158,6 +2422,105 @@ static g_item_t g_items[] = {
     .precaches = ""
   },
 
+  /*QUAKED item_health_quake_medium (.8 .8 0) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Quake Health (+15).
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/health/quake_medium/tris.obj"
+   */
+  {
+    .classname = "item_health_quake_medium",
+    .Pickup = G_PickupHealth,
+    .Use = NULL,
+    .Drop = NULL,
+    .Think = NULL,
+    .pickup_sound = "health/medium/pickup.wav",
+    .model = "models/health/quake_medium/tris.obj",
+    .effects = 0,
+    .icon = "pics/i_quake_health_medium",
+    .name = "Medium Health",
+    .quantity = 15,
+    .ammo = NULL,
+    .type = ITEM_HEALTH,
+    .tag = HEALTH_QUAKE_MEDIUM,
+    .priority = 0.25,
+    .precaches = ""
+  },
+
+  /*QUAKED item_health_quake_large (1 0 0) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Quake Large Health (+25).
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/health/quake_large/tris.obj"
+   */
+  {
+    .classname = "item_health_quake_large",
+    .Pickup = G_PickupHealth,
+    .Use = NULL,
+    .Drop = NULL,
+    .Think = NULL,
+    .pickup_sound = "health/large/pickup.wav",
+    .model = "models/health/quake_large/tris.obj",
+    .effects = 0,
+    .icon = "pics/i_quake_health_large",
+    .name = "Large Health",
+    .quantity = 25,
+    .ammo = NULL,
+    .type = ITEM_HEALTH,
+    .tag = HEALTH_QUAKE_LARGE,
+    .priority = 0.40,
+    .precaches = ""
+  },
+
+  /*QUAKED item_health_quake_mega (.3 .3 1) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Quake Mega Health (+100).
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/health/quake_mega/tris.obj"
+   */
+  {
+    .classname = "item_health_quake_mega",
+    .Pickup = G_PickupHealth,
+    .Use = NULL,
+    .Drop = NULL,
+    .Think = NULL,
+    .pickup_sound = "health/mega/pickup.wav",
+    .model = "models/health/quake_mega/tris.obj",
+    .effects = 0,
+    .icon = "pics/i_quake_health_mega",
+    .name = "Mega Health",
+    .quantity = 100,
+    .ammo = NULL,
+    .type = ITEM_HEALTH,
+    .tag = HEALTH_QUAKE_MEGA,
+    .priority = 0.60,
+    .precaches = ""
+  },
+
   /*QUAKED item_flag_team1 (.2 .2 1) (-16 -16 -24) (16 16 32) triggered no_touch hover
 
    -------- Spawn flags --------
@@ -2294,7 +2657,7 @@ static g_item_t g_items[] = {
     .Use = NULL,
     .Drop = NULL,
     .Think = NULL,
-    .pickup_sound = "quad/pickup.wav",
+    .pickup_sound = "powerups/quad/pickup.wav",
     .model = "models/powerups/quad/tris.obj",
     .effects = EF_BOB | EF_ROTATE ,
     .icon = "pics/i_quad",
@@ -2304,7 +2667,7 @@ static g_item_t g_items[] = {
     .type = ITEM_POWERUP,
     .tag = POWERUP_QUAD,
     .priority = 0.80,
-    .precaches = "quad/attack.wav quad/expire.wav"
+    .precaches = "powerups/quad/attack.wav powerups/quad/expire.wav"
   },
 
   {
@@ -2313,8 +2676,8 @@ static g_item_t g_items[] = {
     .Use = NULL,
     .Drop = G_DropTech,
     .Think = NULL,
-    .pickup_sound = "tech/pickup.wav",
-    .model = "models/techs/haste/tris.obj",
+    .pickup_sound = "powerups/common/pickup.wav",
+    .model = "models/powerups/haste/tris.obj",
     .effects = EF_BOB | EF_ROTATE ,
     .icon = "pics/t_haste",
     .name = "Haste",
@@ -2332,8 +2695,8 @@ static g_item_t g_items[] = {
     .Use = NULL,
     .Drop = G_DropTech,
     .Think = NULL,
-    .pickup_sound = "tech/pickup.wav",
-    .model = "models/techs/regen/tris.obj",
+    .pickup_sound = "powerups/common/pickup.wav",
+    .model = "models/powerups/regen/tris.obj",
     .effects = EF_BOB | EF_ROTATE ,
     .icon = "pics/t_regen",
     .name = "Regeneration",
@@ -2351,8 +2714,8 @@ static g_item_t g_items[] = {
     .Use = NULL,
     .Drop = G_DropTech,
     .Think = NULL,
-    .pickup_sound = "tech/pickup.wav",
-    .model = "models/techs/resist/tris.obj",
+    .pickup_sound = "powerups/common/pickup.wav",
+    .model = "models/powerups/resist/tris.obj",
     .effects = EF_BOB | EF_ROTATE ,
     .icon = "pics/t_resist",
     .name = "Resist",
@@ -2370,8 +2733,8 @@ static g_item_t g_items[] = {
     .Use = NULL,
     .Drop = G_DropTech,
     .Think = NULL,
-    .pickup_sound = "tech/pickup.wav",
-    .model = "models/techs/strength/tris.obj",
+    .pickup_sound = "powerups/common/pickup.wav",
+    .model = "models/powerups/strength/tris.obj",
     .effects = EF_BOB | EF_ROTATE ,
     .icon = "pics/t_strength",
     .name = "Strength",
@@ -2389,8 +2752,8 @@ static g_item_t g_items[] = {
     .Use = NULL,
     .Drop = G_DropTech,
     .Think = NULL,
-    .pickup_sound = "tech/pickup.wav",
-    .model = "models/techs/vampire/tris.obj",
+    .pickup_sound = "powerups/common/pickup.wav",
+    .model = "models/powerups/vampire/tris.obj",
     .effects = EF_BOB | EF_ROTATE ,
     .icon = "pics/t_vampire",
     .name = "Vampire",
@@ -2400,6 +2763,447 @@ static g_item_t g_items[] = {
     .tag = TECH_VAMPIRE,
     .priority = 0.80,
     .precaches = ""
+  },
+
+  /*QUAKED ammo_quake_shells (.6 .6 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Shells for the Quake Super Shotgun.
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/ammo/quake_shells/tris.obj"
+   */
+  {
+    .classname = "ammo_quake_shells",
+    .Pickup = G_PickupAmmo,
+    .Use = NULL,
+    .Drop = G_DropItem,
+    .Think = NULL,
+    .pickup_sound = "ammo/common/pickup.wav",
+    .model = "models/ammo/quake_shells/tris.obj",
+    .effects = 0,
+    .icon = "pics/a_quake_shells",
+    .name = "Shells",
+    .quantity = 10,
+    .max = 80,
+    .ammo = NULL,
+    .type = ITEM_AMMO,
+    .tag = AMMO_QUAKE_SHELLS,
+    .priority = 0.15,
+    .precaches = ""
+  },
+
+  /*QUAKED ammo_quake_nails (.6 .6 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Nails for the Quake Nailgun and Super Nailgun.
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/ammo/quake_nails/tris.obj"
+   */
+  {
+    .classname = "ammo_quake_nails",
+    .Pickup = G_PickupAmmo,
+    .Use = NULL,
+    .Drop = G_DropItem,
+    .Think = NULL,
+    .pickup_sound = "ammo/common/pickup.wav",
+    .model = "models/ammo/quake_nails/tris.obj",
+    .effects = 0,
+    .icon = "pics/a_quake_nails",
+    .name = "Nails",
+    .quantity = 25,
+    .max = 200,
+    .ammo = NULL,
+    .type = ITEM_AMMO,
+    .tag = AMMO_QUAKE_NAILS,
+    .priority = 0.15,
+    .precaches = ""
+  },
+
+  /*QUAKED ammo_quake_rockets (.8 .2 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Rockets for the Quake Grenade Launcher and Rocket Launcher.
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/ammo/quake_rockets/tris.obj"
+   */
+  {
+    .classname = "ammo_quake_rockets",
+    .Pickup = G_PickupAmmo,
+    .Use = NULL,
+    .Drop = G_DropItem,
+    .Think = NULL,
+    .pickup_sound = "ammo/common/pickup.wav",
+    .model = "models/ammo/quake_rockets/tris.obj",
+    .effects = 0,
+    .icon = "pics/a_quake_rockets",
+    .name = "Rockets",
+    .quantity = 5,
+    .max = 100,
+    .ammo = NULL,
+    .type = ITEM_AMMO,
+    .tag = AMMO_QUAKE_ROCKETS,
+    .priority = 0.20,
+    .precaches = ""
+  },
+
+  /*QUAKED ammo_quake_bolts (.9 .9 .9) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Bolts for the Quake Thunderbolt (Lightning Gun).
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/ammo/quake_bolts/tris.obj"
+   */
+  {
+    .classname = "ammo_quake_bolts",
+    .Pickup = G_PickupAmmo,
+    .Use = NULL,
+    .Drop = G_DropItem,
+    .Think = NULL,
+    .pickup_sound = "ammo/common/pickup.wav",
+    .model = "models/ammo/quake_bolts/tris.obj",
+    .effects = 0,
+    .icon = "pics/a_quake_bolts",
+    .name = "Bolts",
+    .quantity = 15,
+    .max = 200,
+    .ammo = NULL,
+    .type = ITEM_AMMO,
+    .tag = AMMO_QUAKE_BOLTS,
+    .priority = 0.20,
+    .precaches = ""
+  },
+
+  /*QUAKED weapon_quake_shotgun (.6 .6 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Quake Shotgun. The starting weapon; fires a tight spread of pellets.
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/weapons/quake_shotgun/tris.obj"
+   */
+  {
+    .classname = "weapon_quake_shotgun",
+    .Pickup = G_PickupWeapon,
+    .Use = G_UseWeapon,
+    .Drop = G_DropWeapon,
+    .Think = G_FireQuakeShotgun,
+    .pickup_sound = "weapons/common/pickup.wav",
+    .model = "models/weapons/quake_shotgun/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/w_quake_shotgun",
+    .name = "Shotgun",
+    .quantity = 1,
+    .ammo = "Shells",
+    .type = ITEM_WEAPON,
+    .tag = WEAPON_QUAKE_SHOTGUN,
+    .flags = WF_HITSCAN | WF_SHORT_RANGE,
+    .priority = 0.15,
+    .precaches = "weapons/shotgun/fire.wav"
+  },
+
+  /*QUAKED weapon_quake_supershotgun (.6 .6 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Quake Super Shotgun. Fires a wider spread of shells than the standard super shotgun.
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/weapons/quake_supershotgun/tris.obj"
+   */
+  {
+    .classname = "weapon_quake_supershotgun",
+    .Pickup = G_PickupWeapon,
+    .Use = G_UseWeapon,
+    .Drop = G_DropWeapon,
+    .Think = G_FireQuakeSuperShotgun,
+    .pickup_sound = "weapons/common/pickup.wav",
+    .model = "models/weapons/quake_supershotgun/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/w_quake_supershotgun",
+    .name = "Super Shotgun",
+    .quantity = 2,
+    .ammo = "Shells",
+    .type = ITEM_WEAPON,
+    .tag = WEAPON_QUAKE_SUPER_SHOTGUN,
+    .flags = WF_HITSCAN | WF_SHORT_RANGE,
+    .priority = 0.25,
+    .precaches = "weapons/supershotgun/fire.wav"
+  },
+
+  /*QUAKED weapon_quake_nailgun (.6 .6 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Quake Nailgun. Rapid-fire nail weapon.
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/weapons/quake_nailgun/tris.obj"
+   */
+  {
+    .classname = "weapon_quake_nailgun",
+    .Pickup = G_PickupWeapon,
+    .Use = G_UseWeapon,
+    .Drop = G_DropWeapon,
+    .Think = G_FireQuakeNailgun,
+    .pickup_sound = "weapons/common/pickup.wav",
+    .model = "models/weapons/quake_nailgun/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/w_quake_nailgun",
+    .name = "Nailgun",
+    .quantity = 1,
+    .ammo = "Nails",
+    .type = ITEM_WEAPON,
+    .tag = WEAPON_QUAKE_NAILGUN,
+    .flags = WF_HITSCAN | WF_MED_RANGE,
+    .priority = 0.30,
+    .precaches = "weapons/machinegun/fire_1.wav"
+  },
+
+  /*QUAKED weapon_quake_supernailgun (.6 .6 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Quake Super Nailgun. Fires two nails per shot.
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/weapons/quake_supernailgun/tris.obj"
+   */
+  {
+    .classname = "weapon_quake_supernailgun",
+    .Pickup = G_PickupWeapon,
+    .Use = G_UseWeapon,
+    .Drop = G_DropWeapon,
+    .Think = G_FireQuakeSuperNailgun,
+    .pickup_sound = "weapons/common/pickup.wav",
+    .model = "models/weapons/quake_supernailgun/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/w_quake_supernailgun",
+    .name = "Super Nailgun",
+    .quantity = 2,
+    .ammo = "Nails",
+    .type = ITEM_WEAPON,
+    .tag = WEAPON_QUAKE_SUPER_NAILGUN,
+    .flags = WF_HITSCAN | WF_MED_RANGE,
+    .priority = 0.40,
+    .precaches = "weapons/machinegun/fire_1.wav"
+  },
+
+  /*QUAKED weapon_quake_grenadelauncher (.6 .6 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Quake Grenade Launcher. Fires slower, more arcing grenades than the standard launcher.
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/weapons/quake_grenadelauncher/tris.obj"
+   */
+  {
+    .classname = "weapon_quake_grenadelauncher",
+    .Pickup = G_PickupWeapon,
+    .Use = G_UseWeapon,
+    .Drop = G_DropWeapon,
+    .Think = G_FireQuakeGrenadeLauncher,
+    .pickup_sound = "weapons/common/pickup.wav",
+    .model = "models/weapons/quake_grenadelauncher/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/w_quake_grenadelauncher",
+    .name = "Grenade Launcher",
+    .quantity = 1,
+    .ammo = "Rockets",
+    .type = ITEM_WEAPON,
+    .tag = WEAPON_QUAKE_GRENADE_LAUNCHER,
+    .flags = WF_PROJECTILE | WF_EXPLOSIVE | WF_MED_RANGE,
+    .priority = 0.45,
+    .precaches = "weapons/grenadelauncher/fire.wav"
+  },
+
+  /*QUAKED weapon_quake_rocketlauncher (.8 .2 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Quake Rocket Launcher. Fires slightly slower rockets than the standard launcher.
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/weapons/quake_rocketlauncher/tris.obj"
+   */
+  {
+    .classname = "weapon_quake_rocketlauncher",
+    .Pickup = G_PickupWeapon,
+    .Use = G_UseWeapon,
+    .Drop = G_DropWeapon,
+    .Think = G_FireQuakeRocketLauncher,
+    .pickup_sound = "weapons/common/pickup.wav",
+    .model = "models/weapons/quake_rocketlauncher/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/w_quake_rocketlauncher",
+    .name = "Rocket Launcher",
+    .quantity = 1,
+    .ammo = "Rockets",
+    .type = ITEM_WEAPON,
+    .tag = WEAPON_QUAKE_ROCKET_LAUNCHER,
+    .flags = WF_PROJECTILE | WF_EXPLOSIVE | WF_MED_RANGE | WF_LONG_RANGE,
+    .priority = 0.60,
+    .precaches = "weapons/rocketlauncher/fire.wav"
+  },
+
+  /*QUAKED weapon_quake_lightning (.9 .9 .9) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Quake Thunderbolt (Lightning Gun). Shorter range than the standard lightning gun.
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/weapons/quake_lightning/tris.obj"
+   */
+  {
+    .classname = "weapon_quake_lightning",
+    .Pickup = G_PickupWeapon,
+    .Use = G_UseWeapon,
+    .Drop = G_DropWeapon,
+    .Think = G_FireQuakeLightning,
+    .pickup_sound = "weapons/common/pickup.wav",
+    .model = "models/weapons/quake_lightning/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/w_quake_lightning",
+    .name = "Thunderbolt",
+    .quantity = 1,
+    .ammo = "Bolts",
+    .type = ITEM_WEAPON,
+    .tag = WEAPON_QUAKE_LIGHTNING,
+    .flags = WF_HITSCAN | WF_SHORT_RANGE,
+    .priority = 0.55,
+    .precaches = "weapons/lightning/fire.wav weapons/lightning/fly.wav "
+    "weapons/lightning/discharge.wav"
+  },
+
+  /*QUAKED item_quake_shadows (.2 .2 .4) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Ring of Shadows. Makes the player nearly invisible for 30 seconds.
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/powerups/quake_shadows/tris.obj"
+   */
+  {
+    .classname = "item_quake_shadows",
+    .Pickup = G_PickupShadows,
+    .Use = NULL,
+    .Drop = NULL,
+    .Think = NULL,
+    .pickup_sound = "powerups/common/pickup.wav",
+    .model = "models/powerups/quake_shadows/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/i_quake_shadows",
+    .name = "Ring of Shadows",
+    .quantity = 0,
+    .ammo = NULL,
+    .type = ITEM_POWERUP,
+    .tag = POWERUP_QUAKE_SHADOWS,
+    .priority = 0.80,
+    .precaches = "models/powerups/quake_eyes/tris.obj powerups/quad/expire.wav"
+  },
+
+  /*QUAKED item_quake_pentagram (.8 .1 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
+   Pentagram of Protection. Grants full invulnerability for 30 seconds.
+
+   -------- Keys --------
+   team : The team name for alternating item spawns.
+
+   -------- Spawn flags --------
+   triggered : Item will not appear until triggered.
+   no_touch : Item will interact as solid instead of being picked up by player.
+   hover : Item will spawn where it was placed in the map and won't drop the floor.
+
+   -------- Radiant config --------
+   model="models/powerups/quake_pentagram/tris.obj"
+   */
+  {
+    .classname = "item_quake_pentagram",
+    .Pickup = G_PickupPentagram,
+    .Use = NULL,
+    .Drop = NULL,
+    .Think = NULL,
+    .pickup_sound = "powerups/common/pickup.wav",
+    .model = "models/powerups/quake_pentagram/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/i_quake_pentagram",
+    .name = "Pentagram of Protection",
+    .quantity = 0,
+    .ammo = NULL,
+    .type = ITEM_POWERUP,
+    .tag = POWERUP_QUAKE_PENTAGRAM,
+    .priority = 0.90,
+    .precaches = "powerups/quad/expire.wav"
   },
 };
 
@@ -2428,20 +3232,115 @@ const g_item_t *G_ItemByIndex(uint16_t index) {
 }
 
 /**
+ * @brief Returns true if the item belongs to the active item set.
+ */
+bool G_ItemAvailable(const g_item_t *item) {
+
+  if (item->type == ITEM_WEAPON) {
+    if (g_level.items == ITEMS_QUAKE) {
+      return item->tag >= WEAPON_QUAKE_SHOTGUN;
+    } else {
+      return item->tag < WEAPON_QUAKE_SHOTGUN;
+    }
+  }
+
+  if (item->type == ITEM_AMMO) {
+    if (g_level.items == ITEMS_QUAKE) {
+      return item->tag >= AMMO_QUAKE_SHELLS;
+    } else {
+      return item->tag < AMMO_QUAKE_SHELLS;
+    }
+  }
+
+  if (item->type == ITEM_ARMOR) {
+    if (g_level.items == ITEMS_QUAKE) {
+      return item->tag >= ARMOR_QUAKE_JACKET;
+    } else {
+      return item->tag < ARMOR_QUAKE_JACKET;
+    }
+  }
+
+  if (item->type == ITEM_HEALTH) {
+    if (g_level.items == ITEMS_QUAKE) {
+      return item->tag >= HEALTH_QUAKE_MEDIUM;
+    } else {
+      return item->tag < HEALTH_QUAKE_MEDIUM;
+    }
+  }
+
+  if (item->type == ITEM_POWERUP) {
+    if (g_level.items == ITEMS_QUAKE) {
+      return item->tag >= POWERUP_QUAKE_SHADOWS;
+    } else {
+      return item->tag < POWERUP_QUAKE_SHADOWS;
+    }
+  }
+
+  return true;
+}
+
+/**
  * @brief Called to set up the special string for weapons usable by the player.
+ * Filters to the active item set, then scans for out-of-set weapons placed by
+ * the mapper. Populates g_level.weapon_bits[] and caps at 16 (STAT_WEAPONS
+ * is a uint16_t).
  */
 static void G_InitWeapons(void) {
   char weapon_info[MAX_STRING_CHARS] = { '\0' };
+  int32_t bit = 0;
 
+  memset(g_level.weapons, -1, sizeof(g_level.weapons));
+
+  // First pass: include all weapons in the active item set.
   for (int32_t t = WEAPON_NONE + 1; t < WEAPON_TOTAL; t++) {
 
-    if (t != WEAPON_NONE + 1) {
+    const g_item_t *weapon = g_media.items.weapons[t];
+
+    if (!G_ItemAvailable(weapon)) {
+      continue;
+    }
+
+    if (bit > 0) {
       strcat(weapon_info, "\\");
+    }
+
+    strcat(weapon_info, va("%i\\%i", weapon->icon_index, weapon->index));
+    g_level.weapons[t] = bit++;
+  }
+
+  // Second pass: entity-promoted weapons placed by the mapper outside the
+  // active item set (e.g. item_quake_nailgun in a default-items map).
+  for (int32_t t = WEAPON_NONE + 1; t < WEAPON_TOTAL; t++) {
+
+    if (g_level.weapons[t] >= 0) {
+      continue;
     }
 
     const g_item_t *weapon = g_media.items.weapons[t];
 
+    bool found = false;
+    G_ForEachEntity(ent, {
+      if (!g_strcmp0(ent->classname, weapon->classname)) {
+        found = true;
+        break;
+      }
+    });
+
+    if (!found) {
+      continue;
+    }
+
+    if (bit >= 16) {
+      gi.Warn("Map exceeds 16 weapons; %s will not be selectable\n", weapon->name);
+      continue;
+    }
+
+    if (bit > 0) {
+      strcat(weapon_info, "\\");
+    }
+
     strcat(weapon_info, va("%i\\%i", weapon->icon_index, weapon->index));
+    g_level.weapons[t] = bit++;
   }
 
   gi.SetConfigString(CS_WEAPONS, weapon_info);

@@ -59,6 +59,9 @@ cvar_t *cg_draw_weapon_bob;
 cvar_t *cg_draw_weapon_x;
 cvar_t *cg_draw_weapon_y;
 cvar_t *cg_draw_weapon_z;
+cvar_t *cg_draw_muzzle_x;
+cvar_t *cg_draw_muzzle_y;
+cvar_t *cg_draw_muzzle_z;
 cvar_t *cg_draw_vitals;
 cvar_t *cg_draw_vitals_pulse;
 cvar_t *cg_entity_bob;
@@ -144,6 +147,9 @@ static void Cg_Init(void) {
   cg_draw_weapon_x = cgi.AddCvar("cg_draw_weapon_x", "0", CVAR_ARCHIVE, "The x offset for drawing the weapon model.");
   cg_draw_weapon_y = cgi.AddCvar("cg_draw_weapon_y", "0", CVAR_ARCHIVE, "The y offset for drawing the weapon model.");
   cg_draw_weapon_z = cgi.AddCvar("cg_draw_weapon_z", "0", CVAR_ARCHIVE, "The z offset for drawing the weapon model.");
+  cg_draw_muzzle_x = cgi.AddCvar("cg_draw_muzzle_x", "0", CVAR_ARCHIVE, "The x (forward) offset for muzzle flash origin.");
+  cg_draw_muzzle_y = cgi.AddCvar("cg_draw_muzzle_y", "0", CVAR_ARCHIVE, "The y (right) offset for muzzle flash origin.");
+  cg_draw_muzzle_z = cgi.AddCvar("cg_draw_muzzle_z", "0", CVAR_ARCHIVE, "The z (up) offset for muzzle flash origin.");
   cg_draw_vitals = cgi.AddCvar("cg_draw_vitals", "1", CVAR_ARCHIVE, "Draw the vitals (health, armor, ammo)");
   cg_draw_vitals_pulse = cgi.AddCvar("cg_draw_vitals_pulse", "1", CVAR_ARCHIVE, "Pulse the vitals when low");
   cg_entity_bob = cgi.AddCvar("cg_entity_bob", "1", CVAR_ARCHIVE, "Controls the bobbing of items");
@@ -271,6 +277,9 @@ static void Cg_UpdateConfigString(int32_t i) {
       return;
     case CS_WEAPONS:
       Cg_ParseWeaponInfo(s);
+      return;
+    case CS_ITEM_SET:
+      cg_state.items = (g_items_t) strtol(s, NULL, 10);
       return;
     case CS_CTF:
       cg_state.ctf = Clampf01(atoi(s));

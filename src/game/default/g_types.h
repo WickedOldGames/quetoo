@@ -28,7 +28,7 @@
  * @brief Game protocol version (protocol minor version). To be incremented
  * whenever the game protocol changes.
  */
-#define PROTOCOL_MINOR 1023
+#define PROTOCOL_MINOR 1024
 
 /**
  * @brief Game-specific server protocol commands. These are parsed directly by
@@ -145,7 +145,9 @@ typedef struct {
 #define CS_NUM_CLIENTS     (CS_GAME + 6)  // number of players in server
 #define CS_NUM_TEAMS       (CS_GAME + 7)  // number of teams (0 - MAX_TEAMS)
 #define CS_WEAPONS         (CS_GAME + 8)  // weapon list, for the change weapon UI
-#define CS_NAV_EDIT        (CS_GAME + 9) // nav edit mode
+#define CS_NAV_EDIT        (CS_GAME + 9)  // nav edit mode
+#define CS_ITEM_SET        (CS_GAME + 10) // active item set (g_items_t)
+#define CS_ITEMS           (CS_GAME + 11) // item names (MAX_ITEMS entries)
 
 /**
  * @brief Player state statistics (inventory, score, etc).
@@ -175,8 +177,9 @@ typedef enum {
   STAT_TIME,
   STAT_WEAPON,
   STAT_WEAPON_ICON,
-  STAT_WEAPON_TAG,
+  STAT_WEAPON_BIT,
   STAT_WEAPONS,
+  STAT_WEAPONS_2,
   STAT_TECH_ICON
 } g_stat_t;
 
@@ -202,6 +205,13 @@ typedef enum {
   MZ_RAILGUN,
   MZ_BFG10K,
   MZ_LOGOUT,
+
+  MZ_QUAKE_SHOTGUN,
+  MZ_QUAKE_SUPER_SHOTGUN,
+  MZ_QUAKE_NAILGUN,
+  MZ_QUAKE_SUPER_NAILGUN,
+  MZ_QUAKE_GRENADE_LAUNCHER,
+  MZ_QUAKE_ROCKET_LAUNCHER,
 } g_muzzle_flash_t;
 
 /**
@@ -356,6 +366,8 @@ typedef enum {
 #define EF_DESPAWN    (EF_GAME << 11) // translucent
 #define EF_LIGHT      (EF_GAME << 12) // colored light
 #define EF_TEAM_TINT  (EF_GAME << 13) // tint by the team color provided
+#define EF_SHADOWS    (EF_GAME << 14) // ring of shadows (translucency)
+#define EF_PENTAGRAM  (EF_GAME << 15) // pentagram of protection (invulnerability shell)
 
 #define EF_CTF_MASK   (EF_CTF_RED | EF_CTF_BLUE | EF_CTF_YELLOW | EF_CTF_GREEN)
 
@@ -380,7 +392,9 @@ typedef enum {
   TRAIL_GIB,
   TRAIL_FIREBALL,
   TRAIL_HOOK,
-  TRAIL_PLAYER_SPAWN
+  TRAIL_PLAYER_SPAWN,
+  TRAIL_NAIL,
+  TRAIL_QUAKE_GRENADE,
 } g_entity_trail_t;
 
 /**
@@ -429,6 +443,14 @@ typedef enum {
 } g_gameplay_t;
 
 /**
+ * @brief Item sets select which weapon and ammo roster a map uses.
+ */
+typedef enum {
+  ITEMS_DEFAULT,
+  ITEMS_QUAKE
+} g_items_t;
+
+/**
  * @brief Hook style.
  */
 typedef enum {
@@ -471,6 +493,14 @@ typedef enum {
   WEAPON_RAILGUN,
   WEAPON_BFG10K,
 
+  WEAPON_QUAKE_SHOTGUN,
+  WEAPON_QUAKE_SUPER_SHOTGUN,
+  WEAPON_QUAKE_NAILGUN,
+  WEAPON_QUAKE_SUPER_NAILGUN,
+  WEAPON_QUAKE_GRENADE_LAUNCHER,
+  WEAPON_QUAKE_ROCKET_LAUNCHER,
+  WEAPON_QUAKE_LIGHTNING,
+
   WEAPON_TOTAL
 } g_weapon_tag_t;
 
@@ -500,6 +530,11 @@ typedef enum {
   AMMO_SLUGS,
   AMMO_NUKES,
 
+  AMMO_QUAKE_SHELLS,
+  AMMO_QUAKE_NAILS,
+  AMMO_QUAKE_ROCKETS,
+  AMMO_QUAKE_BOLTS,
+
   AMMO_TOTAL
 } g_ammo_t;
 
@@ -511,6 +546,9 @@ typedef enum {
   ARMOR_JACKET,
   ARMOR_COMBAT,
   ARMOR_BODY,
+  ARMOR_QUAKE_JACKET,
+  ARMOR_QUAKE_COMBAT,
+  ARMOR_QUAKE_BODY,
 
   ARMOR_TOTAL
 } g_armor_t;
@@ -544,6 +582,9 @@ typedef enum {
   HEALTH_MEDIUM,
   HEALTH_LARGE,
   HEALTH_MEGA,
+  HEALTH_QUAKE_MEDIUM,
+  HEALTH_QUAKE_LARGE,
+  HEALTH_QUAKE_MEGA,
 
   HEALTH_TOTAL
 } g_health_t;
@@ -554,6 +595,9 @@ typedef enum {
 typedef enum {
   POWERUP_QUAD,
   POWERUP_ADRENALINE,
+
+  POWERUP_QUAKE_SHADOWS,
+  POWERUP_QUAKE_PENTAGRAM,
 
   POWERUP_TOTAL
 } g_powerup_t;
@@ -884,7 +928,10 @@ typedef struct {
     uint16_t gibs[NUM_GIB_MODELS];
 
     uint16_t grenade;
+    uint16_t quake_grenade;
+    uint16_t nail;
     uint16_t rocket;
+    uint16_t quake_rocket;
     uint16_t hook;
 
     uint16_t fireball;
@@ -897,6 +944,8 @@ typedef struct {
     uint16_t bfg_prime;
     uint16_t grenade_hit;
     uint16_t grenade_throw;
+    uint16_t quake_grenade_hit;
+    uint16_t quake_nail_hit;
     uint16_t rocket_fly;
     uint16_t lightning_fly;
     uint16_t quad_attack;
@@ -910,6 +959,7 @@ typedef struct {
     uint16_t hook_gibhit;
 
     uint16_t teleport;
+    uint16_t quake_teleport[5];
 
     uint16_t water_in;
     uint16_t water_out;
@@ -982,6 +1032,16 @@ typedef struct {
    * @brief Active gameplay mode.
    */
   g_gameplay_t gameplay;
+
+  /**
+   * @brief Active item set.
+   */
+  g_items_t items;
+
+  /**
+   * @brief Bitmask indexes in `STAT_WEAPONS` for each weapon tag (-1 = not in active set).
+   */
+  int32_t weapons[WEAPON_TOTAL];
 
   /**
    * @brief True if team play is active.
@@ -1659,6 +1719,21 @@ struct g_client_s {
   uint32_t quad_attack_time;
 
   /**
+   * @brief Ring of Shadows is active while time is less than this.
+   */
+  uint32_t shadows_time;
+
+  /**
+   * @brief Pentagram of Protection is active while time is less than this.
+   */
+  uint32_t pentagram_time;
+
+  /**
+   * @brief Pentagram countdown warning threshold.
+   */
+  uint32_t pentagram_countdown_time;
+
+  /**
    * @brief Client being chased in spectator mode.
    */
   g_client_t *chase_target;
@@ -1886,6 +1961,11 @@ struct g_entity_s {
    * @brief Cooldown timer for Touch events.
    */
   uint32_t touch_time;
+
+  /**
+   * @brief Sound to play when this projectile hits a structural surface.
+   */
+  uint16_t hit_sound;
 
   /**
    * @brief Time of the last push interaction.

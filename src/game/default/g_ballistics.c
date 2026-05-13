@@ -267,6 +267,91 @@ void G_BlasterProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir, 
 }
 
 /**
+ * @brief Touch callback for nail projectiles.
+ */
+static void G_NailProjectile_Touch(g_entity_t *ent, g_entity_t *other, const cm_trace_t *trace) {
+
+  if (other == ent->owner) {
+    return;
+  }
+
+  if (other->solid < SOLID_DEAD) {
+    return;
+  }
+
+  if (trace == NULL) {
+    return;
+  }
+
+  if (!G_IsSky(trace)) {
+
+    G_Damage(&(g_damage_t) {
+      .target = other,
+      .inflictor = ent,
+      .attacker = ent->owner,
+      .dir = ent->velocity,
+      .point = ent->s.origin,
+      .normal = trace->plane.normal,
+      .damage = ent->damage,
+      .knockback = ent->knockback,
+      .mod = MOD_MACHINEGUN
+    });
+
+    if (G_IsStructural(trace)) {
+
+      G_MulticastSound(&(const g_play_sound_t) {
+        .index = g_media.sounds.quake_nail_hit,
+        .entity = ent,
+        .atten = SOUND_ATTEN_LINEAR,
+        .pitch = (int8_t) (Randomf() * 5.0)
+      }, MULTICAST_PHS);
+
+      gi.WriteByte(SV_CMD_TEMP_ENTITY);
+      gi.WriteByte(TE_BULLET);
+      gi.WritePosition(ent->s.origin);
+      gi.WriteDir(trace->plane.normal);
+      gi.Multicast(ent->s.origin, MULTICAST_PHS);
+    }
+  }
+
+  G_FreeEntity(ent);
+}
+
+/**
+ * @brief Fires a nail projectile from the specified entity in the given direction.
+ */
+void G_NailProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir, int32_t speed, int32_t damage, int32_t knockback) {
+
+  const box3_t bounds = Box3f(1.f, 1.f, 1.f);
+
+  g_entity_t *projectile = G_AllocEntity(__func__);
+  projectile->owner = ent;
+
+  projectile->s.origin = start;
+  projectile->bounds = bounds;
+  projectile->s.angles = Vec3_Euler(dir);
+  projectile->velocity = Vec3_Scale(dir, speed);
+
+  if (G_ImmediateWall(ent, projectile)) {
+    projectile->s.origin = ent->s.origin;
+  }
+
+  projectile->solid = SOLID_PROJECTILE;
+  projectile->clip_mask = CONTENTS_MASK_CLIP_PROJECTILE;
+  projectile->damage = damage;
+  projectile->knockback = knockback;
+  projectile->move_type = MOVE_TYPE_FLY;
+  projectile->next_think = g_level.time + 8000;
+  projectile->Think = G_FreeEntity;
+  projectile->Touch = G_NailProjectile_Touch;
+  projectile->s.client = ent->s.client;
+  projectile->s.model1 = g_media.models.nail;
+  projectile->s.trail = TRAIL_NAIL;
+
+  gi.LinkEntity(projectile);
+}
+
+/**
  * @brief Fires a single bullet projectile with randomized spread, dealing damage and emitting impact effects.
  */
 void G_BulletProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir, int32_t damage, int32_t knockback, int32_t hspread, int32_t vspread, int32_t mod) {
@@ -398,10 +483,47 @@ void G_GrenadeProjectile_Touch(g_entity_t *ent, g_entity_t *other, const cm_trac
       if (g_level.time - ent->touch_time > 200) {
         if (Vec3_Length(ent->velocity) > 40.0) {
           G_MulticastSound(&(const g_play_sound_t) {
-            .index = g_media.sounds.grenade_hit,
+            .index = ent->hit_sound,
             .entity = ent,
             .atten = SOUND_ATTEN_LINEAR,
             .pitch = (int8_t) (Randomf() * 5.0)
+          }, MULTICAST_PHS);
+          ent->touch_time = g_level.time;
+        }
+      }
+    } else if (G_IsSky(trace)) {
+      G_FreeEntity(ent);
+    }
+
+    return;
+  }
+  ent->enemy = other;
+  G_GrenadeProjectile_Explode(ent);
+}
+
+static void G_QuakeGrenadeProjectile_Touch(g_entity_t *ent, g_entity_t *other, const cm_trace_t *trace) {
+
+  if (other == ent->owner) {
+    return;
+  }
+
+  if (other->solid < SOLID_DEAD) {
+    return;
+  }
+
+  if (trace == NULL) {
+    return;
+  }
+
+  if (!G_TakesDamage(other)) { // bounce off of structural solids
+
+    if (G_IsStructural(trace)) {
+      if (g_level.time - ent->touch_time > 200) {
+        if (Vec3_Length(ent->velocity) > 40.0) {
+          G_MulticastSound(&(const g_play_sound_t) {
+            .index = ent->hit_sound,
+            .entity = ent,
+            .atten = SOUND_ATTEN_LINEAR,
           }, MULTICAST_PHS);
           ent->touch_time = g_level.time;
         }
@@ -445,6 +567,7 @@ void G_GrenadeProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir, 
   }
 
   projectile->solid = SOLID_PROJECTILE;
+  projectile->mass = 75.f;
   projectile->avelocity.x = RandomRangef(-310.f, -290.f);
   projectile->avelocity.y = RandomRangef(-50.f, 50.f);
   projectile->avelocity.z = RandomRangef(-25.f, 25.f);
@@ -458,10 +581,59 @@ void G_GrenadeProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir, 
   projectile->Think = G_GrenadeProjectile_Explode;
   projectile->Touch = G_GrenadeProjectile_Touch;
   projectile->touch_time = g_level.time;
+  projectile->hit_sound = g_media.sounds.grenade_hit;
   projectile->s.trail = TRAIL_GRENADE;
   projectile->s.model1 = g_media.models.grenade;
 
   gi.LinkEntity(projectile);
+}
+
+/**
+ * @brief Fires a Quake grenade projectile with bounce physics and a timed fuse.
+ */
+void G_QuakeGrenadeProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir, int32_t speed, int32_t damage, int32_t knockback, float damage_radius, uint32_t timer) {
+
+  const box3_t bounds = Box3f(6.f, 6.f, 3.f);
+
+  vec3_t forward, right, up;
+
+  g_entity_t *projectile = G_AllocEntity(__func__);
+  projectile->owner = ent;
+
+  projectile->s.origin = start;
+  projectile->bounds = bounds;
+  projectile->s.angles = Vec3_Euler(dir);
+
+  Vec3_Vectors(projectile->s.angles, &forward, &right, &up);
+  projectile->velocity = Vec3_Scale(dir, speed);
+
+  projectile->velocity = Vec3_Fmaf(projectile->velocity, RandomRangef(90.f, 110.f), up);
+  projectile->velocity = Vec3_Fmaf(projectile->velocity, RandomRangef(-10.f, 10.f), right);
+
+  G_PlayerProjectile(projectile, 0.33);
+
+  if (G_ImmediateWall(ent, projectile)) {
+    projectile->s.origin = ent->s.origin;
+  }
+
+  projectile->solid = SOLID_PROJECTILE;
+  projectile->mass = 75.f;
+  projectile->avelocity.x = RandomRangef(-310.f, -290.f);
+  projectile->avelocity.y = RandomRangef(-50.f, 50.f);
+  projectile->avelocity.z = RandomRangef(-25.f, 25.f);
+  projectile->clip_mask = CONTENTS_MASK_CLIP_PROJECTILE;
+  projectile->damage = damage;
+  projectile->damage_radius = damage_radius;
+  projectile->knockback = knockback;
+  projectile->move_type = MOVE_TYPE_BOUNCE;
+  projectile->next_think = g_level.time + timer;
+  projectile->take_damage = true;
+  projectile->Think = G_GrenadeProjectile_Explode;
+  projectile->Touch = G_QuakeGrenadeProjectile_Touch;
+  projectile->touch_time = g_level.time;
+  projectile->hit_sound = g_media.sounds.quake_grenade_hit;
+  projectile->s.trail = TRAIL_QUAKE_GRENADE;
+  projectile->s.model1 = g_media.models.quake_grenade;
 }
 
 // tossing a hand grenade
@@ -495,6 +667,7 @@ void G_HandGrenadeProjectile(g_entity_t *ent, g_entity_t *projectile, vec3_t con
     projectile->spawn_flags |= HAND_GRENADE_HELD;
   }
 
+  projectile->mass = 75.f;
   projectile->avelocity.x = RandomRangef(-310.f, -290.f);
   projectile->avelocity.y = RandomRangef(-50.f, 50.f);
   projectile->avelocity.z = RandomRangef(-25.f, 25.f);
@@ -588,6 +761,43 @@ void G_RocketProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir, i
   projectile->Think = G_FreeEntity;
   projectile->Touch = G_RocketProjectile_Touch;
   projectile->s.model1 = g_media.models.rocket;
+  projectile->s.sound = g_media.sounds.rocket_fly;
+  projectile->s.trail = TRAIL_ROCKET;
+
+  gi.LinkEntity(projectile);
+}
+
+/**
+ * @brief Fires a Quake rocket projectile that explodes with radius damage on impact.
+ */
+void G_QuakeRocketProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir, int32_t speed, int32_t damage, int32_t knockback, float damage_radius) {
+
+  const box3_t bounds = Box3f(8.f, 8.f, 8.f);
+
+  g_entity_t *projectile = G_AllocEntity(__func__);
+  projectile->owner = ent;
+
+  projectile->s.origin = start;
+  projectile->bounds = bounds;
+  projectile->s.angles = Vec3_Euler(dir);
+  projectile->velocity = Vec3_Scale(dir, speed);
+  projectile->avelocity = Vec3_Zero();
+
+  if (G_ImmediateWall(ent, projectile)) {
+    projectile->s.origin = ent->s.origin;
+  }
+
+  projectile->solid = SOLID_PROJECTILE;
+  projectile->clip_mask = CONTENTS_MASK_CLIP_PROJECTILE;
+  projectile->damage = damage;
+  projectile->damage_radius = damage_radius;
+  projectile->knockback = knockback;
+  projectile->ripple_size = 32.0;
+  projectile->move_type = MOVE_TYPE_FLY;
+  projectile->next_think = g_level.time + 8000;
+  projectile->Think = G_FreeEntity;
+  projectile->Touch = G_RocketProjectile_Touch;
+  projectile->s.model1 = g_media.models.quake_rocket;
   projectile->s.sound = g_media.sounds.rocket_fly;
   projectile->s.trail = TRAIL_ROCKET;
 

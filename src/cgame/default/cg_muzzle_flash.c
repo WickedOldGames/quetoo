@@ -26,24 +26,15 @@
   * weapon tag origin and angles. The offset is in weapon-local space
   * (x = forward, y = right, z = up).
   */
-static vec3_t Cg_MuzzleOrigin(const cl_entity_t *ent, const vec3_t offset) {
-
-  const cg_client_info_t *ci = &cg_state.clients[ent->current.client];
+vec3_t Cg_MuzzleOrigin(const cg_client_info_t *ci, const vec3_t offset) {
 
   vec3_t forward, right, up;
   Vec3_Vectors(ci->weapon_angles, &forward, &right, &up);
 
   vec3_t org = ci->weapon_origin;
-  org = Vec3_Fmaf(org, offset.x, forward);
-  org = Vec3_Fmaf(org, offset.y, right);
-  org = Vec3_Fmaf(org, offset.z, up);
-
-  const cm_trace_t tr = cgi.Trace(ent->origin, org, Box3_Zero(), NULL, CONTENTS_MASK_CLIP_PROJECTILE);
-
-  if (tr.fraction < 1.0) {
-    const vec3_t dir = Vec3_Subtract(ent->origin, tr.end);
-    org = Vec3_Fmaf(ent->origin, .75f, dir);
-  }
+  org = Vec3_Fmaf(org, offset.x + cg_draw_muzzle_x->value, forward);
+  org = Vec3_Fmaf(org, offset.y + cg_draw_muzzle_y->value, right);
+  org = Vec3_Fmaf(org, offset.z + cg_draw_muzzle_z->value, up);
 
   return org;
 }
@@ -55,7 +46,7 @@ static void Cg_BlasterFlash(const cl_entity_t *ent) {
 
   const vec3_t color = Cg_ClientEffectColor(ent->current.client, NULL, color_hue_orange);
 
-  vec3_t org = Cg_MuzzleOrigin(ent, Vec3(18.f, 0.f, 1.f));
+  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(10.f, 0.f, 19.f));
 
   Cg_AddLight(&(cg_light_t) {
     .origin = org,
@@ -103,7 +94,80 @@ static void Cg_BlasterFlash(const cl_entity_t *ent) {
  */
 static void Cg_ShotgunFlash(const cl_entity_t *ent) {
 
-  vec3_t org = Cg_MuzzleOrigin(ent, Vec3(18.f, 0.f, 2.f));
+  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(12.f, 0.f, 24.f));
+
+  vec3_t forward, right;
+  Vec3_Vectors(ent->angles, &forward, &right, NULL);
+
+  Cg_AddLight(&(cg_light_t) {
+    .origin = org,
+    .radius = 120.f,
+    .color = Vec3(.9f, .7f, .4f),
+    .intensity = 3.f,
+    .decay = 250,
+  });
+
+  if (cgi.PointContents(ent->origin) & CONTENTS_MASK_LIQUID) {
+    Cg_BubbleTrail(NULL, org, Vec3_Fmaf(ent->origin, 40.f, forward), 4.f);
+    return;
+  }
+
+  // flash burst
+  Cg_AddSprite(&(cg_sprite_t) {
+    .animation = cg_sprite_impact_spark_01,
+    .origin = Vec3_Fmaf(org, 4.f, forward),
+    .rotation = RandomRadian(),
+    .size = 30.f,
+    .lifetime = 180.f,
+    .color = Vec3(1.f, .9f, .7f),
+  });
+
+  // flame lick
+  Cg_AddSprite(&(cg_sprite_t) {
+    .atlas_image = cg_sprite_flame,
+    .origin = Vec3_Fmaf(org, 6.f, forward),
+    .velocity = Vec3_Scale(forward, 60.f),
+    .lifetime = 200.f,
+    .size = 10.f,
+    .size_velocity = -30.f,
+    .rotation = RandomRadian(),
+    .color = ColorHSV(RandomRangef(25.f, 45.f), 1.f, 1.f).vec3,
+  });
+
+  // spark dots
+  for (int32_t i = 0; i < 4; i++) {
+    Cg_AddSprite(&(cg_sprite_t) {
+      .atlas_image = cg_sprite_impact_spark_01_dot,
+      .origin = Vec3_Fmaf(org, 4.f, forward),
+      .velocity = Vec3_Scale(Vec3_Mix(Vec3_RandomDir(), forward, .5f), RandomRangef(60.f, 120.f)),
+      .size = RandomRangef(2.f, 4.f),
+      .size_velocity = -8.f,
+      .lifetime = RandomRangef(150.f, 300.f),
+      .color = Vec3(1.f, .9f, .7f),
+    });
+  }
+
+  // smoke
+  Cg_AddSprite(&(cg_sprite_t) {
+    .atlas_image = cg_sprite_smoke,
+    .origin = org,
+    .velocity = Vec3_Scale(forward, 20.f),
+    .lifetime = 800,
+    .size = 3.f,
+    .size_velocity = 20.f,
+    .rotation = RandomRadian(),
+    .rotation_velocity = RandomRangef(.2f, .6f),
+    .color = Vec3(.6f, .6f, .6f),
+    .lighting = 1.f,
+  });
+}
+
+/**
+ * @brief Quake shotgun muzzle flash.
+ */
+static void Cg_QuakeShotgunFlash(const cl_entity_t *ent) {
+
+  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(6.f, 0.f, 8.f));
 
   vec3_t forward, right;
   Vec3_Vectors(ent->angles, &forward, &right, NULL);
@@ -176,7 +240,7 @@ static void Cg_ShotgunFlash(const cl_entity_t *ent) {
  */
 static void Cg_SuperShotgunFlash(const cl_entity_t *ent) {
 
-  vec3_t org = Cg_MuzzleOrigin(ent, Vec3(18.f, 0.f, 2.f));
+  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(12.f, 0.f, 24.f));
 
   vec3_t forward, right;
   Vec3_Vectors(ent->angles, &forward, &right, NULL);
@@ -249,11 +313,84 @@ static void Cg_SuperShotgunFlash(const cl_entity_t *ent) {
 }
 
 /**
+ * @brief Quake super shotgun muzzle flash.
+ */
+static void Cg_QuakeSuperShotgunFlash(const cl_entity_t *ent) {
+
+  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(20.f, 0.f, 28.f));
+
+  vec3_t forward, right;
+  Vec3_Vectors(ent->angles, &forward, &right, NULL);
+
+  Cg_AddLight(&(cg_light_t) {
+    .origin = org,
+    .radius = 160.f,
+    .color = Vec3(.9f, .7f, .4f),
+    .intensity = 4.f,
+    .decay = 300,
+  });
+
+  if (cgi.PointContents(ent->origin) & CONTENTS_MASK_LIQUID) {
+    Cg_BubbleTrail(NULL, org, Vec3_Fmaf(ent->origin, 40.f, forward), 8.f);
+    return;
+  }
+
+  Cg_AddSprite(&(cg_sprite_t) {
+    .animation = cg_sprite_impact_spark_01,
+    .origin = Vec3_Fmaf(org, 4.f, forward),
+    .rotation = RandomRadian(),
+    .size = 40.f,
+    .lifetime = 220.f,
+    .color = Vec3(1.f, .9f, .7f),
+  });
+
+  for (int32_t i = 0; i < 2; i++) {
+    Cg_AddSprite(&(cg_sprite_t) {
+      .atlas_image = cg_sprite_flame,
+      .origin = Vec3_Fmaf(org, 4.f + i * 4.f, forward),
+      .velocity = Vec3_Scale(forward, RandomRangef(60.f, 100.f)),
+      .lifetime = RandomRangef(200.f, 350.f),
+      .size = RandomRangef(10.f, 16.f),
+      .size_velocity = -30.f,
+      .rotation = RandomRadian(),
+      .color = ColorHSV(RandomRangef(20.f, 50.f), 1.f, 1.f).vec3,
+    });
+  }
+
+  for (int32_t i = 0; i < 8; i++) {
+    Cg_AddSprite(&(cg_sprite_t) {
+      .atlas_image = cg_sprite_impact_spark_01_dot,
+      .origin = Vec3_Fmaf(org, 4.f, forward),
+      .velocity = Vec3_Scale(Vec3_Mix(Vec3_RandomDir(), forward, .4f), RandomRangef(80.f, 160.f)),
+      .size = RandomRangef(2.f, 5.f),
+      .size_velocity = -8.f,
+      .lifetime = RandomRangef(200.f, 400.f),
+      .color = Vec3(1.f, .9f, .7f),
+    });
+  }
+
+  for (int32_t i = 0; i < 2; i++) {
+    Cg_AddSprite(&(cg_sprite_t) {
+      .atlas_image = cg_sprite_smoke,
+      .origin = Vec3_Fmaf(org, i * 4.f, forward),
+      .velocity = Vec3_Add(Vec3_Scale(forward, 25.f), Vec3_RandomRange(-5.f, 5.f)),
+      .lifetime = 1000,
+      .size = 4.f,
+      .size_velocity = 24.f,
+      .rotation = RandomRadian(),
+      .rotation_velocity = RandomRangef(.2f, .8f),
+      .color = Vec3(.5f, .5f, .5f),
+      .lighting = 1.f,
+    });
+  }
+}
+
+/**
  * @brief Machinegun muzzle flash.
  */
 static void Cg_MachinegunFlash(const cl_entity_t *ent) {
 
-  vec3_t org = Cg_MuzzleOrigin(ent, Vec3(22.f, 0.f, 0.f));
+  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(20.f, 0.f, 22.f));
 
   vec3_t forward, right;
   Vec3_Vectors(ent->angles, &forward, &right, NULL);
@@ -316,7 +453,7 @@ static void Cg_MachinegunFlash(const cl_entity_t *ent) {
  */
 static void Cg_GrenadeFlash(const cl_entity_t *ent) {
 
-  vec3_t org = Cg_MuzzleOrigin(ent, Vec3(20.f, 0.f, 6.f));
+  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(12.f, 0.f, 24.f));
 
   vec3_t forward, right;
   Vec3_Vectors(ent->angles, &forward, &right, NULL);
@@ -374,11 +511,70 @@ static void Cg_GrenadeFlash(const cl_entity_t *ent) {
 }
 
 /**
+ * @brief Quake grenade launcher muzzle flash.
+ */
+static void Cg_QuakeGrenadeFlash(const cl_entity_t *ent) {
+
+  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(8.f, 0.f, 6.f));
+
+  vec3_t forward, right;
+  Vec3_Vectors(ent->angles, &forward, &right, NULL);
+
+  Cg_AddLight(&(cg_light_t) {
+    .origin = org,
+    .radius = 120.f,
+    .color = Vec3(.9f, .6f, .3f),
+    .intensity = 3.5f,
+    .decay = 350,
+  });
+
+  if (cgi.PointContents(ent->origin) & CONTENTS_MASK_LIQUID) {
+    Cg_BubbleTrail(NULL, org, Vec3_Fmaf(ent->origin, 40.f, forward), 4.f);
+    return;
+  }
+
+  Cg_AddSprite(&(cg_sprite_t) {
+    .atlas_image = cg_sprite_explosion_glow,
+    .origin = Vec3_Fmaf(org, 6.f, forward),
+    .lifetime = 250,
+    .size = 40.f,
+    .color = Vec3(.9f, .6f, .3f),
+  });
+
+  Cg_AddSprite(&(cg_sprite_t) {
+    .atlas_image = cg_sprite_flame,
+    .origin = Vec3_Fmaf(org, 4.f, forward),
+    .velocity = Vec3_Scale(forward, 40.f),
+    .lifetime = 250.f,
+    .size = 12.f,
+    .size_velocity = -30.f,
+    .rotation = RandomRadian(),
+    .color = ColorHSV(RandomRangef(20.f, 45.f), 1.f, 1.f).vec3,
+  });
+
+  for (int32_t i = 0; i < 2; i++) {
+    Cg_AddSprite(&(cg_sprite_t) {
+      .atlas_image = cg_sprite_smoke,
+      .origin = Vec3_Fmaf(org, i * 3.f, forward),
+      .velocity = Vec3_Add(Vec3_Scale(forward, RandomRangef(10.f, 25.f)),
+                           Vec3(0.f, 0.f, RandomRangef(5.f, 15.f))),
+      .lifetime = 1200,
+      .size = 4.f,
+      .size_velocity = 28.f,
+      .rotation = RandomRadian(),
+      .rotation_velocity = RandomRangef(.2f, .6f),
+      .color = Vec3(.45f, .45f, .45f),
+      .lighting = 1.f,
+    });
+  }
+}
+
+/**
  * @brief Renders the rocket launcher muzzle flash with a dynamic light and optional bubble trail.
  */
 static void Cg_RocketFlash(const cl_entity_t *ent) {
 
-  vec3_t org = Cg_MuzzleOrigin(ent, Vec3(24.f, 0.f, 4.f));
+  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(18.f, 0.f, 24.f));
 
   vec3_t forward, right;
   Vec3_Vectors(ent->angles, &forward, &right, NULL);
@@ -450,13 +646,88 @@ static void Cg_RocketFlash(const cl_entity_t *ent) {
 }
 
 /**
+ * @brief Quake rocket launcher muzzle flash.
+ */
+static void Cg_QuakeRocketFlash(const cl_entity_t *ent) {
+
+  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(10.f, 0.f, 22.f));
+
+  vec3_t forward, right;
+  Vec3_Vectors(ent->angles, &forward, &right, NULL);
+
+  Cg_AddLight(&(cg_light_t) {
+    .origin = org,
+    .radius = 200.f,
+    .color = Vec3(.9f, .6f, .3f),
+    .intensity = 4.f,
+    .decay = 400
+  });
+
+  if (cgi.PointContents(ent->origin) & CONTENTS_MASK_LIQUID) {
+    const vec3_t org2 = Vec3_Fmaf(ent->origin, 40.f, forward);
+    Cg_BubbleTrail(NULL, org, org2, 2.f);
+    return;
+  }
+
+  Cg_AddSprite(&(cg_sprite_t) {
+    .atlas_image = cg_sprite_explosion_glow,
+    .origin = Vec3_Fmaf(org, 8.f, forward),
+    .lifetime = 300,
+    .size = 60.f,
+    .color = Vec3(.9f, .6f, .3f),
+  });
+
+  for (int32_t i = 0; i < 3; i++) {
+    Cg_AddSprite(&(cg_sprite_t) {
+      .atlas_image = cg_sprite_flame,
+      .origin = Vec3_Fmaf(org, 4.f + i * 4.f, forward),
+      .velocity = Vec3_Scale(forward, RandomRangef(40.f, 80.f)),
+      .lifetime = RandomRangef(200.f, 400.f),
+      .size = RandomRangef(10.f, 18.f),
+      .size_velocity = -20.f,
+      .rotation = RandomRadian(),
+      .color = ColorHSV(RandomRangef(20.f, 50.f), 1.f, 1.f).vec3,
+    });
+  }
+
+  Cg_AddSprite(&(cg_sprite_t) {
+    .atlas_image = cg_sprite_smoke,
+    .origin = org,
+    .velocity = Vec3_Scale(forward, RandomRangef(15.f, 30.f)),
+    .lifetime = 800,
+    .size = 4.f,
+    .size_velocity = 36.f,
+    .rotation = RandomRadian(),
+    .rotation_velocity = RandomRangef(.2f, .8f),
+    .color = Vec3(.5f, .5f, .5f),
+    .lighting = 1.f,
+  });
+
+  for (int32_t i = 0; i < 24; i++) {
+    Cg_AddSprite(&(cg_sprite_t) {
+      .atlas_image = cg_sprite_particle2,
+      .origin = Vec3_Fmaf(org, 6.f, forward),
+      .velocity = Vec3_Add(Vec3_Scale(forward, RandomRangef(100.f, 250.f)),
+                           Vec3_RandomRange(-60.f, 60.f)),
+      .acceleration.z = -SPRITE_GRAVITY,
+      .lifetime = RandomRangef(400.f, 800.f),
+      .size = RandomRangef(1.f, 2.f),
+      .color = ColorHSV(RandomRangef(15.f, 45.f), 1.f, 1.f).vec3,
+    });
+  }
+}
+
+/**
  * @brief Hyperblaster muzzle flash.
  */
 static void Cg_HyperblasterFlash(const cl_entity_t *ent) {
 
-  vec3_t org = Cg_MuzzleOrigin(ent, Vec3(26.f, 0.f, 3.f));
+  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(18.f, 0.f, 21.f));
 
-  const vec3_t color = Vec3(.4f, .7f, .9f);
+  const vec3_t color = ColorHSV(204.f, .8f, 1.f).vec3;
+
+  vec3_t forward;
+  Vec3_Vectors(ent->angles, &forward, NULL, NULL);
 
   Cg_AddLight(&(cg_light_t) {
     .origin = org,
@@ -465,6 +736,28 @@ static void Cg_HyperblasterFlash(const cl_entity_t *ent) {
     .intensity = 2.f,
     .decay = 300,
   });
+
+  Cg_AddSprite(&(cg_sprite_t) {
+    .atlas_image = cg_sprite_impact_spark_01_dot,
+    .origin = Vec3_Fmaf(org, 2.f, forward),
+    .rotation = RandomRadian(),
+    .size = 24.f,
+    .size_velocity = -80.f,
+    .lifetime = 100.f,
+    .color = color,
+  });
+
+  for (int32_t i = 0; i < 2; i++) {
+    Cg_AddSprite(&(cg_sprite_t) {
+      .atlas_image = cg_sprite_impact_spark_01_dot,
+      .origin = Vec3_Fmaf(org, 2.f, forward),
+      .velocity = Vec3_Scale(Vec3_Mix(Vec3_RandomDir(), forward, .7f), RandomRangef(60.f, 120.f)),
+      .size = RandomRangef(2.f, 4.f),
+      .size_velocity = -10.f,
+      .lifetime = RandomRangef(80.f, 200.f),
+      .color = color,
+    });
+  }
 }
 
 /**
@@ -472,15 +765,15 @@ static void Cg_HyperblasterFlash(const cl_entity_t *ent) {
  */
 static void Cg_BfgFlash(const cl_entity_t *ent) {
 
-  vec3_t org = Cg_MuzzleOrigin(ent, Vec3(24.f, 0.f, 0.f));
+  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(16.f, 0.f, 24.f));
 
-  const vec3_t color = Color3b(75, 91, 39).vec3;
+  const vec3_t color = ColorHSV(85.f, .9f, 1.f).vec3;
 
   Cg_AddLight(&(cg_light_t) {
     .origin = org,
-    .radius = 200.f,
+    .radius = 320.f,
     .color = color,
-    .intensity = 4.f,
+    .intensity = 6.f,
     .decay = 500,
   });
 
@@ -496,7 +789,8 @@ static void Cg_BfgFlash(const cl_entity_t *ent) {
     .atlas_image = cg_sprite_explosion_glow,
     .origin = org,
     .lifetime = 400,
-    .size = 50.f,
+    .size = 80.f,
+    .size_velocity = 30.f,
     .color = color,
   });
 
@@ -505,7 +799,7 @@ static void Cg_BfgFlash(const cl_entity_t *ent) {
     .animation = cg_sprite_bfg_explosion_2,
     .origin = org,
     .lifetime = Cg_AnimationLifetime(cg_sprite_bfg_explosion_2, 60),
-    .size = 20.f,
+    .size = 30.f,
     .rotation = RandomRadian(),
     .color = color,
   });
@@ -517,7 +811,7 @@ static void Cg_BfgFlash(const cl_entity_t *ent) {
       .origin = org,
       .velocity = Vec3_Scale(Vec3_RandomDir(), RandomRangef(40.f, 100.f)),
       .lifetime = RandomRangef(200.f, 400.f),
-      .size = RandomRangef(6.f, 12.f),
+      .size = RandomRangef(8.f, 16.f),
       .size_velocity = -15.f,
       .rotation = RandomRadian(),
       .color = color,
@@ -532,9 +826,101 @@ static void Cg_BfgFlash(const cl_entity_t *ent) {
       .origin = org,
       .velocity = Vec3_Scale(Vec3_RandomDir(), RandomRangef(60.f, 140.f)),
       .lifetime = RandomRangef(300.f, 600.f),
-      .size = RandomRangef(2.f, 4.f),
+      .size = RandomRangef(3.f, 6.f),
       .size_velocity = -4.f,
       .color = color,
+    });
+  }
+}
+
+/**
+ * @brief Quake nailgun muzzle flash — small, sharp, no big flame cone.
+ */
+static void Cg_QuakeNailgunFlash(const cl_entity_t *ent) {
+
+  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(4.f, 0.f, 4.f));
+
+  vec3_t forward;
+  Vec3_Vectors(ent->angles, &forward, NULL, NULL);
+
+  Cg_AddLight(&(cg_light_t) {
+    .origin = org,
+    .radius = 60.f,
+    .color = Vec3(.9f, .7f, .3f),
+    .intensity = 2.f,
+    .decay = 100,
+  });
+
+  if (cgi.PointContents(ent->origin) & CONTENTS_MASK_LIQUID) {
+    Cg_BubbleTrail(NULL, org, Vec3_Fmaf(ent->origin, 30.f, forward), 2.f);
+    return;
+  }
+
+  Cg_AddSprite(&(cg_sprite_t) {
+    .atlas_image = cg_sprite_impact_spark_01_dot,
+    .origin = Vec3_Fmaf(org, 2.f, forward),
+    .rotation = RandomRadian(),
+    .size = 12.f,
+    .size_velocity = -40.f,
+    .lifetime = 80.f,
+    .color = Vec3(1.f, .85f, .5f),
+  });
+
+  for (int32_t i = 0; i < 2; i++) {
+    Cg_AddSprite(&(cg_sprite_t) {
+      .atlas_image = cg_sprite_impact_spark_01_dot,
+      .origin = Vec3_Fmaf(org, 2.f, forward),
+      .velocity = Vec3_Scale(Vec3_Mix(Vec3_RandomDir(), forward, .6f), RandomRangef(40.f, 80.f)),
+      .size = RandomRangef(1.5f, 3.f),
+      .size_velocity = -8.f,
+      .lifetime = RandomRangef(80.f, 180.f),
+      .color = Vec3(1.f, .85f, .5f),
+    });
+  }
+}
+
+/**
+ * @brief Quake super nailgun muzzle flash.
+ */
+static void Cg_QuakeSuperNailgunFlash(const cl_entity_t *ent) {
+
+  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(20.f, 0.f, 28.f));
+
+  vec3_t forward;
+  Vec3_Vectors(ent->angles, &forward, NULL, NULL);
+
+  Cg_AddLight(&(cg_light_t) {
+    .origin = org,
+    .radius = 60.f,
+    .color = Vec3(.9f, .7f, .3f),
+    .intensity = 2.f,
+    .decay = 100,
+  });
+
+  if (cgi.PointContents(ent->origin) & CONTENTS_MASK_LIQUID) {
+    Cg_BubbleTrail(NULL, org, Vec3_Fmaf(ent->origin, 30.f, forward), 2.f);
+    return;
+  }
+
+  Cg_AddSprite(&(cg_sprite_t) {
+    .atlas_image = cg_sprite_impact_spark_01_dot,
+    .origin = Vec3_Fmaf(org, 2.f, forward),
+    .rotation = RandomRadian(),
+    .size = 12.f,
+    .size_velocity = -40.f,
+    .lifetime = 80.f,
+    .color = Vec3(1.f, .85f, .5f),
+  });
+
+  for (int32_t i = 0; i < 2; i++) {
+    Cg_AddSprite(&(cg_sprite_t) {
+      .atlas_image = cg_sprite_impact_spark_01_dot,
+      .origin = Vec3_Fmaf(org, 2.f, forward),
+      .velocity = Vec3_Scale(Vec3_Mix(Vec3_RandomDir(), forward, .6f), RandomRangef(40.f, 80.f)),
+      .size = RandomRangef(1.5f, 3.f),
+      .size_velocity = -8.f,
+      .lifetime = RandomRangef(80.f, 180.f),
+      .color = Vec3(1.f, .85f, .5f),
     });
   }
 }
@@ -616,6 +1002,36 @@ void Cg_ParseMuzzleFlash(void) {
       sample = cg_sample_teleport;
       Cg_LogoutFlash(ent);
       pitch = 4;
+      break;
+    case MZ_QUAKE_SHOTGUN:
+      sample = cg_sample_quake_shotgun_fire;
+      Cg_QuakeShotgunFlash(ent);
+      pitch = 3;
+      break;
+    case MZ_QUAKE_SUPER_SHOTGUN:
+      sample = cg_sample_quake_supershotgun_fire;
+      Cg_QuakeSuperShotgunFlash(ent);
+      pitch = 3;
+      break;
+    case MZ_QUAKE_NAILGUN:
+      sample = cg_sample_quake_nailgun_fire;
+      Cg_QuakeNailgunFlash(ent);
+      pitch = 5;
+      break;
+    case MZ_QUAKE_SUPER_NAILGUN:
+      sample = cg_sample_quake_supernailgun_fire;
+      Cg_QuakeSuperNailgunFlash(ent);
+      pitch = 5;
+      break;
+    case MZ_QUAKE_GRENADE_LAUNCHER:
+      sample = cg_sample_quake_grenadelauncher_fire;
+      Cg_QuakeGrenadeFlash(ent);
+      pitch = 3;
+      break;
+    case MZ_QUAKE_ROCKET_LAUNCHER:
+      sample = cg_sample_quake_rocketlauncher_fire;
+      Cg_QuakeRocketFlash(ent);
+      pitch = 3;
       break;
     default:
       sample = NULL;

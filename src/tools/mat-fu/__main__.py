@@ -4,9 +4,9 @@ Normalmap-fu: comprehensive GUI tool for authoring Quetoo per-pixel material
 assets (diffuse, normalmap+heightmap, specularmap).
 
 Run with:
-    python normalmap-fu/                              # current dir, no args
-    python normalmap-fu/ /path/to/normalmap.png
-    python normalmap-fu/ --directory /path/to/textures/
+    python mat-fu/                              # current dir, no args
+    python mat-fu/ /path/to/normalmap.png
+    python mat-fu/ --directory /path/to/textures/
 
 File conventions
 ----------------
@@ -45,7 +45,7 @@ SPEC_EXT = ".jpg"
 THUMB_SIZE = 96
 TILE_SIZE = 256
 
-PRESET_FILENAME = ".normalmap-fu.json"
+PRESET_FILENAME = ".mat-fu.json"
 
 # Quetoo's renderer uses Quake's V-down texture coordinates, which makes the
 # per-vertex bitangent point in the image-down direction. As a result the
@@ -1841,7 +1841,7 @@ def cmd_gui(args) -> int:
 def main() -> int:
   import argparse
   parser = argparse.ArgumentParser(
-    prog="normalmap-fu",
+    prog="mat-fu",
     description="Author Quetoo per-pixel material assets (normal/height/spec).")
   sub = parser.add_subparsers(dest="cmd")
 

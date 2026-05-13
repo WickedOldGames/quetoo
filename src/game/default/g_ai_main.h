@@ -34,7 +34,6 @@
 #include "g_ai_node.h"
 #include "g_ai_types.h"
 
-extern cvar_t *g_ai_clients;
 extern cvar_t *g_ai_no_target;
 extern cvar_t *g_ai_node_dev;
 

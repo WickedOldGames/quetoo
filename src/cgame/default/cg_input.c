@@ -151,7 +151,7 @@ static void Cg_WeaponKick(const pm_cmd_t *cmd) {
 
     float degrees, interval = 64.0;
 
-    switch (ps->stats[STAT_WEAPON_TAG] & 0xFF) {
+    switch (ps->stats[STAT_WEAPON_BIT] & 0xFF) {
       case WEAPON_BLASTER:
         degrees = 1.0;
         break;

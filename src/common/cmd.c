@@ -28,7 +28,7 @@ typedef struct cmd_args_s {
   char args[MAX_STRING_CHARS];
 } cmd_args_t;
 
-#define CBUF_CHARS 8192
+#define CBUF_CHARS 65536
 
 typedef struct cmd_state_s {
   GHashTable *commands;
