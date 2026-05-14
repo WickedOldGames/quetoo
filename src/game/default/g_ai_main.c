@@ -1634,6 +1634,22 @@ void G_Ai_Think(g_client_t *cl, pm_cmd_t *cmd) {
     G_Ai_ClearGoal(&cl->ai->backup_move_target);
   }
 
+  // clear stale entity goals whose target has been freed or reused
+  if (cl->ai->combat_target.type == AI_GOAL_ENTITY &&
+      cl->ai->combat_target.entity.spawn_id != cl->ai->combat_target.entity.ent->s.spawn_id) {
+    G_Ai_ClearGoal(&cl->ai->combat_target);
+  }
+
+  if (cl->ai->move_target.type == AI_GOAL_ENTITY &&
+      cl->ai->move_target.entity.spawn_id != cl->ai->move_target.entity.ent->s.spawn_id) {
+    G_Ai_ClearGoal(&cl->ai->move_target);
+  }
+
+  if (cl->ai->backup_move_target.type == AI_GOAL_ENTITY &&
+      cl->ai->backup_move_target.entity.spawn_id != cl->ai->backup_move_target.entity.ent->s.spawn_id) {
+    G_Ai_ClearGoal(&cl->ai->backup_move_target);
+  }
+
   // run functional goals
   for (int32_t i = 0; i < AI_FUNC_GOAL_TOTAL; i++) {
 

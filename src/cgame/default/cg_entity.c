@@ -267,8 +267,8 @@ static void Cg_AddEntity(cl_entity_t *ent) {
     // add a client entity, with an animated player model
     Cg_AddClientEntity(ent, &e);
 
-    // add our view weapon, if it's us and we're in first-person
-    if (ent == cgi.client->entity && !cgi.client->third_person) {
+    // add our view weapon, if it's our view entity and we're in first-person
+    if (ent == Cg_Self() && !cgi.client->third_person) {
       Cg_AddWeapon(ent, &e);
     }
 

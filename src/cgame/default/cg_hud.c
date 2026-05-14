@@ -466,11 +466,11 @@ static void Cg_DrawChase(const player_state_t *ps) {
 
   cl_entity_t *ent = cgi.client->entities + e;
 
-  const int32_t c = ent->current.client;
+  const cg_client_info_t *ci = &cg_state.clients[ent->current.client];
 
   cgi.BindFont("small", NULL, &ch);
 
-  g_snprintf(string, sizeof(string), "Chasing ^7%s", cgi.ConfigString(c));
+  g_snprintf(string, sizeof(string), "Chasing ^7%s", ci->name);
 
   if ((s = strchr(string, '\\'))) {
     *s = '\0';
