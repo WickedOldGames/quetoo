@@ -384,6 +384,31 @@ static void G_Ai_Node_UpdateCosts(const ai_node_id_t id) {
 }
 
 /**
+ * @brief Returns false if any func_plat covering position is not at its bottom (accessible) state.
+ * Bots should not attempt to path to nodes on an elevated platform.
+ */
+static bool G_Ai_PlatformAccessible(const vec3_t position) {
+
+  G_ForEachEntity(ent, {
+    if (!ent->classname || strcmp(ent->classname, "func_plat") != 0) {
+      continue;
+    }
+
+    if (position.x < ent->abs_bounds.mins.x || position.x > ent->abs_bounds.maxs.x ||
+        position.y < ent->abs_bounds.mins.y || position.y > ent->abs_bounds.maxs.y) {
+      continue;
+    }
+
+    // Platform surface (abs_bounds.maxs.z) must be within reach of the node's Z.
+    if (ent->abs_bounds.maxs.z > position.z + 32.f) {
+      return false;
+    }
+  });
+
+  return true;
+}
+
+/**
  * @brief Check if the node we want to move towards is currently pathable.
  */
 bool G_Ai_Node_CanPathTo(const vec3_t position) {
@@ -423,7 +448,7 @@ bool G_Ai_Node_CanPathTo(const vec3_t position) {
     return false;
   }
 
-  return true;
+  return !G_Ai_PlatformAccessible(position) ? false : true;
 }
 
 /**
@@ -1192,6 +1217,11 @@ GArray *G_Ai_Node_FindPath(const ai_node_id_t start, const ai_node_id_t end, con
     for (guint i = 0; i < node->links->len; i++) {
       const ai_link_t *link = &g_array_index(node->links, ai_link_t, i);
       ai_node_t *link_node = &g_array_index(g_ai_nodes, ai_node_t, link->id);
+
+      if (!G_Ai_PlatformAccessible(link_node->position)) {
+        continue;
+      }
+
       const float new_cost = node->cost + link->cost;
 
       if (!g_hash_table_lookup(costs_started, link_node) || new_cost < link_node->cost) {
