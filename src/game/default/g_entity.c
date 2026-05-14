@@ -639,11 +639,11 @@ void G_SpawnEntities(const char *name, cm_entity_t *const *entities, size_t num_
 
   g_strlcpy(g_level.name, name, sizeof(g_level.name));
 
+  G_InitMedia();
+
   for (size_t i = 0; i < num_entities; i++) {
     G_SpawnEntity(entities[i]);
   }
-
-  G_InitMedia();
 
   G_InitEntityTeams();
 
