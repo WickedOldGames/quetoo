@@ -29,110 +29,6 @@
 const g_item_def_t bg_item_defs[] = {
 
   {
-    .classname = "item_armor_body",
-    .pickup_sound = "armor/body/pickup.wav",
-    .model = "models/armor/body/tris.md3",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/i_armor_body",
-    .name = "Body Armor",
-    .quantity = 100,
-    .max = 200,
-    .type = ITEM_ARMOR,
-    .tag = ARMOR_BODY,
-    .priority = 0.80,
-    .precaches = ""
-  },
-
-  {
-    .classname = "item_armor_combat",
-    .pickup_sound = "armor/combat/pickup.wav",
-    .model = "models/armor/combat/tris.md3",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/i_armor_combat",
-    .name = "Combat Armor",
-    .quantity = 50,
-    .max = 100,
-    .type = ITEM_ARMOR,
-    .tag = ARMOR_COMBAT,
-    .priority = 0.66,
-    .precaches = ""
-  },
-
-  {
-    .classname = "item_armor_jacket",
-    .pickup_sound = "armor/jacket/pickup.wav",
-    .model = "models/armor/jacket/tris.md3",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/i_armor_jacket",
-    .name = "Jacket Armor",
-    .quantity = 25,
-    .max = 50,
-    .type = ITEM_ARMOR,
-    .tag = ARMOR_JACKET,
-    .priority = 0.50,
-    .precaches = ""
-  },
-
-  {
-    .classname = "item_armor_shard",
-    .pickup_sound = "armor/shard/pickup.wav",
-    .model = "models/armor/shard/tris.md3",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/i_armor_shard",
-    .name = "Armor Shard",
-    .quantity = 2,
-    .type = ITEM_ARMOR,
-    .tag = ARMOR_SHARD,
-    .priority = 0.10,
-    .precaches = ""
-  },
-
-  {
-    .classname = "item_quake_armor_body",
-    .pickup_sound = "armor/body/pickup.wav",
-    .model = "models/armor/quake_body/tris.obj",
-    .effects = EF_ROTATE,
-    .icon = "pics/i_quake_armor_body",
-    .name = "Red Armor",
-    .quantity = 200,
-    .max = 200,
-    .type = ITEM_ARMOR,
-    .tag = ARMOR_QUAKE_BODY,
-    .priority = 0.90,
-    .precaches = ""
-  },
-
-  {
-    .classname = "item_quake_armor_combat",
-    .pickup_sound = "armor/combat/pickup.wav",
-    .model = "models/armor/quake_combat/tris.obj",
-    .effects = EF_ROTATE,
-    .icon = "pics/i_quake_armor_combat",
-    .name = "Yellow Armor",
-    .quantity = 150,
-    .max = 150,
-    .type = ITEM_ARMOR,
-    .tag = ARMOR_QUAKE_COMBAT,
-    .priority = 0.75,
-    .precaches = ""
-  },
-
-  {
-    .classname = "item_quake_armor_jacket",
-    .pickup_sound = "armor/jacket/pickup.wav",
-    .model = "models/armor/quake_jacket/tris.obj",
-    .effects = EF_ROTATE,
-    .icon = "pics/i_quake_armor_jacket",
-    .name = "Green Armor",
-    .quantity = 100,
-    .max = 100,
-    .type = ITEM_ARMOR,
-    .tag = ARMOR_QUAKE_JACKET,
-    .priority = 0.60,
-    .precaches = ""
-  },
-
-  {
     .classname = "weapon_blaster",
     .pickup_sound = "weapons/common/pickup.wav",
     .model = "models/weapons/blaster/tris.md3",
@@ -312,6 +208,119 @@ const g_item_def_t bg_item_defs[] = {
   },
 
   {
+    .classname = "weapon_quake_shotgun",
+    .pickup_sound = "weapons/common/pickup.wav",
+    .model = "models/weapons/quake_shotgun/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/w_quake_shotgun",
+    .name = "Shotgun",
+    .quantity = 1,
+    .ammo = "Shells",
+    .type = ITEM_WEAPON,
+    .tag = WEAPON_QUAKE_SHOTGUN,
+    .flags = WF_HITSCAN | WF_SHORT_RANGE,
+    .priority = 0.15,
+    .precaches = "weapons/shotgun/fire.wav"
+  },
+
+  {
+    .classname = "weapon_quake_supershotgun",
+    .pickup_sound = "weapons/common/pickup.wav",
+    .model = "models/weapons/quake_supershotgun/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/w_quake_supershotgun",
+    .name = "Super Shotgun",
+    .quantity = 2,
+    .ammo = "Shells",
+    .type = ITEM_WEAPON,
+    .tag = WEAPON_QUAKE_SUPER_SHOTGUN,
+    .flags = WF_HITSCAN | WF_SHORT_RANGE,
+    .priority = 0.25,
+    .precaches = "weapons/supershotgun/fire.wav"
+  },
+
+  {
+    .classname = "weapon_quake_nailgun",
+    .pickup_sound = "weapons/common/pickup.wav",
+    .model = "models/weapons/quake_nailgun/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/w_quake_nailgun",
+    .name = "Nailgun",
+    .quantity = 1,
+    .ammo = "Nails",
+    .type = ITEM_WEAPON,
+    .tag = WEAPON_QUAKE_NAILGUN,
+    .flags = WF_HITSCAN | WF_MED_RANGE,
+    .priority = 0.30,
+    .precaches = "weapons/machinegun/fire_1.wav"
+  },
+
+  {
+    .classname = "weapon_quake_supernailgun",
+    .pickup_sound = "weapons/common/pickup.wav",
+    .model = "models/weapons/quake_supernailgun/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/w_quake_supernailgun",
+    .name = "Super Nailgun",
+    .quantity = 2,
+    .ammo = "Nails",
+    .type = ITEM_WEAPON,
+    .tag = WEAPON_QUAKE_SUPER_NAILGUN,
+    .flags = WF_HITSCAN | WF_MED_RANGE,
+    .priority = 0.40,
+    .precaches = "weapons/machinegun/fire_1.wav"
+  },
+
+  {
+    .classname = "weapon_quake_grenadelauncher",
+    .pickup_sound = "weapons/common/pickup.wav",
+    .model = "models/weapons/quake_grenadelauncher/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/w_quake_grenadelauncher",
+    .name = "Grenade Launcher",
+    .quantity = 1,
+    .ammo = "Rockets",
+    .type = ITEM_WEAPON,
+    .tag = WEAPON_QUAKE_GRENADE_LAUNCHER,
+    .flags = WF_PROJECTILE | WF_EXPLOSIVE | WF_MED_RANGE,
+    .priority = 0.45,
+    .precaches = "weapons/grenadelauncher/fire.wav"
+  },
+
+  {
+    .classname = "weapon_quake_rocketlauncher",
+    .pickup_sound = "weapons/common/pickup.wav",
+    .model = "models/weapons/quake_rocketlauncher/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/w_quake_rocketlauncher",
+    .name = "Rocket Launcher",
+    .quantity = 1,
+    .ammo = "Rockets",
+    .type = ITEM_WEAPON,
+    .tag = WEAPON_QUAKE_ROCKET_LAUNCHER,
+    .flags = WF_PROJECTILE | WF_EXPLOSIVE | WF_MED_RANGE | WF_LONG_RANGE,
+    .priority = 0.60,
+    .precaches = "weapons/rocketlauncher/fire.wav"
+  },
+
+  {
+    .classname = "weapon_quake_thunderbolt",
+    .pickup_sound = "weapons/common/pickup.wav",
+    .model = "models/weapons/quake_thunderbolt/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/w_quake_thunderbolt",
+    .name = "Thunderbolt",
+    .quantity = 1,
+    .ammo = "Bolts",
+    .type = ITEM_WEAPON,
+    .tag = WEAPON_QUAKE_THUNDERBOLT,
+    .flags = WF_HITSCAN | WF_SHORT_RANGE,
+    .priority = 0.55,
+    .precaches = "weapons/lightning/fire.wav weapons/lightning/fly.wav "
+    "weapons/lightning/discharge.wav"
+  },
+
+  {
     .classname = "ammo_shells",
     .pickup_sound = "ammo/common/pickup.wav",
     .model = "models/ammo/shells/tris.md3",
@@ -434,16 +443,166 @@ const g_item_def_t bg_item_defs[] = {
   },
 
   {
-    .classname = "item_adrenaline",
-    .pickup_sound = "powerups/adrenaline/pickup.wav",
-    .model = "models/powerups/adrenaline/tris.obj",
+    .classname = "ammo_quake_shells",
+    .pickup_sound = "ammo/common/pickup.wav",
+    .model = "models/ammo/quake_shells/tris.obj",
+    .effects = 0,
+    .icon = "pics/a_quake_shells",
+    .name = "Shells",
+    .quantity = 10,
+    .max = 80,
+    .type = ITEM_AMMO,
+    .tag = AMMO_QUAKE_SHELLS,
+    .priority = 0.15,
+    .precaches = ""
+  },
+
+  {
+    .classname = "ammo_quake_nails",
+    .pickup_sound = "ammo/common/pickup.wav",
+    .model = "models/ammo/quake_nails/tris.obj",
+    .effects = 0,
+    .icon = "pics/a_quake_nails",
+    .name = "Nails",
+    .quantity = 25,
+    .max = 200,
+    .type = ITEM_AMMO,
+    .tag = AMMO_QUAKE_NAILS,
+    .priority = 0.15,
+    .precaches = ""
+  },
+
+  {
+    .classname = "ammo_quake_rockets",
+    .pickup_sound = "ammo/common/pickup.wav",
+    .model = "models/ammo/quake_rockets/tris.obj",
+    .effects = 0,
+    .icon = "pics/a_quake_rockets",
+    .name = "Rockets",
+    .quantity = 5,
+    .max = 100,
+    .type = ITEM_AMMO,
+    .tag = AMMO_QUAKE_ROCKETS,
+    .priority = 0.20,
+    .precaches = ""
+  },
+
+  {
+    .classname = "ammo_quake_bolts",
+    .pickup_sound = "ammo/common/pickup.wav",
+    .model = "models/ammo/quake_bolts/tris.obj",
+    .effects = 0,
+    .icon = "pics/a_quake_bolts",
+    .name = "Bolts",
+    .quantity = 15,
+    .max = 200,
+    .type = ITEM_AMMO,
+    .tag = AMMO_QUAKE_BOLTS,
+    .priority = 0.20,
+    .precaches = ""
+  },
+
+  {
+    .classname = "item_armor_shard",
+    .pickup_sound = "armor/shard/pickup.wav",
+    .model = "models/armor/shard/tris.md3",
     .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/i_adrenaline",
-    .name = "Adrenaline",
-    .quantity = 0,
-    .type = ITEM_POWERUP,
-    .tag = POWERUP_ADRENALINE,
-    .priority = 0.45,
+    .icon = "pics/i_armor_shard",
+    .name = "Armor Shard",
+    .quantity = 2,
+    .type = ITEM_ARMOR,
+    .tag = ARMOR_SHARD,
+    .priority = 0.10,
+    .precaches = ""
+  },
+
+  {
+    .classname = "item_armor_jacket",
+    .pickup_sound = "armor/jacket/pickup.wav",
+    .model = "models/armor/jacket/tris.md3",
+    .effects = EF_ROTATE | EF_BOB,
+    .icon = "pics/i_armor_jacket",
+    .name = "Jacket Armor",
+    .quantity = 25,
+    .max = 50,
+    .type = ITEM_ARMOR,
+    .tag = ARMOR_JACKET,
+    .priority = 0.50,
+    .precaches = ""
+  },
+
+  {
+    .classname = "item_armor_combat",
+    .pickup_sound = "armor/combat/pickup.wav",
+    .model = "models/armor/combat/tris.md3",
+    .effects = EF_ROTATE | EF_BOB,
+    .icon = "pics/i_armor_combat",
+    .name = "Combat Armor",
+    .quantity = 50,
+    .max = 100,
+    .type = ITEM_ARMOR,
+    .tag = ARMOR_COMBAT,
+    .priority = 0.66,
+    .precaches = ""
+  },
+
+  {
+    .classname = "item_armor_body",
+    .pickup_sound = "armor/body/pickup.wav",
+    .model = "models/armor/body/tris.md3",
+    .effects = EF_ROTATE | EF_BOB,
+    .icon = "pics/i_armor_body",
+    .name = "Body Armor",
+    .quantity = 100,
+    .max = 200,
+    .type = ITEM_ARMOR,
+    .tag = ARMOR_BODY,
+    .priority = 0.80,
+    .precaches = ""
+  },
+
+  {
+    .classname = "item_quake_armor_jacket",
+    .pickup_sound = "armor/jacket/pickup.wav",
+    .model = "models/armor/quake_jacket/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/i_quake_armor_jacket",
+    .name = "Green Armor",
+    .quantity = 100,
+    .max = 100,
+    .type = ITEM_ARMOR,
+    .tag = ARMOR_QUAKE_JACKET,
+    .priority = 0.60,
+    .precaches = ""
+  },
+
+  {
+    .classname = "item_quake_armor_combat",
+    .pickup_sound = "armor/combat/pickup.wav",
+    .model = "models/armor/quake_combat/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/i_quake_armor_combat",
+    .name = "Yellow Armor",
+    .quantity = 150,
+    .max = 150,
+    .type = ITEM_ARMOR,
+    .tag = ARMOR_QUAKE_COMBAT,
+    .priority = 0.75,
+    .precaches = ""
+  },
+
+  {
+    .classname = "item_quake_armor_body",
+    .pickup_sound = "armor/body/pickup.wav",
+    .model = "models/armor/quake_body/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/i_quake_armor_body",
+    .name = "Red Armor",
+    .quantity = 200,
+    .max = 200,
+    .type = ITEM_ARMOR,
+    .tag = ARMOR_QUAKE_BODY,
+    .priority = 0.90,
     .precaches = ""
   },
 
@@ -546,58 +705,6 @@ const g_item_def_t bg_item_defs[] = {
   },
 
   {
-    .classname = "item_flag_team1",
-    .model = "models/ctf/flag/tris.obj",
-    .effects = EF_BOB | EF_ROTATE | EF_TEAM_TINT,
-    .icon = "pics/i_flag1",
-    .name = "Enemy Flag",
-    .quantity = 0,
-    .type = ITEM_FLAG,
-    .tag = FLAG_RED,
-    .priority = 0.75,
-    .precaches = "ctf/capture.wav ctf/steal.wav ctf/return.wav"
-  },
-
-  {
-    .classname = "item_flag_team2",
-    .model = "models/ctf/flag/tris.obj",
-    .effects = EF_BOB | EF_ROTATE | EF_TEAM_TINT,
-    .icon = "pics/i_flag2",
-    .name = "Enemy Flag",
-    .quantity = 0,
-    .type = ITEM_FLAG,
-    .tag = FLAG_BLUE,
-    .priority = 0.75,
-    .precaches = "ctf/capture.wav ctf/steal.wav ctf/return.wav"
-  },
-
-  {
-    .classname = "item_flag_team3",
-    .model = "models/ctf/flag/tris.obj",
-    .effects = EF_BOB | EF_ROTATE | EF_TEAM_TINT,
-    .icon = "pics/i_flag3",
-    .name = "Enemy Flag",
-    .quantity = 0,
-    .type = ITEM_FLAG,
-    .tag = FLAG_YELLOW,
-    .priority = 0.75,
-    .precaches = "ctf/capture.wav ctf/steal.wav ctf/return.wav"
-  },
-
-  {
-    .classname = "item_flag_team4",
-    .model = "models/ctf/flag/tris.obj",
-    .effects = EF_BOB | EF_ROTATE | EF_TEAM_TINT,
-    .icon = "pics/i_flag4",
-    .name = "Enemy Flag",
-    .quantity = 0,
-    .type = ITEM_FLAG,
-    .tag = FLAG_GREEN,
-    .priority = 0.75,
-    .precaches = "ctf/capture.wav ctf/steal.wav ctf/return.wav"
-  },
-
-  {
     .classname = "item_quad",
     .pickup_sound = "powerups/quad/pickup.wav",
     .model = "models/powerups/quad/tris.obj",
@@ -611,6 +718,52 @@ const g_item_def_t bg_item_defs[] = {
     .precaches = "powerups/quad/attack.wav powerups/quad/expire.wav",
     .light_color = { { .2f, .4f, 1.f } },
     .light_radius = 160.f
+  },
+
+  {
+    .classname = "item_adrenaline",
+    .pickup_sound = "powerups/adrenaline/pickup.wav",
+    .model = "models/powerups/adrenaline/tris.obj",
+    .effects = EF_ROTATE | EF_BOB,
+    .icon = "pics/i_adrenaline",
+    .name = "Adrenaline",
+    .quantity = 0,
+    .type = ITEM_POWERUP,
+    .tag = POWERUP_ADRENALINE,
+    .priority = 0.45,
+    .precaches = ""
+  },
+
+  {
+    .classname = "item_invulnerability",
+    .pickup_sound = "powerups/common/pickup.wav",
+    .model = "models/powerups/invulnerability/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/i_invulnerability",
+    .name = "Invulnerability",
+    .quantity = 0,
+    .type = ITEM_POWERUP,
+    .tag = POWERUP_INVULNERABILITY,
+    .priority = 0.90,
+    .precaches = "powerups/invulnerability/expire.wav",
+    .light_color = { { 1.f, .2f, .2f } },
+    .light_radius = 160.f
+  },
+
+  {
+    .classname = "item_invisibility",
+    .pickup_sound = "powerups/common/pickup.wav",
+    .model = "models/powerups/invisibility/tris.obj",
+    .effects = EF_ROTATE,
+    .icon = "pics/i_invisibility",
+    .name = "Invisibility",
+    .quantity = 0,
+    .type = ITEM_POWERUP,
+    .tag = POWERUP_INVISIBILITY,
+    .priority = 0.80,
+    .precaches = "powerups/invisibility/expire.wav",
+    .light_color = { { 1.f, .9f, 0.f } },
+    .light_radius = 120.f
   },
 
   {
@@ -684,208 +837,55 @@ const g_item_def_t bg_item_defs[] = {
   },
 
   {
-    .classname = "ammo_quake_shells",
-    .pickup_sound = "ammo/common/pickup.wav",
-    .model = "models/ammo/quake_shells/tris.obj",
-    .effects = 0,
-    .icon = "pics/a_quake_shells",
-    .name = "Shells",
-    .quantity = 10,
-    .max = 80,
-    .type = ITEM_AMMO,
-    .tag = AMMO_QUAKE_SHELLS,
-    .priority = 0.15,
-    .precaches = ""
-  },
-
-  {
-    .classname = "ammo_quake_nails",
-    .pickup_sound = "ammo/common/pickup.wav",
-    .model = "models/ammo/quake_nails/tris.obj",
-    .effects = 0,
-    .icon = "pics/a_quake_nails",
-    .name = "Nails",
-    .quantity = 25,
-    .max = 200,
-    .type = ITEM_AMMO,
-    .tag = AMMO_QUAKE_NAILS,
-    .priority = 0.15,
-    .precaches = ""
-  },
-
-  {
-    .classname = "ammo_quake_rockets",
-    .pickup_sound = "ammo/common/pickup.wav",
-    .model = "models/ammo/quake_rockets/tris.obj",
-    .effects = 0,
-    .icon = "pics/a_quake_rockets",
-    .name = "Rockets",
-    .quantity = 5,
-    .max = 100,
-    .type = ITEM_AMMO,
-    .tag = AMMO_QUAKE_ROCKETS,
-    .priority = 0.20,
-    .precaches = ""
-  },
-
-  {
-    .classname = "ammo_quake_bolts",
-    .pickup_sound = "ammo/common/pickup.wav",
-    .model = "models/ammo/quake_bolts/tris.obj",
-    .effects = 0,
-    .icon = "pics/a_quake_bolts",
-    .name = "Bolts",
-    .quantity = 15,
-    .max = 200,
-    .type = ITEM_AMMO,
-    .tag = AMMO_QUAKE_BOLTS,
-    .priority = 0.20,
-    .precaches = ""
-  },
-
-  {
-    .classname = "weapon_quake_shotgun",
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/quake_shotgun/tris.obj",
-    .effects = EF_ROTATE,
-    .icon = "pics/w_quake_shotgun",
-    .name = "Shotgun",
-    .quantity = 1,
-    .ammo = "Shells",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_QUAKE_SHOTGUN,
-    .flags = WF_HITSCAN | WF_SHORT_RANGE,
-    .priority = 0.15,
-    .precaches = "weapons/shotgun/fire.wav"
-  },
-
-  {
-    .classname = "weapon_quake_supershotgun",
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/quake_supershotgun/tris.obj",
-    .effects = EF_ROTATE,
-    .icon = "pics/w_quake_supershotgun",
-    .name = "Super Shotgun",
-    .quantity = 2,
-    .ammo = "Shells",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_QUAKE_SUPER_SHOTGUN,
-    .flags = WF_HITSCAN | WF_SHORT_RANGE,
-    .priority = 0.25,
-    .precaches = "weapons/supershotgun/fire.wav"
-  },
-
-  {
-    .classname = "weapon_quake_nailgun",
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/quake_nailgun/tris.obj",
-    .effects = EF_ROTATE,
-    .icon = "pics/w_quake_nailgun",
-    .name = "Nailgun",
-    .quantity = 1,
-    .ammo = "Nails",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_QUAKE_NAILGUN,
-    .flags = WF_HITSCAN | WF_MED_RANGE,
-    .priority = 0.30,
-    .precaches = "weapons/machinegun/fire_1.wav"
-  },
-
-  {
-    .classname = "weapon_quake_supernailgun",
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/quake_supernailgun/tris.obj",
-    .effects = EF_ROTATE,
-    .icon = "pics/w_quake_supernailgun",
-    .name = "Super Nailgun",
-    .quantity = 2,
-    .ammo = "Nails",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_QUAKE_SUPER_NAILGUN,
-    .flags = WF_HITSCAN | WF_MED_RANGE,
-    .priority = 0.40,
-    .precaches = "weapons/machinegun/fire_1.wav"
-  },
-
-  {
-    .classname = "weapon_quake_grenadelauncher",
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/quake_grenadelauncher/tris.obj",
-    .effects = EF_ROTATE,
-    .icon = "pics/w_quake_grenadelauncher",
-    .name = "Grenade Launcher",
-    .quantity = 1,
-    .ammo = "Rockets",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_QUAKE_GRENADE_LAUNCHER,
-    .flags = WF_PROJECTILE | WF_EXPLOSIVE | WF_MED_RANGE,
-    .priority = 0.45,
-    .precaches = "weapons/grenadelauncher/fire.wav"
-  },
-
-  {
-    .classname = "weapon_quake_rocketlauncher",
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/quake_rocketlauncher/tris.obj",
-    .effects = EF_ROTATE,
-    .icon = "pics/w_quake_rocketlauncher",
-    .name = "Rocket Launcher",
-    .quantity = 1,
-    .ammo = "Rockets",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_QUAKE_ROCKET_LAUNCHER,
-    .flags = WF_PROJECTILE | WF_EXPLOSIVE | WF_MED_RANGE | WF_LONG_RANGE,
-    .priority = 0.60,
-    .precaches = "weapons/rocketlauncher/fire.wav"
-  },
-
-  {
-    .classname = "weapon_quake_thunderbolt",
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/quake_thunderbolt/tris.obj",
-    .effects = EF_ROTATE,
-    .icon = "pics/w_quake_thunderbolt",
-    .name = "Thunderbolt",
-    .quantity = 1,
-    .ammo = "Bolts",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_QUAKE_THUNDERBOLT,
-    .flags = WF_HITSCAN | WF_SHORT_RANGE,
-    .priority = 0.55,
-    .precaches = "weapons/lightning/fire.wav weapons/lightning/fly.wav "
-    "weapons/lightning/discharge.wav"
-  },
-
-  {
-    .classname = "item_invisibility",
-    .pickup_sound = "powerups/common/pickup.wav",
-    .model = "models/powerups/invisibility/tris.obj",
-    .effects = EF_ROTATE,
-    .icon = "pics/i_invisibility",
-    .name = "Invisibility",
+    .classname = "item_flag_team1",
+    .model = "models/ctf/flag/tris.obj",
+    .effects = EF_BOB | EF_ROTATE | EF_TEAM_TINT,
+    .icon = "pics/i_flag1",
+    .name = "Enemy Flag",
     .quantity = 0,
-    .type = ITEM_POWERUP,
-    .tag = POWERUP_INVISIBILITY,
-    .priority = 0.80,
-    .precaches = "powerups/invisibility/expire.wav",
-    .light_color = { { 1.f, .9f, 0.f } },
-    .light_radius = 120.f
+    .type = ITEM_FLAG,
+    .tag = FLAG_RED,
+    .priority = 0.75,
+    .precaches = "ctf/capture.wav ctf/steal.wav ctf/return.wav"
   },
 
   {
-    .classname = "item_invulnerability",
-    .pickup_sound = "powerups/common/pickup.wav",
-    .model = "models/powerups/invulnerability/tris.obj",
-    .effects = EF_ROTATE,
-    .icon = "pics/i_invulnerability",
-    .name = "Invulnerability",
+    .classname = "item_flag_team2",
+    .model = "models/ctf/flag/tris.obj",
+    .effects = EF_BOB | EF_ROTATE | EF_TEAM_TINT,
+    .icon = "pics/i_flag2",
+    .name = "Enemy Flag",
     .quantity = 0,
-    .type = ITEM_POWERUP,
-    .tag = POWERUP_INVULNERABILITY,
-    .priority = 0.90,
-    .precaches = "powerups/invulnerability/expire.wav",
-    .light_color = { { 1.f, .2f, .2f } },
-    .light_radius = 160.f
+    .type = ITEM_FLAG,
+    .tag = FLAG_BLUE,
+    .priority = 0.75,
+    .precaches = "ctf/capture.wav ctf/steal.wav ctf/return.wav"
+  },
+
+  {
+    .classname = "item_flag_team3",
+    .model = "models/ctf/flag/tris.obj",
+    .effects = EF_BOB | EF_ROTATE | EF_TEAM_TINT,
+    .icon = "pics/i_flag3",
+    .name = "Enemy Flag",
+    .quantity = 0,
+    .type = ITEM_FLAG,
+    .tag = FLAG_YELLOW,
+    .priority = 0.75,
+    .precaches = "ctf/capture.wav ctf/steal.wav ctf/return.wav"
+  },
+
+  {
+    .classname = "item_flag_team4",
+    .model = "models/ctf/flag/tris.obj",
+    .effects = EF_BOB | EF_ROTATE | EF_TEAM_TINT,
+    .icon = "pics/i_flag4",
+    .name = "Enemy Flag",
+    .quantity = 0,
+    .type = ITEM_FLAG,
+    .tag = FLAG_GREEN,
+    .priority = 0.75,
+    .precaches = "ctf/capture.wav ctf/steal.wav ctf/return.wav"
   },
 };
 

@@ -34,10 +34,6 @@ const g_item_t *G_FindItemByClassName(const char *classname) {
   for (size_t i = 0; i < bg_num_items; i++) {
     const g_item_t *it = &g_items[bg_item_defs[i].tag];
 
-    if (!it->def.classname) {
-      continue;
-    }
-
     if (!g_strcmp0(it->def.classname, classname)) {
       return it;
     }
