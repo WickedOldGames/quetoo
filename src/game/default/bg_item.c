@@ -889,27 +889,4 @@ const g_item_def_t bg_item_defs[] = {
   },
 };
 
-/**
- * @brief Returns the number of item definitions.
- */
-size_t Bg_NumItemDefs(void) {
-  return sizeof(bg_item_defs) / sizeof(bg_item_defs[0]);
-}
-
-/**
- * @brief Returns the item definition for the given classname, or NULL.
- */
-const g_item_def_t *Bg_ItemDefForClassname(const char *classname) {
-
-  if (!classname) {
-    return NULL;
-  }
-
-  for (size_t i = 0; i < Bg_NumItemDefs(); i++) {
-    if (!g_strcmp0(bg_item_defs[i].classname, classname)) {
-      return &bg_item_defs[i];
-    }
-  }
-
-  return NULL;
-}
+size_t bg_num_items = sizeof(bg_item_defs) / sizeof(bg_item_defs[0]);

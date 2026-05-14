@@ -66,7 +66,7 @@ static void G_Give_f(g_client_t *cl) {
   }
 
   if (give_all || g_ascii_strcasecmp(name, "armor") == 0) {
-    for (i = 0; i < g_num_items; i++) {
+    for (i = 0; i < bg_num_items; i++) {
       it = &g_items[i];
       if (!it->Pickup) {
         continue;
@@ -85,7 +85,7 @@ static void G_Give_f(g_client_t *cl) {
   }
 
   if (give_all || g_ascii_strcasecmp(name, "weapons") == 0) {
-    for (i = 0; i < g_num_items; i++) {
+    for (i = 0; i < bg_num_items; i++) {
       it = &g_items[i];
       if (!it->Pickup) {
         continue;
@@ -104,7 +104,7 @@ static void G_Give_f(g_client_t *cl) {
   }
 
   if (give_all || g_ascii_strcasecmp(name, "ammo") == 0) {
-    for (i = 0; i < g_num_items; i++) {
+    for (i = 0; i < bg_num_items; i++) {
       it = &g_items[i];
       if (!it->Pickup) {
         continue;

@@ -147,9 +147,9 @@ static void G_SpawnEntity(cm_entity_t *def) {
   ent->mass = gi.EntityValue(ent->def, "mass")->value;
 
   // check item spawn functions
-  for (size_t i = 0; i < g_num_items; i++) {
+  const g_item_t *it = g_items;
+  for (size_t i = 0; i < bg_num_items; i++, it++) {
 
-    const g_item_t *it = &g_items[i];
     if (!it->def.classname) {
       continue;
     }
@@ -646,8 +646,6 @@ void G_SpawnEntities(const char *name, cm_entity_t *const *entities, size_t num_
 
   g_strlcpy(g_level.name, name, sizeof(g_level.name));
 
-  G_Ai_Load();
-  
   for (size_t i = 0; i < num_entities; i++) {
     G_SpawnEntity(entities[i]);
   }
@@ -671,6 +669,8 @@ void G_SpawnEntities(const char *name, cm_entity_t *const *entities, size_t num_
   G_ResetSpawnPoints();
 
   G_ResetItems();
+
+  G_Ai_Load();
 }
 
 /**

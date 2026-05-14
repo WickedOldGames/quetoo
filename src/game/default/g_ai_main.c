@@ -56,8 +56,8 @@ static bool G_Ai_IsArmed(const g_client_t *cl) {
 
   const float threshold = AI_ARMED_PRIORITY * Lerpf(1.25f, .6f, cl->ai->personality.aggression);
 
-  for (size_t i = 0; i < g_num_items; i++) {
-    const g_item_t *it = &g_items[i];
+  const g_item_t *it = g_items;
+  for (size_t i = 0; i < bg_num_items; i++, it++) {
     if (it->def.type == ITEM_WEAPON && cl->inventory[i] && it->def.priority >= threshold) {
       return true;
     }
@@ -392,8 +392,8 @@ static void G_Ai_PickWeapon(g_client_t *cl) {
 
   const int16_t *inventory = cl->inventory;
 
-  for (size_t i = 0; i < g_num_items; i++) {
-    const g_item_t *it = &g_items[i];
+  const g_item_t *it = g_items;
+  for (size_t i = 0; i < bg_num_items; i++, it++) {
 
     if (it->def.type != ITEM_WEAPON) { // not weapon
       continue;
@@ -514,8 +514,8 @@ static float G_Ai_EnemyPriority(const g_client_t *cl, const g_entity_t *target, 
   // flag carriers are highest priority
   if (target->client) {
     const int16_t *inventory = target->client->inventory;
-    for (size_t i = 0; i < g_num_items; i++) {
-      const g_item_t *it = &g_items[i];
+    const g_item_t *it = g_items;
+    for (size_t i = 0; i < bg_num_items; i++, it++) {
       if (it->def.type == ITEM_FLAG && inventory[i]) {
         priority += 5.f;
         break;
@@ -551,8 +551,8 @@ static bool G_Ai_ChaseEnemy(const g_client_t *cl, const g_entity_t *target) {
   // if they have a flag, higher chance
   const int16_t *inventory = target->client->inventory;
 
-  for (size_t i = 0; i < g_num_items; i++) {
-    const g_item_t *it = &g_items[i];
+  const g_item_t *it = g_items;
+  for (size_t i = 0; i < bg_num_items; i++, it++) {
 
     if (it->def.type != ITEM_FLAG) { // not flag
       continue;
@@ -1888,7 +1888,6 @@ void G_Ai_Init(void) {
   gi.AddCmd("g_ai_test_path", G_Ai_TestPath_f, CMD_AI, "Save current node data");
   gi.AddCmd("g_ai_offset_nodes", G_Ai_OffsetNodes_f, CMD_AI, "Offset the loaded nodes by the specified translation");
 
-  G_Ai_InitItems();
   G_Ai_InitSkins();
 }
 
@@ -1896,6 +1895,9 @@ void G_Ai_Init(void) {
  * @brief Loads map data for the AI subsystem.
  */
 void G_Ai_Load(void) {
+
+  G_Ai_InitItems();
+
   G_Ai_InitNodes();
 }
 

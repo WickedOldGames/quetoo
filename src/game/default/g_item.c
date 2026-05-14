@@ -26,15 +26,13 @@ const box3_t ITEM_BOUNDS = {
   .maxs = { {  16.0,  16.0,  32.0 } }
 };
 
-#define ITEM_SCALE 1.0
-
 /**
  * @brief Finds an item by its entity class name.
  */
 const g_item_t *G_FindItemByClassName(const char *classname) {
 
-  for (size_t i = 0; i < g_num_items; i++) {
-    const g_item_t *it = &g_items[i];
+  const g_item_t *it = g_items;
+  for (size_t i = 0; i < bg_num_items; i++, it++) {
 
     if (!it->def.classname) {
       continue;
@@ -58,9 +56,8 @@ const g_item_t *G_FindItem(const char *name) {
   }
 
   const g_item_t *fallback = NULL;
-
-  for (size_t i = 0; i < g_num_items; i++) {
-    const g_item_t *it = &g_items[i];
+  const g_item_t *it = g_items;
+  for (size_t i = 0; i < bg_num_items; i++, it++) {
 
     if (!it->def.name) {
       continue;
@@ -1405,11 +1402,6 @@ void G_SpawnItem(g_entity_t *ent, const g_item_t *item) {
 g_item_t *g_items;
 
 /**
- * @brief The total number of items in the item list.
- */
-size_t g_num_items;
-
-/**
  * @brief Returns true if the item belongs to the active item set.
  */
 bool G_ItemAvailable(const g_item_t *item) {
@@ -1638,12 +1630,11 @@ static void G_InitItem(g_item_t *it) {
  */
 void G_InitItems(void) {
 
-  g_num_items = Bg_NumItemDefs();
-  g_items = gi.Malloc(g_num_items * sizeof(g_item_t), MEM_TAG_GAME);
+  g_items = gi.Malloc(bg_num_items * sizeof(g_item_t), MEM_TAG_GAME);
 
-  for (size_t i = 0; i < g_num_items; i++) {
+  g_item_t *it = g_items;
+  for (size_t i = 0; i < bg_num_items; i++, it++) {
 
-    g_item_t *it = &g_items[i];
     G_InitItem(it);
 
     // set up media pointers
@@ -1688,7 +1679,7 @@ void G_InitItems(void) {
   }
 
   // second pass: resolve ammo_item pointers (requires all defs to be populated first)
-  for (size_t i = 0; i < g_num_items; i++) {
+  for (size_t i = 0; i < bg_num_items; i++) {
     g_item_t *it = &g_items[i];
 
     if (it->def.ammo) {

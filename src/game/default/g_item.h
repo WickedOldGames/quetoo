@@ -25,36 +25,35 @@
 
 #if defined(__GAME_LOCAL_H__)
 
-  extern size_t g_num_items;
   extern g_item_t *g_items;
 
   /**
    * @brief Item bounding box scaling.
    */
-  #define ITEM_SCALE 1.0
-  
+  #define ITEM_SCALE 1.f
+
   /**
    * @brief Quad Damage scaling factors
    */
-  #define QUAD_DAMAGE_FACTOR 2.5
-  #define QUAD_KNOCKBACK_FACTOR 2.0
+  #define QUAD_DAMAGE_FACTOR 2.5f
+  #define QUAD_KNOCKBACK_FACTOR 2.f
 
   /**
    * @brief Haste scaling factor
    */
-  #define TECH_HASTE_FACTOR 0.75
-  
+  #define TECH_HASTE_FACTOR 0.75f
+
   /**
    * @brief Resist scaling factors
    */
-  #define TECH_RESIST_DAMAGE_FACTOR 0.5
-  #define TECH_RESIST_KNOCKBACK_FACTOR 0.75
-  
+  #define TECH_RESIST_DAMAGE_FACTOR 0.5f
+  #define TECH_RESIST_KNOCKBACK_FACTOR 0.75f
+
   /**
    * @brief Strength scaling factor
    */
-  #define TECH_STRENGTH_DAMAGE_FACTOR 1.5
-  #define TECH_STRENGTH_KNOCKBACK_FACTOR 1.25
+  #define TECH_STRENGTH_DAMAGE_FACTOR 1.5f
+  #define TECH_STRENGTH_KNOCKBACK_FACTOR 1.25f
 
   /**
    * @brief Regen constants
@@ -65,7 +64,7 @@
   /**
    * @brief Vampire scaling factor
    */
-  #define TECH_VAMPIRE_DAMAGE_FACTOR 0.25
+  #define TECH_VAMPIRE_DAMAGE_FACTOR 0.25f
 
   extern const box3_t ITEM_BOUNDS;
 

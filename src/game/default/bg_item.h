@@ -91,12 +91,12 @@ typedef struct {
   const char *ammo;
 
   /**
-   * @brief Type-specific tag (e.g. g_weapon_tag_t, g_ammo_tag_t).
+   * @brief Type-specific tag (e.g. `g_weapon_tag_t`, `g_ammo_tag_t`).
    */
   uint16_t tag;
 
   /**
-   * @brief Type-specific flags (e.g. g_weapon_flags_t).
+   * @brief Type-specific flags (e.g. `g_weapon_flags_t`).
    */
   uint16_t flags;
 
@@ -133,11 +133,6 @@ typedef struct {
 extern const g_item_def_t bg_item_defs[];
 
 /**
- * @brief Returns the number of item definitions.
+ * @brief The count of `bg_item_defs`.
  */
-size_t Bg_NumItemDefs(void);
-
-/**
- * @brief Returns the item definition for the given classname, or NULL.
- */
-const g_item_def_t *Bg_ItemDefForClassname(const char *classname);
+extern size_t bg_num_items;

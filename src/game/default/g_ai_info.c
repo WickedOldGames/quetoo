@@ -87,7 +87,6 @@ const g_ai_roster_t *G_Ai_GetUserInfo(const g_client_t *cl, char *info) {
  * @brief Initializes the AI name prefix console variable.
  */
 void G_Ai_InitSkins(void) {
-
   g_ai_name_prefix = gi.AddCvar("g_ai_name_prefix", "^0[^1BOT^0] ^7", 0, NULL);
 }
 
