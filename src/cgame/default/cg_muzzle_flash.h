@@ -24,6 +24,5 @@
 #include "cg_types.h"
 
 #if defined(__CG_LOCAL_H__)
-vec3_t Cg_MuzzleOrigin(const cg_client_info_t *ci, vec3_t offset);
 void Cg_ParseMuzzleFlash(void);
 #endif /* __CG_LOCAL_H__ */

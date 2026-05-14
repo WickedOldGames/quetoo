@@ -21,24 +21,6 @@
 
 #include "cg_local.h"
 
- /**
-  * @brief Returns the muzzle origin for the given entity, using the cached
-  * weapon tag origin and angles. The offset is in weapon-local space
-  * (x = forward, y = right, z = up).
-  */
-vec3_t Cg_MuzzleOrigin(const cg_client_info_t *ci, const vec3_t offset) {
-
-  vec3_t forward, right, up;
-  Vec3_Vectors(ci->weapon_angles, &forward, &right, &up);
-
-  vec3_t org = ci->weapon_origin;
-  org = Vec3_Fmaf(org, offset.x + cg_draw_muzzle_x->value, forward);
-  org = Vec3_Fmaf(org, offset.y + cg_draw_muzzle_y->value, right);
-  org = Vec3_Fmaf(org, offset.z + cg_draw_muzzle_z->value, up);
-
-  return org;
-}
-
 /**
  * @brief Renders the blaster muzzle flash with a dynamic light and optional bubble trail.
  */
@@ -46,7 +28,7 @@ static void Cg_BlasterFlash(const cl_entity_t *ent) {
 
   const vec3_t color = Cg_ClientEffectColor(ent->current.client, NULL, color_hue_orange);
 
-  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(10.f, 0.f, 19.f));
+  vec3_t org = cg_state.clients[ent->current.client].weapon_muzzle;
 
   Cg_AddLight(&(cg_light_t) {
     .origin = org,
@@ -94,7 +76,7 @@ static void Cg_BlasterFlash(const cl_entity_t *ent) {
  */
 static void Cg_ShotgunFlash(const cl_entity_t *ent) {
 
-  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(12.f, 0.f, 24.f));
+  vec3_t org = cg_state.clients[ent->current.client].weapon_muzzle;
 
   vec3_t forward, right;
   Vec3_Vectors(ent->angles, &forward, &right, NULL);
@@ -167,7 +149,7 @@ static void Cg_ShotgunFlash(const cl_entity_t *ent) {
  */
 static void Cg_QuakeShotgunFlash(const cl_entity_t *ent) {
 
-  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(6.f, 0.f, 8.f));
+  vec3_t org = cg_state.clients[ent->current.client].weapon_muzzle;
 
   vec3_t forward, right;
   Vec3_Vectors(ent->angles, &forward, &right, NULL);
@@ -240,7 +222,7 @@ static void Cg_QuakeShotgunFlash(const cl_entity_t *ent) {
  */
 static void Cg_SuperShotgunFlash(const cl_entity_t *ent) {
 
-  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(12.f, 0.f, 24.f));
+  vec3_t org = cg_state.clients[ent->current.client].weapon_muzzle;
 
   vec3_t forward, right;
   Vec3_Vectors(ent->angles, &forward, &right, NULL);
@@ -317,7 +299,7 @@ static void Cg_SuperShotgunFlash(const cl_entity_t *ent) {
  */
 static void Cg_QuakeSuperShotgunFlash(const cl_entity_t *ent) {
 
-  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(20.f, 0.f, 28.f));
+  vec3_t org = cg_state.clients[ent->current.client].weapon_muzzle;
 
   vec3_t forward, right;
   Vec3_Vectors(ent->angles, &forward, &right, NULL);
@@ -390,7 +372,7 @@ static void Cg_QuakeSuperShotgunFlash(const cl_entity_t *ent) {
  */
 static void Cg_MachinegunFlash(const cl_entity_t *ent) {
 
-  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(20.f, 0.f, 22.f));
+  vec3_t org = cg_state.clients[ent->current.client].weapon_muzzle;
 
   vec3_t forward, right;
   Vec3_Vectors(ent->angles, &forward, &right, NULL);
@@ -453,7 +435,7 @@ static void Cg_MachinegunFlash(const cl_entity_t *ent) {
  */
 static void Cg_GrenadeFlash(const cl_entity_t *ent) {
 
-  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(12.f, 0.f, 24.f));
+  vec3_t org = cg_state.clients[ent->current.client].weapon_muzzle;
 
   vec3_t forward, right;
   Vec3_Vectors(ent->angles, &forward, &right, NULL);
@@ -515,7 +497,7 @@ static void Cg_GrenadeFlash(const cl_entity_t *ent) {
  */
 static void Cg_QuakeGrenadeFlash(const cl_entity_t *ent) {
 
-  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(8.f, 0.f, 6.f));
+  vec3_t org = cg_state.clients[ent->current.client].weapon_muzzle;
 
   vec3_t forward, right;
   Vec3_Vectors(ent->angles, &forward, &right, NULL);
@@ -574,7 +556,7 @@ static void Cg_QuakeGrenadeFlash(const cl_entity_t *ent) {
  */
 static void Cg_RocketFlash(const cl_entity_t *ent) {
 
-  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(18.f, 0.f, 24.f));
+  vec3_t org = cg_state.clients[ent->current.client].weapon_muzzle;
 
   vec3_t forward, right;
   Vec3_Vectors(ent->angles, &forward, &right, NULL);
@@ -650,7 +632,7 @@ static void Cg_RocketFlash(const cl_entity_t *ent) {
  */
 static void Cg_QuakeRocketFlash(const cl_entity_t *ent) {
 
-  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(10.f, 0.f, 22.f));
+  vec3_t org = cg_state.clients[ent->current.client].weapon_muzzle;
 
   vec3_t forward, right;
   Vec3_Vectors(ent->angles, &forward, &right, NULL);
@@ -722,7 +704,7 @@ static void Cg_QuakeRocketFlash(const cl_entity_t *ent) {
  */
 static void Cg_HyperblasterFlash(const cl_entity_t *ent) {
 
-  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(18.f, 0.f, 21.f));
+  vec3_t org = cg_state.clients[ent->current.client].weapon_muzzle;
 
   const vec3_t color = ColorHSV(204.f, .8f, 1.f).vec3;
 
@@ -765,7 +747,7 @@ static void Cg_HyperblasterFlash(const cl_entity_t *ent) {
  */
 static void Cg_BfgFlash(const cl_entity_t *ent) {
 
-  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(16.f, 0.f, 24.f));
+  vec3_t org = cg_state.clients[ent->current.client].weapon_muzzle;
 
   const vec3_t color = ColorHSV(85.f, .9f, 1.f).vec3;
 
@@ -838,7 +820,7 @@ static void Cg_BfgFlash(const cl_entity_t *ent) {
  */
 static void Cg_QuakeNailgunFlash(const cl_entity_t *ent) {
 
-  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(4.f, 0.f, 4.f));
+  vec3_t org = cg_state.clients[ent->current.client].weapon_muzzle;
 
   vec3_t forward;
   Vec3_Vectors(ent->angles, &forward, NULL, NULL);
@@ -884,7 +866,7 @@ static void Cg_QuakeNailgunFlash(const cl_entity_t *ent) {
  */
 static void Cg_QuakeSuperNailgunFlash(const cl_entity_t *ent) {
 
-  vec3_t org = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(20.f, 0.f, 28.f));
+  vec3_t org = cg_state.clients[ent->current.client].weapon_muzzle;
 
   vec3_t forward;
   Vec3_Vectors(ent->angles, &forward, NULL, NULL);

@@ -192,7 +192,13 @@ void Cg_AddWeapon(cl_entity_t *ent, r_entity_t *self) {
 
   cg_client_info_t *ci = &cg_state.clients[cgi.client->frame.ps.client];
 
-  Mat4_Vectors(weapon->matrix, NULL, NULL, NULL, &ci->weapon_origin);
+  vec3_t weapon_origin;
+  Mat4_Vectors(weapon->matrix, NULL, NULL, NULL, &weapon_origin);
 
-  ci->weapon_angles = weapon->angles;
+  const vec3_t cfg_muzzle = weapon->model->mesh->config.view.muzzle;
+  if (!Vec3_Equal(cfg_muzzle, Vec3_Zero())) {
+    ci->weapon_muzzle = Mat4_Transform(weapon->matrix, cfg_muzzle);
+  } else {
+    ci->weapon_muzzle = weapon_origin;
+  }
 }

@@ -1185,7 +1185,7 @@ static void Cg_InitProjectile(const cl_entity_t *ent, vec3_t *forward, vec3_t *r
 
   const cg_client_info_t *ci = &cg_state.clients[ent->current.client];
 
-  *org = ci->weapon_origin;
+  *org = ci->weapon_muzzle;
 
   if (forward) {
     *forward = cgi.view->forward;
@@ -1215,11 +1215,7 @@ void Cg_EntityTrail(cl_entity_t *ent) {
 
       // we own this beam (lightning, grapple, etc..)
       // anchor start to the client-side muzzle; keep end as the server-authoritative termination
-      if (s->trail == TRAIL_LIGHTNING) {
-        start = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(-8.f, 0.f, 3.25f));
-      } else {
-        start = Cg_MuzzleOrigin(&cg_state.clients[ent->current.client], Vec3(-32.f, 0.f, -8.f));
-      }
+      start = cg_state.clients[ent->current.client].weapon_muzzle;
     }
   } else {
     end = ent->origin;

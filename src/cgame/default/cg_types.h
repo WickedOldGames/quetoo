@@ -117,10 +117,10 @@ typedef struct {
   cg_team_info_t *team;
 
   /**
-   * @brief The cached weapon tag origin and angles, for muzzle flash alignment.
+   * @brief The cached weapon muzzle position in world space, transformed from
+   * the model-space muzzle defined in link.cfg / view.cfg.
    */
-  vec3_t weapon_origin;
-  vec3_t weapon_angles;
+  vec3_t weapon_muzzle;
 } cg_client_info_t;
 
 #define WEATHER_NONE 0x0

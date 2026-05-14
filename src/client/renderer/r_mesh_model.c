@@ -74,6 +74,17 @@ static void R_LoadMeshConfig(r_mesh_config_t *config, const char *path) {
       config->transform = Mat4_ConcatScale(config->transform, v);
       continue;
     }
+
+    if (!g_strcmp0(token, "muzzle")) {
+
+      vec3_t v;
+      if (Parse_Primitive(&parser, PARSE_DEFAULT | PARSE_WITHIN_QUOTES | PARSE_NO_WRAP, PARSE_FLOAT, v.xyz, 3) != 3) {
+        break;
+      }
+
+      config->muzzle = v;
+      continue;
+    }
   }
 
   Fs_Free(buf);

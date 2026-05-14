@@ -535,16 +535,14 @@ void Cg_AddClientEntity(cl_entity_t *ent, r_entity_t *e) {
 
   // deal with our own player model
   if (ent == cgi.client->entity) {
-    e->effects |= EF_SELF;
-
-    // don't draw ourselves, unless 3rd person is set
     if (!cgi.client->third_person) {
-      e->effects |= EF_NO_DRAW;
+      e->effects |= EF_SELF | EF_NO_DRAW;
 
       // keep our shadow underneath us using the predicted origin
       e->origin.x = cgi.view->origin.x;
       e->origin.y = cgi.view->origin.y;
-    } else { // if we're in 3rd person, use step offset, since prediction is off
+    } else {
+      // in third-person, treat ourselves exactly like any other client
       e->origin.z -= ent->step_offset;
       Cg_BreathTrail(ent);
     }
@@ -683,10 +681,14 @@ void Cg_AddClientEntity(cl_entity_t *ent, r_entity_t *e) {
 
     assert(r_weapon);
 
-    // cache these post-animation so that we can place muzzle flashes
+    // cache the muzzle position post-animation for muzzle flash and beam alignment
 
-    ci->weapon_origin = r_weapon->origin;
-    ci->weapon_angles = r_weapon->angles;
+    const vec3_t cfg_muzzle = r_weapon->model->mesh->config.link.muzzle;
+    if (!Vec3_Equal(cfg_muzzle, Vec3_Zero())) {
+      ci->weapon_muzzle = Mat4_Transform(r_weapon->matrix, cfg_muzzle);
+    } else {
+      ci->weapon_muzzle = r_weapon->origin;
+    }
   }
 
   r_entity_t *r_flag = NULL;

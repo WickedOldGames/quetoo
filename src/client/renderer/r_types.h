@@ -1279,6 +1279,11 @@ typedef struct {
    * @brief The normalization transform matrix.
    */
   mat4_t transform;
+
+  /**
+   * @brief The muzzle position in model space (Quetoo coordinate system).
+   */
+  vec3_t muzzle;
 } r_mesh_config_t;
 
 /**
