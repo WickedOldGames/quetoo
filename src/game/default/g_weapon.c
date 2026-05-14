@@ -1042,10 +1042,10 @@ void G_FireQuakeLightning(g_client_t *cl) {
 
     G_ClientProjectile(cl, &forward, &right, &up, &org, 0.0);
 
-    G_LightningProjectile(cl->entity, org, forward, g_balance_quake_lightning_damage->integer,
-      g_balance_quake_lightning_knockback->integer);
+    G_LightningProjectile(cl->entity, org, forward, g_balance_quake_thunderbolt_damage->integer,
+      g_balance_quake_thunderbolt_knockback->integer);
 
-    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_lightning_refire->value), cl->weapon->quantity);
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_thunderbolt_refire->value), cl->weapon->quantity);
   }
 }
 

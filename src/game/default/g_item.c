@@ -3133,7 +3133,7 @@ static g_item_t g_items[] = {
     .precaches = "weapons/rocketlauncher/fire.wav"
   },
 
-  /*QUAKED weapon_quake_lightning (.9 .9 .9) (-16 -16 -16) (16 16 16) triggered no_touch hover
+  /*QUAKED weapon_quake_thunderbolt (.9 .9 .9) (-16 -16 -16) (16 16 16) triggered no_touch hover
    Quake Thunderbolt (Lightning Gun). Shorter range than the standard lightning gun.
 
    -------- Keys --------
@@ -3145,18 +3145,18 @@ static g_item_t g_items[] = {
    hover : Item will spawn where it was placed in the map and won't drop the floor.
 
    -------- Radiant config --------
-   model="models/weapons/quake_lightning/tris.obj"
+   model="models/weapons/quake_thunderbolt/tris.obj"
    */
   {
-    .classname = "weapon_quake_lightning",
+    .classname = "weapon_quake_thunderbolt",
     .Pickup = G_PickupWeapon,
     .Use = G_UseWeapon,
     .Drop = G_DropWeapon,
     .Think = G_FireQuakeLightning,
     .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/quake_lightning/tris.obj",
+    .model = "models/weapons/quake_thunderbolt/tris.obj",
     .effects = EF_ROTATE,
-    .icon = "pics/w_quake_lightning",
+    .icon = "pics/w_quake_thunderbolt",
     .name = "Thunderbolt",
     .quantity = 1,
     .ammo = "Bolts",
