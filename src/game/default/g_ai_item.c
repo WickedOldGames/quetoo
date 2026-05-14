@@ -73,7 +73,8 @@ bool G_Ai_CanPickup(const g_client_t *cl, const g_entity_t *other) {
       return true;
     case ITEM_FLAG: {
       const g_team_id_t team = cl->persistent.team->id;
-      if ((g_team_id_t)(item->def.tag - FLAG_FIRST) == team && other->owner == NULL) {
+      const g_team_id_t flag_team = (item->def.tag - FLAG_FIRST);
+      if (flag_team == team && other->owner == NULL) {
         return false;
       }
 
