@@ -51,7 +51,7 @@ void Sv_DropClient(sv_client_t *client) {
   Mem_ClearBuffer(&client->datagram.buffer);
 
   if (client->datagram.messages) {
-    g_list_free_full(client->datagram.messages, Mem_Free);
+    g_list_free_full(client->datagram.messages, g_free);
   }
 
   if (client->state > SV_CLIENT_FREE) { // send the disconnect

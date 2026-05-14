@@ -205,7 +205,7 @@ typedef struct {
   byte data[MAX_DATAGRAM_SIZE];
 
   /**
-   * @brief List of sv_client_message_t bounds for safe fragmentation.
+   * @brief List of `sv_client_message_t` bounds for safe fragmentation.
    */
   GList *messages;
 } sv_client_datagram_t;
