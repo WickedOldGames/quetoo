@@ -642,17 +642,32 @@ void G_FireMachinegun(g_client_t *cl) {
 }
 
 /**
+ * @brief Defensive no-op think callback for held grenades.
+ */
+static void G_HeldGrenadeThink(g_entity_t *ent) {
+  (void) ent;
+}
+
+/**
  * @brief Spawns a grenade entity attached to the client that ticks until thrown or released.
  */
 static void G_PullGrenadePin(g_client_t *cl) {
+  if (cl->held_grenade) {
+    G_FreeEntity(cl->held_grenade);
+    cl->held_grenade = NULL;
+  }
+
   g_entity_t *nade = G_AllocEntity(__func__);
   cl->held_grenade = nade;
   nade->owner = cl->entity;
+  nade->s.origin = cl->entity->s.origin;
   nade->solid = SOLID_NOT;
   nade->sv_flags |= SVF_NO_CLIENT;
   nade->move_type = MOVE_TYPE_NONE;
   nade->clip_mask = CONTENTS_MASK_CLIP_PROJECTILE;
   nade->take_damage = true;
+  nade->next_think = 0;
+  nade->Think = G_HeldGrenadeThink;
   nade->Touch = G_GrenadeProjectile_Touch;
   nade->touch_time = g_level.time;
   nade->s.trail = TRAIL_GRENADE;
@@ -758,6 +773,7 @@ void G_FireHandGrenade(g_client_t *cl) {
   // figure out how fast/far to throw
   throw_speed *= (float) hold_time / 1000;
   throw_speed = Clampf(throw_speed, 500, 1200);
+  const int32_t fuse = Clampf((int32_t) nade_time - (int32_t) hold_time, 1, (int32_t) nade_time);
 
   vec3_t forward, right, up, org;
 
@@ -771,7 +787,7 @@ void G_FireHandGrenade(g_client_t *cl) {
       120,                    // damage dealt
       120,                    // knockback
       185.0,                  // blast radius
-      nade_time - hold_time   // time before explode (next think)
+      fuse                    // time before explode (next think)
   );
 
   // play the sound if we throw it

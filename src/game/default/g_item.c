@@ -527,11 +527,11 @@ static bool G_PickupHealth(g_client_t *cl, g_entity_t *ent) {
 const g_armor_info_t *G_ArmorInfo(const g_item_t *armor) {
   static const g_armor_info_t armor_info[] = {
     { ARMOR_QUAKE_JACKET, 0.3, 0.0 },
-    { ARMOR_QUAKE_COMBAT, 0.6, 0.3 },
-    { ARMOR_QUAKE_BODY,   0.8, 0.6 },
+    { ARMOR_QUAKE_COMBAT, 0.6, 0.0 },
+    { ARMOR_QUAKE_BODY,   0.8, 0.0 },
     { ARMOR_BODY,         0.8, 0.6 },
-    { ARMOR_COMBAT, 0.6, 0.3 },
-    { ARMOR_JACKET, 0.3, 0.0 }
+    { ARMOR_COMBAT,       0.6, 0.3 },
+    { ARMOR_JACKET,       0.3, 0.0 }
   };
 
   if (!armor) {
@@ -576,7 +576,19 @@ static bool G_PickupArmor(g_client_t *cl, g_entity_t *ent) {
         Clampf((int16_t) new_armor->quantity, 0, cl->max_armor);
 
     taken = true;
+  } else if (new_armor->tag >= ARMOR_QUAKE_JACKET) {
+    // Quake-family armor uses Q1 effective-score logic: full swap, no salvage.
+    // A pickup is only accepted if it strictly improves the player's effective score.
+    const float current_score = current_info->normal_protection * cl->inventory[current_armor->index];
+    const float new_score = new_info->normal_protection * new_armor->quantity;
+
+    if (new_score > current_score) {
+      cl->inventory[current_armor->index] = 0;
+      cl->inventory[new_armor->index] = Clampf((int16_t) new_armor->quantity, 0, cl->max_armor);
+      taken = true;
+    }
   } else {
+    // Q2-family armor uses salvage-conversion logic.
     // we picked up stronger armor than we currently had
     if (new_info->normal_protection > current_info->normal_protection) {
 
@@ -1522,7 +1534,7 @@ static g_item_t g_items[] = {
     .effects = EF_ROTATE | EF_BOB,
     .icon = "pics/i_armor_shard",
     .name = "Armor Shard",
-    .quantity = 3,
+    .quantity = 2,
     .ammo = NULL,
     .type = ITEM_ARMOR,
     .tag = ARMOR_SHARD,

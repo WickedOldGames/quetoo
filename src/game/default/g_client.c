@@ -534,9 +534,13 @@ static void G_ClientDie(g_entity_t *ent, g_entity_t *attacker, uint32_t mod) {
         120,          // damage dealt
         120,          // knockback
         185.0,          // blast radius
-        3000 - (g_level.time - nade_hold_time) // time before explode (next think)
+        Clampf(3000 - (int32_t) (g_level.time - nade_hold_time), 1, 3000) // time before explode (next think)
     );
   }
+
+  cl->grenade_hold_time = 0;
+  cl->grenade_hold_frame = 0;
+  cl->held_grenade = NULL;
 
   ent->solid = SOLID_DEAD;
   ent->dead = true;
