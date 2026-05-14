@@ -375,6 +375,7 @@ typedef struct {
   vec3_t angles; // the final view angles for this command
   int16_t forward, right, up; // directional intentions
   uint8_t buttons; // bit mask of buttons down
+  vec3_t muzzle; // player-relative muzzle offset, sent with +attack commands
 } pm_cmd_t;
 
 /**

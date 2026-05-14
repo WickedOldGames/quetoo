@@ -221,6 +221,13 @@ void Cg_Move(pm_cmd_t *cmd) {
   if (in_attack.state & (BUTTON_STATE_HELD | BUTTON_STATE_DOWN)) {
     if (!((in_attack.state & BUTTON_STATE_DOWN) && Cg_AttemptSelectWeapon(&cgi.client->frame.ps))) {
       cmd->buttons |= BUTTON_ATTACK;
+
+      // Encode the pixel-accurate muzzle position as a player-relative offset
+      // so the server can use it instead of its hardcoded approximation.
+      const cg_client_info_t *ci = &cg_state.clients[cgi.client->frame.ps.client];
+      if (!Vec3_Equal(ci->weapon_muzzle, Vec3_Zero())) {
+        cmd->muzzle = Vec3_Subtract(ci->weapon_muzzle, cgi.client->entity->current.origin);
+      }
     }
   }
 

@@ -44,13 +44,14 @@
 /**
  * @brief Delta compression flags for user_cmd_t.
  */
-#define CMD_ANGLE1  0x1
-#define CMD_ANGLE2  0x2
-#define CMD_ANGLE3  0x4
-#define CMD_FORWARD 0x8
+#define CMD_ANGLE1  0x01
+#define CMD_ANGLE2  0x02
+#define CMD_ANGLE3  0x04
+#define CMD_FORWARD 0x08
 #define CMD_RIGHT   0x10
 #define CMD_UP      0x20
 #define CMD_BUTTONS 0x40
+#define CMD_MUZZLE  0x80
 
 /**
  * @brief These flags indicate which fields in a given `entity_state_t` must be

@@ -42,14 +42,9 @@
 #define DEFAULT_GAME "default"
 
 /**
- * @brief The default ai module name.
- */
-#define DEFAULT_AI "default"
-
-/**
  * @brief Quake net protocol version; this must be changed when the structure
  * of core net messages or serialized data types change. The game and client
- * game maintain PROTOCOL_MINOR as well.
+ * game maintain `PROTOCOL_MINOR` as well.
  */
 #define PROTOCOL_MAJOR 2026
 

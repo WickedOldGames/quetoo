@@ -201,6 +201,10 @@ void Net_WriteDeltaMoveCmd(mem_buf_t *msg, const pm_cmd_t *from, const pm_cmd_t 
     bits |= CMD_BUTTONS;
   }
 
+  if (!Vec3_Equal(to->muzzle, from->muzzle)) {
+    bits |= CMD_MUZZLE;
+  }
+
   Net_WriteByte(msg, bits);
 
   if (bits & CMD_ANGLE1) {
@@ -225,6 +229,12 @@ void Net_WriteDeltaMoveCmd(mem_buf_t *msg, const pm_cmd_t *from, const pm_cmd_t 
 
   if (bits & CMD_BUTTONS) {
     Net_WriteByte(msg, to->buttons);
+  }
+
+  if (bits & CMD_MUZZLE) {
+    Net_WriteChar(msg, (int8_t) to->muzzle.x);
+    Net_WriteChar(msg, (int8_t) to->muzzle.y);
+    Net_WriteChar(msg, (int8_t) to->muzzle.z);
   }
 
   Net_WriteByte(msg, to->msec);
@@ -749,6 +759,12 @@ void Net_ReadDeltaMoveCmd(mem_buf_t *msg, const pm_cmd_t *from, pm_cmd_t *to) {
 
   if (bits & CMD_BUTTONS) {
     to->buttons = Net_ReadByte(msg);
+  }
+
+  if (bits & CMD_MUZZLE) {
+    to->muzzle.x = Net_ReadChar(msg);
+    to->muzzle.y = Net_ReadChar(msg);
+    to->muzzle.z = Net_ReadChar(msg);
   }
 
   to->msec = Net_ReadByte(msg);

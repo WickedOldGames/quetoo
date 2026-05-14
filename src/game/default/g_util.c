@@ -66,20 +66,27 @@ void G_ClientProjectile(const g_client_t *cl, vec3_t *forward, vec3_t *right, ve
   vec3_t ent_forward, ent_right, ent_up;
   Vec3_Vectors(cl->angles, &ent_forward, &ent_right, &ent_up);
 
-  *org = Vec3_Fmaf(start, 24.f, ent_forward);
+  // use the client-supplied muzzle offset if valid
+  const vec3_t muzzle = cl->cmd.muzzle;
+  const float muzzle_len = Vec3_Length(muzzle);
+  if ((cl->cmd.buttons & BUTTON_ATTACK) && muzzle_len > 0.f && muzzle_len <= 64.f) {
+    *org = Vec3_Add(cl->entity->s.origin, muzzle);
+  } else {
+    *org = Vec3_Fmaf(start, 24.f, ent_forward);
 
-  switch (cl->persistent.hand) {
-    case HAND_RIGHT:
-      *org = Vec3_Fmaf(*org, 6.f * hand, ent_right);
-      break;
-    case HAND_LEFT:
-      *org = Vec3_Fmaf(*org, -6.f * hand, ent_right);
-      break;
-    default:
-      break;
+    switch (cl->persistent.hand) {
+      case HAND_RIGHT:
+        *org = Vec3_Fmaf(*org, +6.f * hand, ent_right);
+        break;
+      case HAND_LEFT:
+        *org = Vec3_Fmaf(*org, -6.f * hand, ent_right);
+        break;
+      default:
+        break;
+    }
+
+    *org = Vec3_Fmaf(*org, -12.f, ent_up);
   }
-
-  *org = Vec3_Fmaf(*org, -12.f, ent_up);
 
   // if the projected origin is invalid, use the entity's origin
   if (gi.Trace(*org, *org, Box3_Zero(), cl->entity, CONTENTS_MASK_CLIP_PROJECTILE).start_solid) {
