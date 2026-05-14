@@ -1504,9 +1504,7 @@ static void G_InitWeapons(void) {
 }
 
 /**
- * @brief Called to set up a specific item in the item list. This might be called
- * during item spawning (since bmodels have to spawn before any modelindex calls
- * can safely be made) but will be called for every other item once that is done.
+ * @brief Called to set up a specific item in the item list.
  */
 static void G_InitItem(g_item_t *it, const g_item_def_t *def) {
 
@@ -1623,21 +1621,12 @@ void G_InitItems(void) {
   g_items = gi.Malloc(ITEM_TOTAL * sizeof(g_item_t), MEM_TAG_GAME);
 
   for (size_t i = 0; i < bg_num_items; i++) {
-    const g_item_def_t *def = &bg_item_defs[i];
-    g_item_t *it = &g_items[def->tag];
-
-    G_InitItem(it, def);
-
-    // precache all weapons/health/armor, even if the map doesn't contain them
-    if (it->def.type == ITEM_WEAPON || it->def.type == ITEM_HEALTH || it->def.type == ITEM_ARMOR) {
-      G_PrecacheItem(it);
-    }
+    G_InitItem(&g_items[bg_item_defs[i].tag], &bg_item_defs[i]);
   }
 
   // second pass: resolve ammo_item pointers (requires all defs to be populated first)
-  for (size_t i = 0; i < bg_num_items; i++) {
-    const g_item_def_t *def = &bg_item_defs[i];
-    g_item_t *it = &g_items[def->tag];
+  for (g_item_tag_t t = WEAPON_FIRST; t < ITEM_TOTAL; t++) {
+    g_item_t *it = &g_items[t];
 
     if (it->def.ammo) {
       it->ammo_item = G_FindItem(it->def.ammo);
