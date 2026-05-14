@@ -56,9 +56,9 @@ static bool G_Ai_IsArmed(const g_client_t *cl) {
 
   const float threshold = AI_ARMED_PRIORITY * Lerpf(1.25f, .6f, cl->ai->personality.aggression);
 
-  for (size_t i = 0; i < bg_num_items; i++) {
-    const g_item_t *it = &g_items[bg_item_defs[i].tag];
-    if (it->def.type == ITEM_WEAPON && cl->inventory[it->def.tag] && it->def.priority >= threshold) {
+  for (g_item_tag_t t = WEAPON_FIRST; t < WEAPON_LAST; t++) {
+    const g_item_t *it = &g_items[t];
+    if (cl->inventory[t] && it->def.priority >= threshold) {
       return true;
     }
   }
@@ -387,20 +387,15 @@ static void G_Ai_PickWeapon(g_client_t *cl) {
     targ_range = RANGE_DONT_CARE;
   }
 
-  ai_item_pick_t weapons[ai_num_weapons];
+  ai_item_pick_t weapons[WEAPON_TOTAL];
   size_t num_weapons = 0;
 
   const int16_t *inventory = cl->inventory;
 
-  const g_item_t *it = g_items;
-  for (size_t i = 0; i < bg_num_items; i++) {
-    it = &g_items[bg_item_defs[i].tag];
+  for (g_item_tag_t t = WEAPON_FIRST; t < WEAPON_LAST; t++) {
+    const g_item_t *it = &g_items[t];
 
-    if (it->def.type != ITEM_WEAPON) { // not weapon
-      continue;
-    }
-
-    if (!inventory[it->def.tag]) { // not in stock
+    if (!inventory[t]) { // not in stock
       continue;
     }
 
@@ -515,9 +510,8 @@ static float G_Ai_EnemyPriority(const g_client_t *cl, const g_entity_t *target, 
   // flag carriers are highest priority
   if (target->client) {
     const int16_t *inventory = target->client->inventory;
-    for (size_t i = 0; i < bg_num_items; i++) {
-      const g_item_t *it = &g_items[bg_item_defs[i].tag];
-      if (it->def.type == ITEM_FLAG && inventory[it->def.tag]) {
+    for (g_item_tag_t t = FLAG_FIRST; t < FLAG_LAST; t++) {
+      if (inventory[t]) {
         priority += 5.f;
         break;
       }
@@ -552,18 +546,11 @@ static bool G_Ai_ChaseEnemy(const g_client_t *cl, const g_entity_t *target) {
   // if they have a flag, higher chance
   const int16_t *inventory = target->client->inventory;
 
-  const g_item_t *it = g_items;
-  for (size_t i = 0; i < bg_num_items; i++) {
-    it = &g_items[bg_item_defs[i].tag];
-
-    if (it->def.type != ITEM_FLAG) { // not flag
-      continue;
-    } else if (!inventory[it->def.tag]) {
-      continue;
+  for (g_item_tag_t t = FLAG_FIRST; t < FLAG_LAST; t++) {
+    if (inventory[t]) {
+      chance *= 2.0f;
+      break;
     }
-
-    chance *= 2.0f;
-    break;
   }
 
   // aggressive bots are more willing to chase
@@ -1897,8 +1884,6 @@ void G_Ai_Init(void) {
  * @brief Loads map data for the AI subsystem.
  */
 void G_Ai_Load(void) {
-
-  G_Ai_InitItems();
 
   G_Ai_InitNodes();
 }

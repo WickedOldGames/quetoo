@@ -31,8 +31,8 @@ const box3_t ITEM_BOUNDS = {
  */
 const g_item_t *G_FindItemByClassName(const char *classname) {
 
-  for (size_t i = 0; i < bg_num_items; i++) {
-    const g_item_t *it = &g_items[bg_item_defs[i].tag];
+  for (g_item_tag_t t = WEAPON_FIRST; t < ITEM_TOTAL; t++) {
+    const g_item_t *it = &g_items[t];
 
     if (!g_strcmp0(it->def.classname, classname)) {
       return it;
@@ -52,12 +52,8 @@ const g_item_t *G_FindItem(const char *name) {
   }
 
   const g_item_t *fallback = NULL;
-  for (size_t i = 0; i < bg_num_items; i++) {
-    const g_item_t *it = &g_items[bg_item_defs[i].tag];
-
-    if (!it->def.name) {
-      continue;
-    }
+  for (g_item_tag_t t = WEAPON_FIRST; t < ITEM_TOTAL; t++) {
+    const g_item_t *it = &g_items[t];
 
     if (!g_ascii_strcasecmp(it->def.name, name)) {
       if (G_ItemAvailable(it)) {

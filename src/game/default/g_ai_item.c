@@ -21,8 +21,6 @@
 
 #include "g_local.h"
 
-size_t ai_num_weapons;
-
 /**
  * @return True if the bot entity can pick up the item entity.
  */
@@ -86,16 +84,4 @@ bool G_Ai_CanPickup(const g_client_t *cl, const g_entity_t *other) {
   }
 }
 
-/**
- * @brief Counts and caches the number of weapons available for AI weapon selection.
- */
-void G_Ai_InitItems(void) {
 
-  ai_num_weapons = 0;
-
-  for (size_t i = 0; i < bg_num_items; i++) {
-    if (g_items[i].def.type == ITEM_WEAPON) {
-      ai_num_weapons++;
-    }
-  }
-}

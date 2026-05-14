@@ -65,18 +65,15 @@ static void G_Give_f(g_client_t *cl) {
   }
 
   if (give_all || g_ascii_strcasecmp(name, "armor") == 0) {
-    for (size_t i = 0; i < bg_num_items; i++) {
-      it = &g_items[bg_item_defs[i].tag];
+    for (g_item_tag_t t = ARMOR_FIRST; t < ARMOR_LAST; t++) {
+      it = &g_items[t];
       if (!it->Pickup) {
-        continue;
-      }
-      if (it->def.type != ITEM_ARMOR) {
         continue;
       }
       if (!G_ArmorInfo(it)) {
         continue;
       }
-      cl->inventory[it->def.tag] = it->def.max;
+      cl->inventory[t] = it->def.max;
     }
     if (!give_all) {
       return;
@@ -84,18 +81,15 @@ static void G_Give_f(g_client_t *cl) {
   }
 
   if (give_all || g_ascii_strcasecmp(name, "weapons") == 0) {
-    for (size_t i = 0; i < bg_num_items; i++) {
-      it = &g_items[bg_item_defs[i].tag];
+    for (g_item_tag_t t = WEAPON_FIRST; t < WEAPON_LAST; t++) {
+      it = &g_items[t];
       if (!it->Pickup) {
         continue;
       }
-      if (it->def.type != ITEM_WEAPON) {
+      if (g_level.weapons[t - WEAPON_FIRST] < 0) {
         continue;
       }
-      if (g_level.weapons[it->def.tag - WEAPON_FIRST] < 0) {
-        continue;
-      }
-      cl->inventory[it->def.tag] += 1;
+      cl->inventory[t] += 1;
     }
     if (!give_all) {
       return;
@@ -103,20 +97,17 @@ static void G_Give_f(g_client_t *cl) {
   }
 
   if (give_all || g_ascii_strcasecmp(name, "ammo") == 0) {
-    for (size_t i = 0; i < bg_num_items; i++) {
-      it = &g_items[bg_item_defs[i].tag];
+    for (g_item_tag_t t = AMMO_FIRST; t < AMMO_LAST; t++) {
+      it = &g_items[t];
       if (!it->Pickup) {
-        continue;
-      }
-      if (it->def.type != ITEM_AMMO) {
         continue;
       }
       // Give ammo if it's in the active set or used by an entity-promoted weapon.
       bool available = G_ItemAvailable(it);
       if (!available) {
-        for (g_item_tag_t t = WEAPON_FIRST; t < WEAPON_LAST; t++) {
-          if (g_level.weapons[t - WEAPON_FIRST] >= 0 &&
-              g_items[t].ammo_item == it) {
+        for (g_item_tag_t w = WEAPON_FIRST; w < WEAPON_LAST; w++) {
+          if (g_level.weapons[w - WEAPON_FIRST] >= 0 &&
+              g_items[w].ammo_item == it) {
             available = true;
             break;
           }
