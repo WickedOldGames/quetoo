@@ -24,6 +24,7 @@
 #include "EditorViewController.h"
 #include "EntityViewController.h"
 #include "MaterialViewController.h"
+#include "MeshViewController.h"
 
 #pragma mark - Delegates
 
@@ -48,12 +49,16 @@ static void didClickDeleteEntity(Button *button) {
 }
 
 /**
- * @brief ButtonDelegate for Save .map and .mat.
+ * @brief ButtonDelegate for Save .map, .mat, and mesh configs.
  */
 static void didClickSave(Button *button) {
 
+  EditorViewController *this = button->delegate.self;
+
   cgi.Cbuf("save_editor_map\n");
   cgi.Cbuf("r_save_materials\n");
+
+  $(this->meshViewController, save);
 }
 
 #define _Class _EditorViewController
@@ -67,6 +72,7 @@ static void dealloc(Object *self) {
   release(this->tabViewController);
   release(this->entityViewController);
   release(this->materialViewController);
+  release(this->meshViewController);
 
   super(Object, self, dealloc);
 }
@@ -100,10 +106,14 @@ static void loadView(ViewController *self) {
   this->materialViewController = $(alloc(MaterialViewController), init);
   assert(this->materialViewController);
 
+  this->meshViewController = $(alloc(MeshViewController), init);
+  assert(this->meshViewController);
+
   ViewController *tabViewController = (ViewController *) this->tabViewController;
 
   $(tabViewController, addChildViewController, (ViewController *) this->entityViewController);
   $(tabViewController, addChildViewController, (ViewController *) this->materialViewController);
+  $(tabViewController, addChildViewController, (ViewController *) this->meshViewController);
 
   $(self, addChildViewController, tabViewController);
   $((View *) ((Panel *) self->view)->contentView, addSubview, tabViewController->view);
@@ -145,6 +155,15 @@ static void respondToEvent(ViewController *self, const SDL_Event *event) {
           deleteEntity->state &= ~ControlStateDisabled;
         }
         $(deleteEntity, stateDidChange);
+
+        r_model_t *model = NULL;
+        if (number > 0) {
+          const cg_editor_entity_t *edit = &cg_editor.entities[number];
+          if (edit->model && IS_MESH_MODEL(edit->model)) {
+            model = (r_model_t *) edit->model;
+          }
+        }
+        $(this->meshViewController, setModel, model);
       }
         break;
     }

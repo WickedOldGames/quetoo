@@ -23,6 +23,7 @@
 
 #include "EntityViewController.h"
 #include "MaterialViewController.h"
+#include "MeshViewController.h"
 
 #include <ObjectivelyMVC.h>
 
@@ -65,6 +66,11 @@ struct EditorViewController {
    * @brief The MaterialViewController.
    */
   MaterialViewController *materialViewController;
+
+  /**
+   * @brief The MeshViewController.
+   */
+  MeshViewController *meshViewController;
 
   /**
    * @brief The Create Entity button.

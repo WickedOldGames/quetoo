@@ -6,13 +6,16 @@ cguieditor_DATA = \
 	EntityViewController.json \
 	MaterialViewController.css \
 	MaterialViewController.json \
+	MeshViewController.css \
+	MeshViewController.json \
 	editor.css
 
 noinst_HEADERS = \
 	EditorViewController.h \
 	EntityView.h \
 	EntityViewController.h \
-	MaterialViewController.h
+	MaterialViewController.h \
+	MeshViewController.h
 
 noinst_LTLIBRARIES = \
 	libcguieditor.la
@@ -21,7 +24,8 @@ libcguieditor_la_SOURCES = \
 	EditorViewController.c \
 	EntityView.c \
 	EntityViewController.c \
-	MaterialViewController.c
+	MaterialViewController.c \
+	MeshViewController.c
 
 libcguieditor_la_CFLAGS = \
 	-I$(top_srcdir)/src \

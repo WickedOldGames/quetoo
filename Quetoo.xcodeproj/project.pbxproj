@@ -740,6 +740,10 @@
 		CFA000222F9100000000C022 /* MaterialViewController.css in CopyFiles */ = {isa = PBXBuildFile; fileRef = CFA000102F9100000000C010 /* MaterialViewController.css */; };
 		CFA000232F9100000000C023 /* MaterialViewController.json in CopyFiles */ = {isa = PBXBuildFile; fileRef = CFA000112F9100000000C011 /* MaterialViewController.json */; };
 		CFA000242F9100000000C024 /* editor.css in CopyFiles */ = {isa = PBXBuildFile; fileRef = CFA000122F9100000000C012 /* editor.css */; };
+		CFA000252F9100000000C025 /* MeshViewController.c in Sources */ = {isa = PBXBuildFile; fileRef = CFA000122F9100000000C025 /* MeshViewController.c */; };
+		CFA000262F9100000000C026 /* MeshViewController.h in Headers */ = {isa = PBXBuildFile; fileRef = CFA000132F9100000000C026 /* MeshViewController.h */; };
+		CFA000272F9100000000C027 /* MeshViewController.css in CopyFiles */ = {isa = PBXBuildFile; fileRef = CFA000142F9100000000C027 /* MeshViewController.css */; };
+		CFA000282F9100000000C028 /* MeshViewController.json in CopyFiles */ = {isa = PBXBuildFile; fileRef = CFA000152F9100000000C028 /* MeshViewController.json */; };
 		D081469FB0034668B00C4DB3 /* post_vs.glsl in CopyFiles */ = {isa = PBXBuildFile; fileRef = 59216DDAE6EB4C3EBE0336A3 /* post_vs.glsl */; };
 		F53787C291008C7507AE5FF4 /* cm_manifest.h in Headers */ = {isa = PBXBuildFile; fileRef = 9BEEC6DF7149D25DE326F0A7 /* cm_manifest.h */; };
 		F57902A224843EA10023101D /* soften_fs.glsl in CopyFiles */ = {isa = PBXBuildFile; fileRef = F57902A124843E730023101D /* soften_fs.glsl */; };
@@ -1219,6 +1223,8 @@
 				CFA000222F9100000000C022 /* MaterialViewController.css in CopyFiles */,
 				CFA000232F9100000000C023 /* MaterialViewController.json in CopyFiles */,
 				CFA000242F9100000000C024 /* editor.css in CopyFiles */,
+				CFA000272F9100000000C027 /* MeshViewController.css in CopyFiles */,
+				CFA000282F9100000000C028 /* MeshViewController.json in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1963,6 +1969,10 @@
 		CFA000102F9100000000C010 /* MaterialViewController.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = MaterialViewController.css; sourceTree = "<group>"; };
 		CFA000112F9100000000C011 /* MaterialViewController.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = MaterialViewController.json; sourceTree = "<group>"; };
 		CFA000122F9100000000C012 /* editor.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = editor.css; sourceTree = "<group>"; };
+		CFA000122F9100000000C025 /* MeshViewController.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = MeshViewController.c; sourceTree = "<group>"; };
+		CFA000132F9100000000C026 /* MeshViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = MeshViewController.h; sourceTree = "<group>"; };
+		CFA000142F9100000000C027 /* MeshViewController.css */ = {isa = PBXFileReference; lastKnownFileType = text.css; path = MeshViewController.css; sourceTree = "<group>"; };
+		CFA000152F9100000000C028 /* MeshViewController.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = MeshViewController.json; sourceTree = "<group>"; };
 		D126FFD46C343DDC86C13E17 /* cm_manifest.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = cm_manifest.c; sourceTree = "<group>"; };
 		DF0B9374573E39DECA0D8E4C /* manifest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = manifest.h; sourceTree = "<group>"; };
 		F57902A124843E730023101D /* soften_fs.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = soften_fs.glsl; sourceTree = "<group>"; };
@@ -3557,6 +3567,10 @@
 				CFA000102F9100000000C010 /* MaterialViewController.css */,
 				CFA0000F2F9100000000C00F /* MaterialViewController.h */,
 				CFA000112F9100000000C011 /* MaterialViewController.json */,
+				CFA000122F9100000000C025 /* MeshViewController.c */,
+				CFA000142F9100000000C027 /* MeshViewController.css */,
+				CFA000132F9100000000C026 /* MeshViewController.h */,
+				CFA000152F9100000000C028 /* MeshViewController.json */,
 				CFA000122F9100000000C012 /* editor.css */,
 				CEA716EB2FA796690099B469 /* Makefile.am */,
 			);
@@ -3700,6 +3714,7 @@
 				CFA0001A2F9100000000C01A /* EntityView.h in Headers */,
 				CFA0001D2F9100000000C01D /* EntityViewController.h in Headers */,
 				CFA000212F9100000000C021 /* MaterialViewController.h in Headers */,
+				CFA000262F9100000000C026 /* MeshViewController.h in Headers */,
 				CE6EE40B1F720DC300FBC830 /* SettingsViewController.h in Headers */,
 				CEFF13BE277FB7AC001E1500 /* TeamPlayerView.h in Headers */,
 				CEAA77F22775333300EAC853 /* TeamsViewController.h in Headers */,
@@ -4867,6 +4882,7 @@
 				CFA000192F9100000000C019 /* EntityView.c in Sources */,
 				CFA0001C2F9100000000C01C /* EntityViewController.c in Sources */,
 				CFA000202F9100000000C020 /* MaterialViewController.c in Sources */,
+				CFA000252F9100000000C025 /* MeshViewController.c in Sources */,
 				CE6EE3ED1F720D9A00FBC830 /* SettingsViewController.c in Sources */,
 				CEAA78ED2775388700EAC853 /* TeamView.c in Sources */,
 				CEFF1379277FB763001E1500 /* TeamPlayerView.c in Sources */,
