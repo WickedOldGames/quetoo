@@ -534,7 +534,7 @@ const g_item_t *G_GetFlag(const g_client_t *cl) {
 
     g_entity_t *f = G_FlagForTeam(&g_team_list[i]);
 
-    if (f && cl->inventory[f->item->index]) {
+    if (f && cl->inventory[f->item->def.tag]) {
       return f->item;
     }
   }

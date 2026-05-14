@@ -463,37 +463,7 @@ typedef enum {
   HOOK_SWING_AUTO
 } g_hook_style_t;
 
-// g_item_type_t is defined in bg_item.h
-
-/**
- * @brief Weapon tags to inform the client game which weapon the player wields and
- * the order of the weapon switcher.
- */
-typedef enum {
-  WEAPON_NONE,
-
-  WEAPON_BLASTER,
-  WEAPON_SHOTGUN,
-  WEAPON_SUPER_SHOTGUN,
-  WEAPON_MACHINEGUN,
-  WEAPON_HAND_GRENADE,
-  WEAPON_GRENADE_LAUNCHER,
-  WEAPON_ROCKET_LAUNCHER,
-  WEAPON_HYPERBLASTER,
-  WEAPON_LIGHTNING,
-  WEAPON_RAILGUN,
-  WEAPON_BFG10K,
-
-  WEAPON_QUAKE_SHOTGUN,
-  WEAPON_QUAKE_SUPER_SHOTGUN,
-  WEAPON_QUAKE_NAILGUN,
-  WEAPON_QUAKE_SUPER_NAILGUN,
-  WEAPON_QUAKE_GRENADE_LAUNCHER,
-  WEAPON_QUAKE_ROCKET_LAUNCHER,
-  WEAPON_QUAKE_THUNDERBOLT,
-
-  WEAPON_TOTAL
-} g_weapon_tag_t;
+// g_item_type_t and g_item_tag_t are defined in bg_item.h
 
 /**
  * @brief Weapon flags provide hints to indicate weapon use.
@@ -509,42 +479,6 @@ typedef enum {
 } g_weapon_flags_t;
 
 /**
- * @brief Ammunition types.
- */
-typedef enum {
-  AMMO_SHELLS,
-  AMMO_BULLETS,
-  AMMO_GRENADES,
-  AMMO_ROCKETS,
-  AMMO_CELLS,
-  AMMO_BOLTS,
-  AMMO_SLUGS,
-  AMMO_NUKES,
-
-  AMMO_QUAKE_SHELLS,
-  AMMO_QUAKE_NAILS,
-  AMMO_QUAKE_ROCKETS,
-  AMMO_QUAKE_BOLTS,
-
-  AMMO_TOTAL
-} g_ammo_t;
-
-/**
- * @brief Armor types.
- */
-typedef enum {
-  ARMOR_SHARD,
-  ARMOR_JACKET,
-  ARMOR_COMBAT,
-  ARMOR_BODY,
-  ARMOR_QUAKE_JACKET,
-  ARMOR_QUAKE_COMBAT,
-  ARMOR_QUAKE_BODY,
-
-  ARMOR_TOTAL
-} g_armor_t;
-
-/**
  * @brief Armor attributes.
  */
 typedef struct {
@@ -552,7 +486,7 @@ typedef struct {
   /**
    * @brief Armor type tag.
    */
-  g_armor_t tag;
+  g_item_tag_t tag;
 
   /**
    * @brief Protection fraction against normal damage.
@@ -564,46 +498,6 @@ typedef struct {
    */
   float energy_protection;
 } g_armor_info_t;
-
-/**
- * @brief Health types.
- */
-typedef enum {
-  HEALTH_SMALL,
-  HEALTH_MEDIUM,
-  HEALTH_LARGE,
-  HEALTH_MEGA,
-  HEALTH_QUAKE_MEDIUM,
-  HEALTH_QUAKE_LARGE,
-  HEALTH_QUAKE_MEGA,
-
-  HEALTH_TOTAL
-} g_health_t;
-
-/**
- * @brief Powerup types.
- */
-typedef enum {
-  POWERUP_QUAD,
-  POWERUP_ADRENALINE,
-  POWERUP_INVULNERABILITY,
-  POWERUP_INVISIBILITY,
-
-  POWERUP_TOTAL
-} g_powerup_t;
-
-/**
- * @brief Tech types.
- */
-typedef enum {
-  TECH_HASTE,
-  TECH_REGEN,
-  TECH_RESIST,
-  TECH_STRENGTH,
-  TECH_VAMPIRE,
-
-  TECH_TOTAL
-} g_tech_t;
 
 #if defined(__GAME_LOCAL_H__)
 
@@ -687,11 +581,6 @@ typedef struct g_item_s {
    * @brief Called every frame for a player holding this weapon.
    */
   void (*Think)(g_client_t *cl);
-
-  /**
-   * @brief Index in the global item list; calculated at init.
-   */
-  uint16_t index;
 
   /**
    * @brief Pointer to the ammo item; calculated at init.
@@ -839,16 +728,6 @@ typedef struct {
  * @brief This structure holds references to frequently accessed media.
  */
 typedef struct {
-  struct g_media_items_t {
-    const g_item_t *ammo[AMMO_TOTAL];
-    const g_item_t *armor[ARMOR_TOTAL];
-    const g_item_t *flags[MAX_TEAMS];
-    const g_item_t *health[HEALTH_TOTAL];
-    const g_item_t *powerups[POWERUP_TOTAL];
-    const g_item_t *weapons[WEAPON_TOTAL];
-    const g_item_t *techs[TECH_TOTAL];
-  } items;
-
   struct g_media_models_t {
     uint16_t gibs[NUM_GIB_MODELS];
 

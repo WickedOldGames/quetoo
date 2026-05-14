@@ -56,9 +56,9 @@ static bool G_Ai_IsArmed(const g_client_t *cl) {
 
   const float threshold = AI_ARMED_PRIORITY * Lerpf(1.25f, .6f, cl->ai->personality.aggression);
 
-  const g_item_t *it = g_items;
-  for (size_t i = 0; i < bg_num_items; i++, it++) {
-    if (it->def.type == ITEM_WEAPON && cl->inventory[i] && it->def.priority >= threshold) {
+  for (size_t i = 0; i < bg_num_items; i++) {
+    const g_item_t *it = &g_items[bg_item_defs[i].tag];
+    if (it->def.type == ITEM_WEAPON && cl->inventory[it->def.tag] && it->def.priority >= threshold) {
       return true;
     }
   }
@@ -393,18 +393,19 @@ static void G_Ai_PickWeapon(g_client_t *cl) {
   const int16_t *inventory = cl->inventory;
 
   const g_item_t *it = g_items;
-  for (size_t i = 0; i < bg_num_items; i++, it++) {
+  for (size_t i = 0; i < bg_num_items; i++) {
+    it = &g_items[bg_item_defs[i].tag];
 
     if (it->def.type != ITEM_WEAPON) { // not weapon
       continue;
     }
 
-    if (!inventory[i]) { // not in stock
+    if (!inventory[it->def.tag]) { // not in stock
       continue;
     }
 
     if (it->ammo_item) {
-      const int32_t ammo_have = inventory[it->ammo_item->index];
+      const int32_t ammo_have = inventory[it->ammo_item->def.tag];
       const int32_t ammo_need = it->def.quantity;
       if (ammo_have < ammo_need) {
         continue;
@@ -514,9 +515,9 @@ static float G_Ai_EnemyPriority(const g_client_t *cl, const g_entity_t *target, 
   // flag carriers are highest priority
   if (target->client) {
     const int16_t *inventory = target->client->inventory;
-    const g_item_t *it = g_items;
-    for (size_t i = 0; i < bg_num_items; i++, it++) {
-      if (it->def.type == ITEM_FLAG && inventory[i]) {
+    for (size_t i = 0; i < bg_num_items; i++) {
+      const g_item_t *it = &g_items[bg_item_defs[i].tag];
+      if (it->def.type == ITEM_FLAG && inventory[it->def.tag]) {
         priority += 5.f;
         break;
       }
@@ -552,11 +553,12 @@ static bool G_Ai_ChaseEnemy(const g_client_t *cl, const g_entity_t *target) {
   const int16_t *inventory = target->client->inventory;
 
   const g_item_t *it = g_items;
-  for (size_t i = 0; i < bg_num_items; i++, it++) {
+  for (size_t i = 0; i < bg_num_items; i++) {
+    it = &g_items[bg_item_defs[i].tag];
 
     if (it->def.type != ITEM_FLAG) { // not flag
       continue;
-    } else if (!inventory[i]) {
+    } else if (!inventory[it->def.tag]) {
       continue;
     }
 

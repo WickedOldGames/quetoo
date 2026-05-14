@@ -159,7 +159,7 @@ static int32_t G_CheckArmor(g_entity_t *ent, const vec3_t pos, const vec3_t norm
     return 0;
   }
 
-  const int32_t quantity = ent->client->inventory[armor->index];
+  const int32_t quantity = ent->client->inventory[armor->def.tag];
   int32_t saved;
 
   if (dflags & DMG_ENERGY) {
@@ -168,7 +168,7 @@ static int32_t G_CheckArmor(g_entity_t *ent, const vec3_t pos, const vec3_t norm
     saved = Clampf(damage * armor_info->normal_protection, 0, quantity);
   }
 
-  ent->client->inventory[armor->index] -= saved;
+  ent->client->inventory[armor->def.tag] -= saved;
 
   G_SpawnDamage(TE_BLOOD, pos, normal, saved);
 
@@ -230,7 +230,7 @@ void G_Damage(const g_damage_t *dmg) {
   }
 
   if (target->client && !(dflags & DMG_NO_GOD)) { // invulnerability
-    if (target->client->inventory[g_media.items.powerups[POWERUP_INVULNERABILITY]->index]) {
+    if (target->client->inventory[POWERUP_INVULNERABILITY]) {
       G_MulticastSound(&(const g_play_sound_t) {
         .index = g_media.sounds.invulnerability_protect,
         .entity = target,
@@ -249,7 +249,7 @@ void G_Damage(const g_damage_t *dmg) {
   }
 
   if (attacker->client) {
-    if (attacker->client->inventory[g_media.items.powerups[POWERUP_QUAD]->index]) {
+    if (attacker->client->inventory[POWERUP_QUAD]) {
       damage *= QUAD_DAMAGE_FACTOR;
       knockback *= QUAD_KNOCKBACK_FACTOR;
     }

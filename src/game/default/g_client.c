@@ -180,7 +180,7 @@ static void G_ClientObituary(g_client_t *cl, g_entity_t *attacker, uint32_t mod)
       int16_t a = 0;
       const g_item_t *armor = G_ClientArmor(attacker->client);
       if (armor) {
-        a = attacker->client->inventory[armor->index];
+        a = attacker->client->inventory[armor->def.tag];
       }
       gi.ClientPrint(cl, PRINT_MEDIUM, "%s had %d health and %d armor\n",
                      attacker->client->persistent.net_name, attacker->health, a);
@@ -583,7 +583,7 @@ static void G_Give(g_client_t *cl, char *it, int16_t quantity) {
     return;
   }
 
-  const uint16_t index = item->index;
+  const g_item_tag_t index = item->def.tag;
 
   if (item->def.type == ITEM_WEAPON) { // weapons receive quantity as ammo
     cl->inventory[index]++;
@@ -591,7 +591,7 @@ static void G_Give(g_client_t *cl, char *it, int16_t quantity) {
     if (item->def.ammo) {
       const g_item_t *ammo = item->ammo_item;
       if (ammo) {
-        const uint16_t ammo_index = ammo->index;
+        const g_item_tag_t ammo_index = ammo->def.tag;
 
         if (quantity > -1) {
           cl->inventory[ammo_index] = quantity;
@@ -663,7 +663,7 @@ static void G_InitClientInventory(g_client_t *cl) {
   if (g_level.gameplay == GAME_INSTAGIB) {
     G_Give(cl, "Railgun", 1);
     G_Give(cl, "Grenades", 1);
-    item = g_media.items.weapons[WEAPON_RAILGUN];
+    item = &g_items[WEAPON_RAILGUN];
   }
   // arena yields all weapons, health, etc..
   else if (g_level.gameplay == GAME_ARENA) {
@@ -680,16 +680,16 @@ static void G_InitClientInventory(g_client_t *cl) {
 
     G_Give(cl, "Body Armor", -1);
 
-    item = g_media.items.weapons[WEAPON_ROCKET_LAUNCHER];
+    item = &g_items[WEAPON_ROCKET_LAUNCHER];
   }
   // dm gets the blaster, or the quake shotgun + shells in quake item sets
   else if (g_level.items == ITEMS_QUAKE) {
     G_Give(cl, "Shotgun", 1);
     G_Give(cl, "Shells", 10);
-    item = g_media.items.weapons[WEAPON_QUAKE_SHOTGUN];
+    item = &g_items[WEAPON_QUAKE_SHOTGUN];
   } else {
     G_Give(cl, "Blaster", -1);
-    item = g_media.items.weapons[WEAPON_BLASTER];
+    item = &g_items[WEAPON_BLASTER];
   }
 
   // use the best weapon given by the level
@@ -1682,7 +1682,7 @@ static void G_ClientMove(g_client_t *cl, pm_cmd_t *cmd) {
  */
 static void G_ClientInventoryThink(g_client_t *cl) {
 
-  if (cl->inventory[g_media.items.powerups[POWERUP_QUAD]->index]) { // if they have quad
+  if (cl->inventory[POWERUP_QUAD]) { // if they have quad
 
     if (cl->quad_countdown_time && cl->quad_countdown_time < g_level.time) { // play the countdown sound      
       G_MulticastSound(&(const g_play_sound_t) {
@@ -1697,7 +1697,7 @@ static void G_ClientInventoryThink(g_client_t *cl) {
     if (cl->quad_damage_time < g_level.time) { // expire it
 
       cl->quad_damage_time = 0.0;
-      cl->inventory[g_media.items.powerups[POWERUP_QUAD]->index] = 0;
+      cl->inventory[POWERUP_QUAD] = 0;
 
       cl->entity->s.effects &= ~EF_QUAD;
     }
@@ -1705,11 +1705,11 @@ static void G_ClientInventoryThink(g_client_t *cl) {
 
   // other power-ups and things can be timed out here as well
 
-  if (cl->inventory[g_media.items.powerups[POWERUP_INVISIBILITY]->index]) {
+  if (cl->inventory[POWERUP_INVISIBILITY]) {
 
     if (cl->invisibility_time < g_level.time) {
       cl->invisibility_time = 0;
-      cl->inventory[g_media.items.powerups[POWERUP_INVISIBILITY]->index] = 0;
+      cl->inventory[POWERUP_INVISIBILITY] = 0;
       cl->entity->s.effects &= ~EF_INVISIBILITY;
 
       G_MulticastSound(&(const g_play_sound_t) {
@@ -1720,7 +1720,7 @@ static void G_ClientInventoryThink(g_client_t *cl) {
     }
   }
 
-  if (cl->inventory[g_media.items.powerups[POWERUP_INVULNERABILITY]->index]) {
+  if (cl->inventory[POWERUP_INVULNERABILITY]) {
 
     if (cl->invulnerability_countdown_time && cl->invulnerability_countdown_time < g_level.time) {
       G_MulticastSound(&(const g_play_sound_t) {
@@ -1735,7 +1735,7 @@ static void G_ClientInventoryThink(g_client_t *cl) {
     if (cl->invulnerability_time < g_level.time) {
       cl->invulnerability_time = 0;
       cl->invulnerability_countdown_time = 0;
-      cl->inventory[g_media.items.powerups[POWERUP_INVULNERABILITY]->index] = 0;
+      cl->inventory[POWERUP_INVULNERABILITY] = 0;
       cl->entity->s.effects &= ~EF_INVULNERABILITY;
     }
   }

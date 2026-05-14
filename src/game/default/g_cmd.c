@@ -66,8 +66,8 @@ static void G_Give_f(g_client_t *cl) {
   }
 
   if (give_all || g_ascii_strcasecmp(name, "armor") == 0) {
-    for (i = 0; i < bg_num_items; i++) {
-      it = &g_items[i];
+    for (size_t i = 0; i < bg_num_items; i++) {
+      it = &g_items[bg_item_defs[i].tag];
       if (!it->Pickup) {
         continue;
       }
@@ -77,7 +77,7 @@ static void G_Give_f(g_client_t *cl) {
       if (!G_ArmorInfo(it)) {
         continue;
       }
-      cl->inventory[i] = it->def.max;
+      cl->inventory[it->def.tag] = it->def.max;
     }
     if (!give_all) {
       return;
@@ -85,18 +85,18 @@ static void G_Give_f(g_client_t *cl) {
   }
 
   if (give_all || g_ascii_strcasecmp(name, "weapons") == 0) {
-    for (i = 0; i < bg_num_items; i++) {
-      it = &g_items[i];
+    for (size_t i = 0; i < bg_num_items; i++) {
+      it = &g_items[bg_item_defs[i].tag];
       if (!it->Pickup) {
         continue;
       }
       if (it->def.type != ITEM_WEAPON) {
         continue;
       }
-      if (g_level.weapons[it->def.tag] < 0) {
+      if (g_level.weapons[it->def.tag - WEAPON_FIRST] < 0) {
         continue;
       }
-      cl->inventory[i] += 1;
+      cl->inventory[it->def.tag] += 1;
     }
     if (!give_all) {
       return;
@@ -104,8 +104,8 @@ static void G_Give_f(g_client_t *cl) {
   }
 
   if (give_all || g_ascii_strcasecmp(name, "ammo") == 0) {
-    for (i = 0; i < bg_num_items; i++) {
-      it = &g_items[i];
+    for (size_t i = 0; i < bg_num_items; i++) {
+      it = &g_items[bg_item_defs[i].tag];
       if (!it->Pickup) {
         continue;
       }
@@ -115,9 +115,9 @@ static void G_Give_f(g_client_t *cl) {
       // Give ammo if it's in the active set or used by an entity-promoted weapon.
       bool available = G_ItemAvailable(it);
       if (!available) {
-        for (int32_t t = WEAPON_NONE + 1; t < WEAPON_TOTAL; t++) {
-          if (g_level.weapons[t] >= 0 &&
-              g_media.items.weapons[t]->ammo_item == it) {
+        for (g_item_tag_t t = WEAPON_FIRST; t < WEAPON_LAST; t++) {
+          if (g_level.weapons[t - WEAPON_FIRST] >= 0 &&
+              g_items[t].ammo_item == it) {
             available = true;
             break;
           }
@@ -155,9 +155,9 @@ static void G_Give_f(g_client_t *cl) {
   if (it->def.type == ITEM_AMMO) { // give the requested ammo quantity
 
     if (gi.Argc() == 3) {
-      cl->inventory[it->index] = quantity;
+      cl->inventory[it->def.tag] = quantity;
     } else {
-      cl->inventory[it->index] += it->def.quantity;
+      cl->inventory[it->def.tag] += it->def.quantity;
     }
   } else { // or spawn and touch whatever they asked for
     it_ent = G_AllocEntity(it->def.classname);
@@ -277,7 +277,7 @@ static void G_Use_f(g_client_t *cl) {
     return;
   }
 
-  if (!cl->inventory[it->index]) {
+  if (!cl->inventory[it->def.tag]) {
     gi.ClientPrint(cl, PRINT_HIGH, "Out of item: %s\n", s);
     return;
   }
@@ -323,7 +323,7 @@ static void G_Drop_f(g_client_t *cl) {
     return;
   }
 
-  const uint16_t index = it->index;
+  const g_item_tag_t index = it->def.tag;
 
   if (cl->inventory[index] == 0) {
     gi.ClientPrint(cl, PRINT_HIGH, "Out of item: %s\n", s);
@@ -365,7 +365,7 @@ static void G_WeaponLast_f(g_client_t *cl) {
     return;
   }
 
-  const uint16_t index = cl->prev_weapon->index;
+  const g_item_tag_t index = cl->prev_weapon->def.tag;
 
   if (!cl->inventory[index]) {
     return;

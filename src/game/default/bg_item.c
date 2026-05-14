@@ -553,7 +553,7 @@ const g_item_def_t bg_item_defs[] = {
     .name = "Enemy Flag",
     .quantity = 0,
     .type = ITEM_FLAG,
-    .tag = TEAM_RED,
+    .tag = FLAG_RED,
     .priority = 0.75,
     .precaches = "ctf/capture.wav ctf/steal.wav ctf/return.wav"
   },
@@ -566,7 +566,7 @@ const g_item_def_t bg_item_defs[] = {
     .name = "Enemy Flag",
     .quantity = 0,
     .type = ITEM_FLAG,
-    .tag = TEAM_BLUE,
+    .tag = FLAG_BLUE,
     .priority = 0.75,
     .precaches = "ctf/capture.wav ctf/steal.wav ctf/return.wav"
   },
@@ -579,7 +579,7 @@ const g_item_def_t bg_item_defs[] = {
     .name = "Enemy Flag",
     .quantity = 0,
     .type = ITEM_FLAG,
-    .tag = TEAM_YELLOW,
+    .tag = FLAG_YELLOW,
     .priority = 0.75,
     .precaches = "ctf/capture.wav ctf/steal.wav ctf/return.wav"
   },
@@ -592,7 +592,7 @@ const g_item_def_t bg_item_defs[] = {
     .name = "Enemy Flag",
     .quantity = 0,
     .type = ITEM_FLAG,
-    .tag = TEAM_GREEN,
+    .tag = FLAG_GREEN,
     .priority = 0.75,
     .precaches = "ctf/capture.wav ctf/steal.wav ctf/return.wav"
   },

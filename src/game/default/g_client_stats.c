@@ -192,7 +192,7 @@ void G_ClientStats(g_client_t *cl) {
   const g_item_t *armor = G_ClientArmor(cl);
   if (armor) {
     cl->ps.stats[STAT_ARMOR_ICON] = armor->icon_index;
-    cl->ps.stats[STAT_ARMOR] = cl->inventory[armor->index];
+    cl->ps.stats[STAT_ARMOR] = cl->inventory[armor->def.tag];
   } else {
     cl->ps.stats[STAT_ARMOR_ICON] = 0;
     cl->ps.stats[STAT_ARMOR] = 0;
@@ -219,7 +219,7 @@ void G_ClientStats(g_client_t *cl) {
 
   for (int32_t i = 0; i < g_level.num_teams; i++) {
 
-    if (cl->inventory[g_media.items.flags[i]->index]) {
+    if (cl->inventory[FLAG_FIRST + i]) {
       cl->ps.stats[STAT_CARRYING_FLAG] = i + 1;
       break;
     }
@@ -235,13 +235,13 @@ void G_ClientStats(g_client_t *cl) {
     cl->ps.stats[STAT_HEALTH] = 0;
   } else {
     if (cl->entity->health > 100) {
-      cl->ps.stats[STAT_HEALTH_ICON] = g_media.items.health[HEALTH_MEGA]->icon_index;
+      cl->ps.stats[STAT_HEALTH_ICON] = g_items[HEALTH_MEGA].icon_index;
     } else if (cl->entity->health > 75) {
       cl->ps.stats[STAT_HEALTH_ICON] = g_media.images.health;
     } else if (cl->entity->health > 25) {
-      cl->ps.stats[STAT_HEALTH_ICON] = g_media.items.health[HEALTH_MEDIUM]->icon_index;
+      cl->ps.stats[STAT_HEALTH_ICON] = g_items[HEALTH_MEDIUM].icon_index;
     } else {
-      cl->ps.stats[STAT_HEALTH_ICON] = g_media.items.health[HEALTH_LARGE]->icon_index;
+      cl->ps.stats[STAT_HEALTH_ICON] = g_items[HEALTH_LARGE].icon_index;
     }
     cl->ps.stats[STAT_HEALTH] = cl->entity->health;
   }
@@ -277,7 +277,7 @@ void G_ClientStats(g_client_t *cl) {
   if (weapon) {
     cl->ps.stats[STAT_WEAPON] = cl->weapon->model_index;
     cl->ps.stats[STAT_WEAPON_ICON] = weapon->icon_index;
-    const int32_t wb = g_level.weapons[weapon->def.tag];
+    const int32_t wb = g_level.weapons[weapon->def.tag - WEAPON_FIRST];
     cl->ps.stats[STAT_WEAPON_BIT] = wb >= 0 ? wb + 1 : 0;
   } else {
     cl->ps.stats[STAT_WEAPON] = 0;
@@ -286,7 +286,7 @@ void G_ClientStats(g_client_t *cl) {
   }
 
   if (cl->next_weapon) {
-    const int32_t wb = g_level.weapons[cl->next_weapon->def.tag];
+    const int32_t wb = g_level.weapons[cl->next_weapon->def.tag - WEAPON_FIRST];
     cl->ps.stats[STAT_WEAPON_BIT] |= ((wb >= 0 ? wb + 1 : 0) << 8);
   }
 
@@ -313,17 +313,17 @@ void G_ClientStats(g_client_t *cl) {
   cl->ps.stats[STAT_WEAPONS_2] = 0;
 
   if (!cl->persistent.spectator && !cl->entity->dead) {
-    for (int32_t i = WEAPON_NONE + 1; i < WEAPON_TOTAL; i++) {
+    for (g_item_tag_t i = WEAPON_FIRST; i < WEAPON_LAST; i++) {
 
-      const int32_t bit = g_level.weapons[i];
+      const int32_t bit = g_level.weapons[i - WEAPON_FIRST];
       if (bit < 0) {
         continue;
       }
 
-      const g_item_t *weapon = g_media.items.weapons[i];
+      const g_item_t *weapon = &g_items[i];
       const g_item_t *ammo = weapon->ammo_item;
 
-      if (cl->inventory[weapon->index] && (!ammo || cl->inventory[ammo->index] >= weapon->def.quantity)) {
+      if (cl->inventory[weapon->def.tag] && (!ammo || cl->inventory[ammo->def.tag] >= weapon->def.quantity)) {
         if (bit < 16) {
           cl->ps.stats[STAT_WEAPONS] |= 1 << bit;
         } else {

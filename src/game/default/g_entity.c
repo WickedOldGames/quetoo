@@ -147,17 +147,10 @@ static void G_SpawnEntity(cm_entity_t *def) {
   ent->mass = gi.EntityValue(ent->def, "mass")->value;
 
   // check item spawn functions
-  const g_item_t *it = g_items;
-  for (size_t i = 0; i < bg_num_items; i++, it++) {
-
-    if (!it->def.classname) {
-      continue;
-    }
-
-    if (!g_strcmp0(it->def.classname, ent->classname)) {
-      G_SpawnItem(ent, it);
-      return;
-    }
+  const g_item_t *it = G_FindItemByClassName(ent->classname);
+  if (it) {
+    G_SpawnItem(ent, it);
+    return;
   }
 
   // check normal spawn functions
@@ -321,11 +314,11 @@ static void G_InitMedia(void) {
 
   g_media.sounds.roar = gi.SoundIndex("misc/ominous_bwah");
 
-  g_media.sounds.techs[TECH_HASTE] = gi.SoundIndex("techs/haste/haste");
-  g_media.sounds.techs[TECH_REGEN] = gi.SoundIndex("techs/regen/regen");
-  g_media.sounds.techs[TECH_RESIST] = gi.SoundIndex("techs/resist/resist");
-  g_media.sounds.techs[TECH_STRENGTH] = gi.SoundIndex("techs/strength/strength");
-  g_media.sounds.techs[TECH_VAMPIRE] = gi.SoundIndex("techs/vampire/vampire");
+  g_media.sounds.techs[TECH_HASTE - TECH_FIRST]    = gi.SoundIndex("techs/haste/haste");
+  g_media.sounds.techs[TECH_REGEN - TECH_FIRST]    = gi.SoundIndex("techs/regen/regen");
+  g_media.sounds.techs[TECH_RESIST - TECH_FIRST]   = gi.SoundIndex("techs/resist/resist");
+  g_media.sounds.techs[TECH_STRENGTH - TECH_FIRST] = gi.SoundIndex("techs/strength/strength");
+  g_media.sounds.techs[TECH_VAMPIRE - TECH_FIRST]  = gi.SoundIndex("techs/vampire/vampire");
 
   g_media.images.health = gi.ImageIndex("pics/i_health");
 }
@@ -412,8 +405,8 @@ static void G_CreateTeamSpawnPoints(GSList **dm_spawns, GSList **team_red_spawns
     red_flag->s.origin = reused_spawns[r]->s.origin;
     blue_flag->s.origin = reused_spawns[r ^ 1]->s.origin;
     
-    G_SpawnItem(red_flag, g_media.items.flags[TEAM_RED]);
-    G_SpawnItem(blue_flag, g_media.items.flags[TEAM_BLUE]);
+    G_SpawnItem(red_flag, &g_items[FLAG_RED]);
+    G_SpawnItem(blue_flag, &g_items[FLAG_BLUE]);
     
     g_team_red->flag_entity = red_flag;
     g_team_blue->flag_entity = blue_flag;
@@ -610,8 +603,8 @@ void G_SpawnTechs(void) {
     return;
   }
 
-  for (g_tech_t i = 0; i < TECH_TOTAL; i++) {
-    G_SpawnTech(g_media.items.techs[i]);
+  for (g_item_tag_t i = TECH_FIRST; i < TECH_LAST; i++) {
+    G_SpawnTech(&g_items[i]);
   }
 }
 

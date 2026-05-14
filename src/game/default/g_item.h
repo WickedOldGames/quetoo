@@ -69,7 +69,7 @@
   extern const box3_t ITEM_BOUNDS;
 
   const g_item_t *G_GetTech(const g_client_t *cl);
-  bool G_HasTech(const g_client_t *cl, const g_tech_t tech);
+  bool G_HasTech(const g_client_t *cl, g_item_tag_t tech);
   bool G_AddAmmo(g_client_t *cl, const g_item_t *item, int16_t count);
   g_entity_t *G_DropItem(g_client_t *cl, const g_item_t *item);
   bool G_ItemAvailable(const g_item_t *item);

@@ -31,8 +31,8 @@ const box3_t ITEM_BOUNDS = {
  */
 const g_item_t *G_FindItemByClassName(const char *classname) {
 
-  const g_item_t *it = g_items;
-  for (size_t i = 0; i < bg_num_items; i++, it++) {
+  for (size_t i = 0; i < bg_num_items; i++) {
+    const g_item_t *it = &g_items[bg_item_defs[i].tag];
 
     if (!it->def.classname) {
       continue;
@@ -56,8 +56,8 @@ const g_item_t *G_FindItem(const char *name) {
   }
 
   const g_item_t *fallback = NULL;
-  const g_item_t *it = g_items;
-  for (size_t i = 0; i < bg_num_items; i++, it++) {
+  for (size_t i = 0; i < bg_num_items; i++) {
+    const g_item_t *it = &g_items[bg_item_defs[i].tag];
 
     if (!it->def.name) {
       continue;
@@ -79,40 +79,40 @@ const g_item_t *G_FindItem(const char *name) {
 /**
  * @brief Maps Quetoo weapon tags to their Quake equivalent, by gameplay role.
  *  Used to redirect generic bindings (e.g. "use Rocket Launcher") to the
- *  appropriate weapon when g_level.items == ITEMS_QUAKE.
- *  WEAPON_NONE means no equivalent exists.
+ *  appropriate weapon when `g_level.items == ITEMS_QUAKE`.
+ *  `WEAPON_NONE` means no equivalent exists.
  */
-static const g_weapon_tag_t g_quake_weapon_map[WEAPON_TOTAL] = {
+static const g_item_tag_t g_quake_weapon_map[WEAPON_LAST] = {
   [WEAPON_BLASTER]          = WEAPON_QUAKE_SHOTGUN,
   [WEAPON_SHOTGUN]          = WEAPON_QUAKE_SHOTGUN,
   [WEAPON_SUPER_SHOTGUN]    = WEAPON_QUAKE_SUPER_SHOTGUN,
   [WEAPON_MACHINEGUN]       = WEAPON_QUAKE_NAILGUN,
-  [WEAPON_HAND_GRENADE]     = WEAPON_NONE,
+  [WEAPON_HAND_GRENADE]     = ITEM_NONE,
   [WEAPON_GRENADE_LAUNCHER] = WEAPON_QUAKE_GRENADE_LAUNCHER,
   [WEAPON_ROCKET_LAUNCHER]  = WEAPON_QUAKE_ROCKET_LAUNCHER,
   [WEAPON_HYPERBLASTER]     = WEAPON_QUAKE_SUPER_NAILGUN,
   [WEAPON_LIGHTNING]        = WEAPON_QUAKE_THUNDERBOLT,
   [WEAPON_RAILGUN]          = WEAPON_QUAKE_THUNDERBOLT,
-  [WEAPON_BFG10K]           = WEAPON_NONE,
+  [WEAPON_BFG10K]           = ITEM_NONE,
 };
 
 /**
  * @brief Returns the Quake equivalent of a Quetoo weapon item when
- *  g_level.items == ITEMS_QUAKE, or NULL if no mapping exists or the item is
+ *  `g_level.items == ITEMS_QUAKE`, or `NULL` if no mapping exists or the item is
  *  already a Quake weapon.
  */
 const g_item_t *G_MappedWeapon(const g_item_t *weapon) {
 
-  if (weapon->def.tag == WEAPON_NONE || weapon->def.tag >= WEAPON_QUAKE_SHOTGUN) {
+  if (weapon->def.tag < WEAPON_FIRST || weapon->def.tag >= WEAPON_QUAKE_SHOTGUN) {
     return NULL; // already a Quake weapon, or unmapped
   }
 
-  const g_weapon_tag_t mapped = g_quake_weapon_map[weapon->def.tag];
-  if (mapped == WEAPON_NONE) {
+  const g_item_tag_t mapped = g_quake_weapon_map[weapon->def.tag];
+  if (!mapped) {
     return NULL;
   }
 
-  return g_media.items.weapons[mapped];
+  return &g_items[mapped];
 }
 
 /**
@@ -123,10 +123,10 @@ const g_item_t *G_MappedWeapon(const g_item_t *weapon) {
 const g_item_t *G_ClientArmor(const g_client_t *cl) {
 
 
-  for (g_armor_t armor = ARMOR_QUAKE_BODY; armor > ARMOR_SHARD; armor--) {
+  for (g_item_tag_t armor = ARMOR_QUAKE_BODY; armor > ARMOR_SHARD; armor--) {
 
-    if (cl->inventory[g_media.items.armor[armor]->index]) {
-      return g_media.items.armor[armor];
+    if (cl->inventory[armor]) {
+      return &g_items[armor];
     }
   }
 
@@ -190,11 +190,11 @@ static bool G_PickupAdrenaline(g_client_t *cl, g_entity_t *ent) {
  */
 static bool G_PickupQuadDamage(g_client_t *cl, g_entity_t *ent) {
 
-  if (cl->inventory[g_media.items.powerups[POWERUP_QUAD]->index]) {
+  if (cl->inventory[POWERUP_QUAD]) {
     return false; // already have it
   }
 
-  cl->inventory[g_media.items.powerups[POWERUP_QUAD]->index] = 1;
+  cl->inventory[POWERUP_QUAD] = 1;
 
   uint32_t delta = 3000;
 
@@ -219,18 +219,18 @@ static bool G_PickupQuadDamage(g_client_t *cl, g_entity_t *ent) {
 g_entity_t *G_TossQuadDamage(g_client_t *cl) {
   g_entity_t *quad;
 
-  if (!cl->inventory[g_media.items.powerups[POWERUP_QUAD]->index]) {
+  if (!cl->inventory[POWERUP_QUAD]) {
     return NULL;
   }
 
-  quad = G_DropItem(cl, g_media.items.powerups[POWERUP_QUAD]);
+  quad = G_DropItem(cl, &g_items[POWERUP_QUAD]);
 
   if (quad) {
     quad->timestamp = cl->quad_damage_time;
   }
 
   cl->quad_damage_time = 0.0;
-  cl->inventory[g_media.items.powerups[POWERUP_QUAD]->index] = 0;
+  cl->inventory[POWERUP_QUAD] = 0;
 
   return quad;
 }
@@ -240,11 +240,11 @@ g_entity_t *G_TossQuadDamage(g_client_t *cl) {
  */
 static bool G_PickupInvisibility(g_client_t *cl, g_entity_t *ent) {
 
-  if (cl->inventory[g_media.items.powerups[POWERUP_INVISIBILITY]->index]) {
+  if (cl->inventory[POWERUP_INVISIBILITY]) {
     return false; // already have it
   }
 
-  cl->inventory[g_media.items.powerups[POWERUP_INVISIBILITY]->index] = 1;
+  cl->inventory[POWERUP_INVISIBILITY] = 1;
 
   if (ent->spawn_flags & SF_ITEM_DROPPED) {
     cl->invisibility_time = ent->next_think;
@@ -269,18 +269,18 @@ static bool G_PickupInvisibility(g_client_t *cl, g_entity_t *ent) {
  */
 g_entity_t *G_TossInvisibility(g_client_t *cl) {
 
-  if (!cl->inventory[g_media.items.powerups[POWERUP_INVISIBILITY]->index]) {
+  if (!cl->inventory[POWERUP_INVISIBILITY]) {
     return NULL;
   }
 
-  g_entity_t *item = G_DropItem(cl, g_media.items.powerups[POWERUP_INVISIBILITY]);
+  g_entity_t *item = G_DropItem(cl, &g_items[POWERUP_INVISIBILITY]);
 
   if (item) {
     item->timestamp = cl->invisibility_time;
   }
 
   cl->invisibility_time = 0;
-  cl->inventory[g_media.items.powerups[POWERUP_INVISIBILITY]->index] = 0;
+  cl->inventory[POWERUP_INVISIBILITY] = 0;
   cl->entity->s.effects &= ~EF_INVISIBILITY;
 
   return item;
@@ -291,11 +291,11 @@ g_entity_t *G_TossInvisibility(g_client_t *cl) {
  */
 static bool G_PickupInvulnerability(g_client_t *cl, g_entity_t *ent) {
 
-  if (cl->inventory[g_media.items.powerups[POWERUP_INVULNERABILITY]->index]) {
+  if (cl->inventory[POWERUP_INVULNERABILITY]) {
     return false; // already have it
   }
 
-  cl->inventory[g_media.items.powerups[POWERUP_INVULNERABILITY]->index] = 1;
+  cl->inventory[POWERUP_INVULNERABILITY] = 1;
 
   uint32_t delta = 3000;
 
@@ -326,11 +326,11 @@ static bool G_PickupInvulnerability(g_client_t *cl, g_entity_t *ent) {
  */
 g_entity_t *G_TossInvulnerability(g_client_t *cl) {
 
-  if (!cl->inventory[g_media.items.powerups[POWERUP_INVULNERABILITY]->index]) {
+  if (!cl->inventory[POWERUP_INVULNERABILITY]) {
     return NULL;
   }
 
-  g_entity_t *item = G_DropItem(cl, g_media.items.powerups[POWERUP_INVULNERABILITY]);
+  g_entity_t *item = G_DropItem(cl, &g_items[POWERUP_INVULNERABILITY]);
 
   if (item) {
     item->timestamp = cl->invulnerability_time;
@@ -338,7 +338,7 @@ g_entity_t *G_TossInvulnerability(g_client_t *cl) {
 
   cl->invulnerability_time = 0;
   cl->invulnerability_countdown_time = 0;
-  cl->inventory[g_media.items.powerups[POWERUP_INVULNERABILITY]->index] = 0;
+  cl->inventory[POWERUP_INVULNERABILITY] = 0;
   cl->entity->s.effects &= ~EF_INVULNERABILITY;
 
   return item;
@@ -348,14 +348,13 @@ g_entity_t *G_TossInvulnerability(g_client_t *cl) {
  * @brief Adds the given amount of ammo to the client's inventory, clamped to the item's maximum.
  */
 bool G_AddAmmo(g_client_t *cl, const g_item_t *item, int16_t count) {
-  uint16_t index;
   int16_t max = item->def.max;
 
   if (!max) {
     return false;
   }
 
-  index = item->index;
+  const g_item_tag_t index = item->def.tag;
 
   cl->inventory[index] += count;
 
@@ -372,14 +371,13 @@ bool G_AddAmmo(g_client_t *cl, const g_item_t *item, int16_t count) {
  * @brief Sets the client's ammo count for the given item to an absolute value, clamped to its maximum.
  */
 bool G_SetAmmo(g_client_t *cl, const g_item_t *item, int16_t count) {
-  uint16_t index;
   int16_t max = item->def.max;
 
   if (!max) {
     return false;
   }
 
-  index = item->index;
+  const g_item_tag_t index = item->def.tag;
 
   cl->inventory[index] = count;
 
@@ -422,12 +420,12 @@ static bool G_PickupGrenades(g_client_t *cl, g_entity_t *ent) {
 
   const bool pickup = G_PickupAmmo(cl, ent);
   if (pickup) {
-    if (!cl->inventory[g_media.items.weapons[WEAPON_HAND_GRENADE]->index]) {
-      cl->inventory[g_media.items.weapons[WEAPON_HAND_GRENADE]->index]++;
+    if (!cl->inventory[WEAPON_HAND_GRENADE]) {
+      cl->inventory[WEAPON_HAND_GRENADE]++;
     }
 
-    if (cl->weapon == g_media.items.weapons[WEAPON_BLASTER]) {
-      G_UseWeapon(cl, g_media.items.weapons[WEAPON_HAND_GRENADE]);
+    if (cl->weapon == &g_items[WEAPON_BLASTER]) {
+      G_UseWeapon(cl, &g_items[WEAPON_HAND_GRENADE]);
     }
   }
 
@@ -448,8 +446,8 @@ static bool G_PickupGrenadeLauncher(g_client_t *cl, g_entity_t *ent) {
 
   const bool pickup = G_PickupWeapon(cl, ent);
   if (pickup) {
-    if (!cl->inventory[g_media.items.weapons[WEAPON_HAND_GRENADE]->index]) {
-      cl->inventory[g_media.items.weapons[WEAPON_HAND_GRENADE]->index]++;
+    if (!cl->inventory[WEAPON_HAND_GRENADE]) {
+      cl->inventory[WEAPON_HAND_GRENADE]++;
     }
   }
 
@@ -559,29 +557,29 @@ static bool G_PickupArmor(g_client_t *cl, g_entity_t *ent) {
 
   if (new_armor->def.tag == ARMOR_SHARD) { // always take it, ignoring cap
     if (current_armor) {
-      cl->inventory[current_armor->index] =
-          Clampf(cl->inventory[current_armor->index] + new_armor->def.quantity,
+      cl->inventory[current_armor->def.tag] =
+          Clampf(cl->inventory[current_armor->def.tag] + new_armor->def.quantity,
                 0, cl->max_armor);
     } else {
-      cl->inventory[g_media.items.armor[ARMOR_JACKET]->index] =
+      cl->inventory[ARMOR_JACKET] =
           Clampf((int16_t) new_armor->def.quantity, 0, cl->max_armor);
     }
 
     taken = true;
   } else if (!current_armor) { // no current armor, take it
-    cl->inventory[new_armor->index] =
+    cl->inventory[new_armor->def.tag] =
         Clampf((int16_t) new_armor->def.quantity, 0, cl->max_armor);
 
     taken = true;
   } else if (new_armor->def.tag >= ARMOR_QUAKE_JACKET) {
     // Quake-family armor uses Q1 effective-score logic: full swap, no salvage.
     // A pickup is only accepted if it strictly improves the player's effective score.
-    const float current_score = current_info->normal_protection * cl->inventory[current_armor->index];
+    const float current_score = current_info->normal_protection * cl->inventory[current_armor->def.tag];
     const float new_score = new_info->normal_protection * new_armor->def.quantity;
 
     if (new_score > current_score) {
-      cl->inventory[current_armor->index] = 0;
-      cl->inventory[new_armor->index] = Clampf((int16_t) new_armor->def.quantity, 0, cl->max_armor);
+      cl->inventory[current_armor->def.tag] = 0;
+      cl->inventory[new_armor->def.tag] = Clampf((int16_t) new_armor->def.quantity, 0, cl->max_armor);
       taken = true;
     }
   } else {
@@ -592,14 +590,14 @@ static bool G_PickupArmor(g_client_t *cl, g_entity_t *ent) {
       // get the ratio between the new and old armor to add a portion to
       // new armor pickup. Ganked from q2pro (thanks skuller)
       const float salvage = current_info->normal_protection / new_info->normal_protection;
-      const int16_t salvage_count = salvage * cl->inventory[current_armor->index];
+      const int16_t salvage_count = salvage * cl->inventory[current_armor->def.tag];
 
       const int16_t new_count = Clampf(salvage_count + new_armor->def.quantity, 0, new_armor->def.max);
 
       if (new_count < cl->max_armor) {
-        cl->inventory[current_armor->index] = 0;
+        cl->inventory[current_armor->def.tag] = 0;
 
-        cl->inventory[new_armor->index] =
+        cl->inventory[new_armor->def.tag] =
             Clampf(new_count, 0, cl->max_armor);
       }
 
@@ -609,13 +607,13 @@ static bool G_PickupArmor(g_client_t *cl, g_entity_t *ent) {
       const float salvage = new_info->normal_protection / current_info->normal_protection;
       const int16_t salvage_count = salvage * new_armor->def.quantity;
 
-      int16_t new_count = salvage_count + cl->inventory[current_armor->index];
+      int16_t new_count = salvage_count + cl->inventory[current_armor->def.tag];
       new_count = Clampf(new_count, 0, current_armor->def.max);
 
       // take it
-      if (cl->inventory[current_armor->index] < new_count &&
-              cl->inventory[current_armor->index] < cl->max_armor) {
-        cl->inventory[current_armor->index] =
+      if (cl->inventory[current_armor->def.tag] < new_count &&
+              cl->inventory[current_armor->def.tag] < cl->max_armor) {
+        cl->inventory[current_armor->def.tag] =
             Clampf(new_count, 0, cl->max_armor);
 
         taken = true;
@@ -722,10 +720,10 @@ static bool G_PickupFlag(g_client_t *cl, g_entity_t *ent) {
     }
 
     if (carried_flag) {
-      const g_team_t *other_team = &g_team_list[carried_flag->def.tag];
+      const g_team_t *other_team = &g_team_list[carried_flag->def.tag - FLAG_FIRST];
       g_entity_t *other_team_flag = G_FlagForTeam(other_team);
 
-      index = other_team_flag->item->index;
+      index = other_team_flag->item->def.tag;
       if (cl->inventory[index]) { // capture
 
         cl->inventory[index] = 0;
@@ -766,7 +764,7 @@ static bool G_PickupFlag(g_client_t *cl, g_entity_t *ent) {
 
   gi.LinkEntity(team_flag);
 
-  index = team_flag->item->index;
+  index = team_flag->item->def.tag;
   cl->inventory[index] = 1;
 
   // link the flag model to the player
@@ -793,8 +791,8 @@ g_entity_t *G_TossFlag(g_client_t *cl) {
     return NULL;
   }
 
-  const g_team_t *team = &g_team_list[flag->def.tag];
-  const int32_t index = flag->index;
+  const g_team_t *team = &g_team_list[flag->def.tag - FLAG_FIRST];
+  const g_item_tag_t index = flag->def.tag;
 
   if (!cl->inventory[index]) {
     return NULL;
@@ -906,7 +904,7 @@ void G_TouchItem(g_entity_t *ent, g_entity_t *other, const cm_trace_t *trace) {
     }
 
     cl->ps.stats[STAT_PICKUP_ICON] = icon;
-    cl->ps.stats[STAT_PICKUP_STRING] = CS_ITEMS + ent->item->index;
+    cl->ps.stats[STAT_PICKUP_STRING] = CS_ITEMS + ent->item->def.tag;
     
     if (ent->item->Use) {
       cl->last_pickup = ent->item;
@@ -1037,11 +1035,11 @@ static float G_TechRangeFromSpawn(const g_entity_t *spawn) {
   float best_dist = FLT_MAX;
   bool any = false;
 
-  for (g_tech_t tech = TECH_HASTE; tech < TECH_TOTAL; tech++) {
+  for (g_item_tag_t tech = TECH_FIRST; tech < TECH_LAST; tech++) {
 
     g_entity_t *ent = NULL;
     G_ForEachEntity(e, {
-      if (e->item == g_media.items.techs[tech]) {
+      if (e->item == &g_items[tech]) {
         ent = e;
         break;
       }
@@ -1119,8 +1117,8 @@ void G_ResetDroppedTech(g_entity_t *ent) {
 /**
  * @brief Check if a player has the specified tech.
  */
-bool G_HasTech(const g_client_t *cl, const g_tech_t tech) {
-  return !!cl->inventory[g_media.items.techs[tech]->index];
+bool G_HasTech(const g_client_t *cl, g_item_tag_t tech) {
+  return !!cl->inventory[tech];
 }
 
 /**
@@ -1128,7 +1126,7 @@ bool G_HasTech(const g_client_t *cl, const g_tech_t tech) {
  */
 static bool G_PickupTech(g_client_t *cl, g_entity_t *ent) {
 
-  for (g_tech_t tech = TECH_HASTE; tech < TECH_TOTAL; tech++) {
+  for (g_item_tag_t tech = TECH_FIRST; tech < TECH_LAST; tech++) {
 
     if (G_HasTech(cl, tech)) {
       return false;
@@ -1136,7 +1134,7 @@ static bool G_PickupTech(g_client_t *cl, g_entity_t *ent) {
   }
 
   // add the weapon to inventory
-  cl->inventory[ent->item->index]++;
+  cl->inventory[ent->item->def.tag]++;
 
   return true;
 }
@@ -1146,10 +1144,10 @@ static bool G_PickupTech(g_client_t *cl, g_entity_t *ent) {
  */
 const g_item_t *G_GetTech(const g_client_t *cl) {
 
-  for (g_tech_t i = TECH_HASTE; i < TECH_TOTAL; i++) {
+  for (g_item_tag_t i = TECH_FIRST; i < TECH_LAST; i++) {
 
     if (G_HasTech(cl, i)) {
-      return g_media.items.techs[i];
+      return &g_items[i];
     }
   }
 
@@ -1166,7 +1164,7 @@ g_entity_t *G_TossTech(g_client_t *cl) {
     return NULL;
   }
 
-  cl->inventory[tech->index] = 0;
+  cl->inventory[tech->def.tag] = 0;
 
   return G_DropItem(cl, tech);
 }
@@ -1189,7 +1187,7 @@ void G_ResetItem(g_entity_t *ent) {
 
   if (ent->item->def.type == ITEM_FLAG) {
     if (g_level.ctf == false ||
-      ent->item->def.tag >= g_level.num_teams) {
+      ent->item->def.tag >= g_level.num_teams + FLAG_FIRST) {
       ent->sv_flags |= SVF_NO_CLIENT;
       ent->solid = SOLID_NOT;
     }
@@ -1349,7 +1347,7 @@ void G_PrecacheItem(const g_item_t *it) {
   }
 }
 
-static void G_InitItem(g_item_t *item);
+static void G_InitItem(g_item_t *it, const g_item_def_t *def);
 
 /**
  * @brief Sets the clipping size and plants the object on the floor.
@@ -1367,7 +1365,7 @@ void G_SpawnItem(g_entity_t *ent, const g_item_t *item) {
   if (ent->model) {
     ent->s.model1 = gi.ModelIndex(ent->model);
   } else {
-    G_InitItem((g_item_t *) ent->item);
+    G_InitItem((g_item_t *) ent->item, &ent->item->def);
     ent->s.model1 = ent->item->model_index;
   }
 
@@ -1388,8 +1386,8 @@ void G_SpawnItem(g_entity_t *ent, const g_item_t *item) {
       ent->health = 0;
     }
   } else if (ent->item->def.type == ITEM_FLAG) {
-    // pass flag tint over
-    ent->s.animation1 = item->def.tag;
+    // pass flag tint over (0-based team index)
+    ent->s.animation1 = item->def.tag - FLAG_FIRST;
   }
 
   ent->next_think = g_level.time + QUETOO_TICK_MILLIS * 2;
@@ -1458,9 +1456,9 @@ static void G_InitWeapons(void) {
   memset(g_level.weapons, -1, sizeof(g_level.weapons));
 
   // First pass: include all weapons in the active item set.
-  for (int32_t t = WEAPON_NONE + 1; t < WEAPON_TOTAL; t++) {
+  for (g_item_tag_t t = WEAPON_FIRST; t < WEAPON_LAST; t++) {
 
-    const g_item_t *weapon = g_media.items.weapons[t];
+    const g_item_t *weapon = &g_items[t];
 
     if (!G_ItemAvailable(weapon)) {
       continue;
@@ -1470,19 +1468,19 @@ static void G_InitWeapons(void) {
       strcat(weapon_info, "\\");
     }
 
-    strcat(weapon_info, va("%i\\%i", weapon->icon_index, weapon->index));
-    g_level.weapons[t] = bit++;
+    strcat(weapon_info, va("%i\\%i", weapon->icon_index, weapon->def.tag));
+    g_level.weapons[t - WEAPON_FIRST] = bit++;
   }
 
   // Second pass: entity-promoted weapons placed by the mapper outside the
   // active item set (e.g. item_quake_nailgun in a default-items map).
-  for (int32_t t = WEAPON_NONE + 1; t < WEAPON_TOTAL; t++) {
+  for (g_item_tag_t t = WEAPON_FIRST; t < WEAPON_LAST; t++) {
 
-    if (g_level.weapons[t] >= 0) {
+    if (g_level.weapons[t - WEAPON_FIRST] >= 0) {
       continue;
     }
 
-    const g_item_t *weapon = g_media.items.weapons[t];
+    const g_item_t *weapon = &g_items[t];
 
     bool found = false;
     G_ForEachEntity(ent, {
@@ -1505,8 +1503,8 @@ static void G_InitWeapons(void) {
       strcat(weapon_info, "\\");
     }
 
-    strcat(weapon_info, va("%i\\%i", weapon->icon_index, weapon->index));
-    g_level.weapons[t] = bit++;
+    strcat(weapon_info, va("%i\\%i", weapon->icon_index, weapon->def.tag));
+    g_level.weapons[t - WEAPON_FIRST] = bit++;
   }
 
   gi.SetConfigString(CS_WEAPONS, weapon_info);
@@ -1517,10 +1515,9 @@ static void G_InitWeapons(void) {
  * during item spawning (since bmodels have to spawn before any modelindex calls
  * can safely be made) but will be called for every other item once that is done.
  */
-static void G_InitItem(g_item_t *it) {
+static void G_InitItem(g_item_t *it, const g_item_def_t *def) {
 
-  it->index = (uint16_t) (ptrdiff_t) (it - g_items);
-  it->def = bg_item_defs[it->index];
+  it->def = *def;
 
   switch (it->def.type) {
     case ITEM_ARMOR:
@@ -1622,7 +1619,7 @@ static void G_InitItem(g_item_t *it) {
   it->model_index = gi.ModelIndex(it->def.model);
   it->pickup_sound_index = gi.SoundIndex(it->def.pickup_sound);
 
-  gi.SetConfigString(CS_ITEMS + it->index, it->def.name);
+  gi.SetConfigString(CS_ITEMS + it->def.tag, it->def.name);
 }
 
 /**
@@ -1630,47 +1627,13 @@ static void G_InitItem(g_item_t *it) {
  */
 void G_InitItems(void) {
 
-  g_items = gi.Malloc(bg_num_items * sizeof(g_item_t), MEM_TAG_GAME);
+  g_items = gi.Malloc(ITEM_TOTAL * sizeof(g_item_t), MEM_TAG_GAME);
 
-  g_item_t *it = g_items;
-  for (size_t i = 0; i < bg_num_items; i++, it++) {
+  for (size_t i = 0; i < bg_num_items; i++) {
+    const g_item_def_t *def = &bg_item_defs[i];
+    g_item_t *it = &g_items[def->tag];
 
-    G_InitItem(it);
-
-    // set up media pointers
-    const g_item_t **array = NULL;
-
-    switch (it->def.type) {
-      case ITEM_AMMO:
-        array = g_media.items.ammo;
-        break;
-      case ITEM_ARMOR:
-        array = g_media.items.armor;
-        break;
-      case ITEM_FLAG:
-        array = g_media.items.flags;
-        break;
-      case ITEM_HEALTH:
-        array = g_media.items.health;
-        break;
-      case ITEM_POWERUP:
-        array = g_media.items.powerups;
-        break;
-      case ITEM_WEAPON:
-        array = g_media.items.weapons;
-        break;
-      case ITEM_TECH:
-        array = g_media.items.techs;
-        break;
-      default:
-        gi.Error("Item %s has an invalid type\n", it->def.name);
-    }
-
-    if (array[it->def.tag]) {
-      gi.Error("Item %s has the same tag as %s\n", it->def.name, array[it->def.tag]->def.name);
-    }
-
-    array[it->def.tag] = it;
+    G_InitItem(it, def);
 
     // precache all weapons/health/armor, even if the map doesn't contain them
     if (it->def.type == ITEM_WEAPON || it->def.type == ITEM_HEALTH || it->def.type == ITEM_ARMOR) {
@@ -1680,7 +1643,8 @@ void G_InitItems(void) {
 
   // second pass: resolve ammo_item pointers (requires all defs to be populated first)
   for (size_t i = 0; i < bg_num_items; i++) {
-    g_item_t *it = &g_items[i];
+    const g_item_def_t *def = &bg_item_defs[i];
+    g_item_t *it = &g_items[def->tag];
 
     if (it->def.ammo) {
       it->ammo_item = G_FindItem(it->def.ammo);

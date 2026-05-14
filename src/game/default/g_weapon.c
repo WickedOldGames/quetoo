@@ -34,7 +34,7 @@ static void G_ChangeWeapon(g_client_t *cl, const g_item_t *item) {
       cl->entity->s.model2 = item->model_index;
 
       if (item->def.ammo) {
-        cl->ammo_index = item->ammo_item->index;
+        cl->ammo_index = item->ammo_item->def.tag;
       } else {
         cl->ammo_index = 0;
       }
@@ -78,18 +78,18 @@ static void G_ChangeWeapon(g_client_t *cl, const g_item_t *item) {
  */
 bool G_PickupWeapon(g_client_t *cl, g_entity_t *ent) {
 
-  if (g_weapon_stay->integer && ent->team == NULL && cl->inventory[ent->item->index]) {
+  if (g_weapon_stay->integer && ent->team == NULL && cl->inventory[ent->item->def.tag]) {
     return false;
   }
 
-  const int16_t had_weapon = cl->inventory[ent->item->index];
+  const int16_t had_weapon = cl->inventory[ent->item->def.tag];
 
   // add the weapon to inventory
-  cl->inventory[ent->item->index]++;
+  cl->inventory[ent->item->def.tag]++;
 
   const g_item_t *ammo = ent->item->ammo_item;
   if (ammo) {
-    const int16_t *stock = &cl->inventory[ammo->index];
+    const int16_t *stock = &cl->inventory[ammo->def.tag];
 
     if (*stock >= ent->health) {
       G_AddAmmo(cl, ammo, ent->health / 2);
@@ -111,11 +111,11 @@ bool G_PickupWeapon(g_client_t *cl, g_entity_t *ent) {
   const uint16_t auto_switch = cl->persistent.auto_switch;
   if (auto_switch == 1) { // switch from starting weapon
 
-    const g_weapon_tag_t tag = (g_level.items == ITEMS_QUAKE)
+    const g_item_tag_t tag = (g_level.items == ITEMS_QUAKE)
       ? WEAPON_QUAKE_SHOTGUN
       : WEAPON_BLASTER;
 
-    if (cl->weapon == g_media.items.weapons[tag]) {
+    if (cl->weapon == &g_items[tag]) {
       G_ChangeWeapon(cl, ent->item);
     }
   } else if (auto_switch == 2) { // switch to all
@@ -134,11 +134,11 @@ bool G_PickupWeapon(g_client_t *cl, g_entity_t *ent) {
  */
 static bool G_HasWeapon(const g_client_t *cl, const g_item_t *weapon) {
 
-  if (!cl->inventory[weapon->index]) {
+  if (!cl->inventory[weapon->def.tag]) {
     return false;
   }
 
-  if (weapon->def.ammo &&cl->inventory[weapon->ammo_item->index] < weapon->def.quantity) {
+  if (weapon->def.ammo &&cl->inventory[weapon->ammo_item->def.tag] < weapon->def.quantity) {
     return false;
   }
 
@@ -152,8 +152,8 @@ void G_UseBestWeapon(g_client_t *cl) {
 
   const g_item_t *item = NULL;
 
-  for (int32_t t = WEAPON_NONE + 1; t < WEAPON_TOTAL; t++) {
-    const g_item_t *weapon = g_media.items.weapons[t];
+  for (g_item_tag_t t = WEAPON_FIRST; t < WEAPON_LAST; t++) {
+    const g_item_t *weapon = &g_items[t];
 
     if (!weapon) {
       continue;
@@ -185,7 +185,7 @@ void G_UseWeapon(g_client_t *cl, const g_item_t *item) {
 
   if (item->def.ammo) { // ensure we have ammo
 
-    if (!cl->inventory[item->ammo_item->index]) {
+    if (!cl->inventory[item->ammo_item->def.tag]) {
       gi.ClientPrint(cl, PRINT_HIGH, "Not enough ammo for %s\n", item->def.name);
       return;
     }
@@ -202,7 +202,7 @@ void G_UseWeapon(g_client_t *cl, const g_item_t *item) {
 g_entity_t *G_DropWeapon(g_client_t *cl, const g_item_t *item) {
 
   const g_item_t *ammo = item->ammo_item;
-  const uint16_t ammo_index = ammo->index;
+  const uint16_t ammo_index = ammo->def.tag;
 
   g_entity_t *dropped = G_DropItem(cl, item);
 
@@ -312,7 +312,7 @@ void G_PlayTechSound(g_client_t *cl) {
 
   if (cl->tech_sound_time < g_level.time) {
     G_MulticastSound(&(const g_play_sound_t) {
-      .index = g_media.sounds.techs[tech->def.tag],
+      .index = g_media.sounds.techs[tech->def.tag - TECH_FIRST],
       .entity = cl->entity,
       .atten = SOUND_ATTEN_LINEAR
     }, MULTICAST_PHS);
@@ -345,7 +345,7 @@ static void G_WeaponFired(g_client_t *cl, uint32_t interval, uint32_t ammo_neede
   }
 
   // play a quad damage sound if applicable
-  if (cl->inventory[g_media.items.powerups[POWERUP_QUAD]->index]) {
+  if (cl->inventory[POWERUP_QUAD]) {
 
     if (cl->quad_attack_time < g_level.time) {
       G_MulticastSound(&(const g_play_sound_t) {
@@ -388,7 +388,7 @@ void G_ClientWeaponThink(g_client_t *cl) {
           cl->entity->s.model2 = item->model_index;
 
           if (item->def.ammo) {
-            cl->ammo_index = item->ammo_item->index;
+            cl->ammo_index = item->ammo_item->def.tag;
           } else {
             cl->ammo_index = 0;
           }
@@ -1086,7 +1086,7 @@ static void G_FireBfg_(g_entity_t *ent) {
   g_client_t *cl = ent->owner->client;
 
   if (ent->owner->dead == false) {
-    if (cl->weapon == g_media.items.weapons[WEAPON_BFG10K]) {
+    if (cl->weapon == &g_items[WEAPON_BFG10K]) {
       vec3_t forward, right, up, org;
 
       G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
