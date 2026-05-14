@@ -47,7 +47,7 @@ void G_FireQuakeNailgun(g_client_t *cl);
 void G_FireQuakeSuperNailgun(g_client_t *cl);
 void G_FireQuakeGrenadeLauncher(g_client_t *cl);
 void G_FireQuakeRocketLauncher(g_client_t *cl);
-void G_FireQuakeLightning(g_client_t *cl);
+void G_FireQuakeThunderbolt(g_client_t *cl);
 void G_ClientWeaponThink(g_client_t *cl);
 void G_HookDetach(g_client_t *cl);
 void G_HookThink(g_client_t *cl, const bool refire);

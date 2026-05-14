@@ -1023,7 +1023,7 @@ void G_FireQuakeRocketLauncher(g_client_t *cl) {
 /**
  * @brief Fires a continuous lightning beam from the Quake thunderbolt.
  */
-void G_FireQuakeLightning(g_client_t *cl) {
+void G_FireQuakeThunderbolt(g_client_t *cl) {
 
   if (G_FireWeapon(cl)) {
     vec3_t forward, right, up, org;
