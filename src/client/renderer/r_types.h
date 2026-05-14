@@ -335,7 +335,7 @@ typedef struct r_decal_s {
   float rotation;
 } r_decal_t;
 
-#define MAX_DECALS 0x400
+#define MAX_DECALS 0x800
 
 /**
  * @brief OpenGL occlusion queries.

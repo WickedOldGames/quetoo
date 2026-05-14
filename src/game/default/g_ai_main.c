@@ -34,9 +34,9 @@ static inline float Lerpf(float a, float b, float t) {
 
 /**
  * @brief Minimum weapon priority to be considered "armed" for combat.
- * Below this (e.g. Blaster 0.10, Shotgun 0.15), bots prioritize gathering items.
+ * Blaster (0.10) is below this threshold; Shotgun (0.15) and above are armed.
  */
-#define AI_ARMED_PRIORITY 0.25f
+#define AI_ARMED_PRIORITY 0.15f
 
 /**
  * @brief Health threshold below which bots disengage to seek health/armor.
@@ -46,11 +46,11 @@ static inline float Lerpf(float a, float b, float t) {
 /**
  * @brief Distance within which an unarmed or retreating bot will still fight back.
  */
-#define AI_SELF_DEFENSE_DISTANCE 256.f
+#define AI_SELF_DEFENSE_DISTANCE 512.f
 
 /**
- * @return True if the bot has at least a mid-tier weapon (Super Shotgun or better).
- * Aggressive bots will fight with weaker weapons.
+ * @return True if the bot has at least a Shotgun or better.
+ * Blaster-only bots are considered unarmed and will prioritize weapon pickups.
  */
 static bool G_Ai_IsArmed(const g_client_t *cl) {
 
