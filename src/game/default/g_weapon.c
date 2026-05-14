@@ -967,6 +967,10 @@ void G_FireQuakeNailgun(g_client_t *cl) {
 
     G_ClientProjectile(cl, &forward, &right, &up, &org, 0.0);
 
+    const float barrel_offset = (cl->quake_nailgun_barrel & 1) ? 2.0f : -2.0f;
+    org = Vec3_Fmaf(org, barrel_offset, right);
+    cl->quake_nailgun_barrel++;
+
     G_NailProjectile(cl->entity, org, forward, g_balance_quake_nailgun_speed->integer,
       g_balance_quake_nailgun_damage->integer, g_balance_quake_nailgun_knockback->integer);
 

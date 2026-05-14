@@ -1577,7 +1577,12 @@ struct g_client_s {
   bool hook_pull;
 
   /**
-   * @brief Damage absorbed by armor this frame.
+   * @brief Alternating barrel index for the Quake nailgun.
+   * Odd = right barrel (+2 units), even = left barrel (-2 units).
+   */
+  uint32_t quake_nailgun_barrel;
+
+  /**
    */
   int16_t damage_armor;
 
