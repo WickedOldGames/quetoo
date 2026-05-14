@@ -986,9 +986,18 @@ void G_FireQuakeNailgun(g_client_t *cl) {
 void G_FireQuakeSuperNailgun(g_client_t *cl) {
 
   if (G_FireWeapon(cl)) {
-    vec3_t forward, org;
+    vec3_t forward, right, up, org;
 
-    G_ClientProjectile(cl, &forward, NULL, NULL, &org, 0.0);
+    G_ClientProjectile(cl, &forward, &right, &up, &org, 0.0);
+
+    // Cycle through 4 barrels: up, right, down, left.
+    switch (cl->quake_nailgun_barrel % 4) {
+      case 0: org = Vec3_Fmaf(org,  2.0f, up);    break;
+      case 1: org = Vec3_Fmaf(org,  2.0f, right); break;
+      case 2: org = Vec3_Fmaf(org, -2.0f, up);    break;
+      case 3: org = Vec3_Fmaf(org, -2.0f, right); break;
+    }
+    cl->quake_nailgun_barrel++;
 
     G_NailProjectile(cl->entity, org, forward,
       g_balance_quake_supernailgun_speed->integer, g_balance_quake_supernailgun_damage->integer,
