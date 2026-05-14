@@ -94,7 +94,7 @@ void G_Ai_InitItems(void) {
 
   ai_num_weapons = 0;
 
-  for (uint16_t i = 0; i < g_num_items; i++) {
+  for (size_t i = 0; i < g_num_items; i++) {
     if (G_ItemByIndex(i)->def.type == ITEM_WEAPON) {
       ai_num_weapons++;
     }

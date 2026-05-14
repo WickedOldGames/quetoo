@@ -1707,7 +1707,7 @@ void G_InitItems(void) {
   }
 
   // second pass: resolve ammo_item pointers (requires all defs to be populated first)
-  for (uint16_t i = 0; i < g_num_items; i++) {
+  for (size_t i = 0; i < g_num_items; i++) {
     g_item_t *it = &g_items[i];
 
     if (it->def.ammo) {

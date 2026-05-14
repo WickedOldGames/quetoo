@@ -27,7 +27,7 @@
 static void G_Give_f(g_client_t *cl) {
   const g_item_t *it;
   uint32_t quantity;
-  uint32_t i;
+  size_t i;
   bool give_all;
   g_entity_t *it_ent;
 

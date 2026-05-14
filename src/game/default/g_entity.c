@@ -149,13 +149,13 @@ static void G_SpawnEntity(cm_entity_t *def) {
   // check item spawn functions
   for (size_t i = 0; i < g_num_items; i++) {
 
-    const g_item_t *item = G_ItemByIndex(i);
-    if (!item->def.classname) {
+    const g_item_t *it = G_ItemByIndex(i);
+    if (!it->def.classname) {
       continue;
     }
 
-    if (!g_strcmp0(item->def.classname, ent->classname)) {
-      G_SpawnItem(ent, item);
+    if (!g_strcmp0(it->def.classname, ent->classname)) {
+      G_SpawnItem(ent, it);
       return;
     }
   }
