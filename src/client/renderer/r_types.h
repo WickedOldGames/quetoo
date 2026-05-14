@@ -1116,11 +1116,6 @@ typedef struct {
    */
   struct r_model_s *worldspawn;
 
-  /**
-   * @brief The shared decal elements buffer object (referenced by all block VAOs).
-   */
-  GLuint decal_elements_buffer;
-
 } r_bsp_model_t;
 
 /**

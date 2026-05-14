@@ -286,18 +286,6 @@ static void R_LoadBspBlocks(r_bsp_model_t *bsp) {
   bsp->num_blocks = bsp->cm->file->num_blocks;
   bsp->blocks = out = Mem_LinkMalloc(bsp->num_blocks * sizeof(r_bsp_block_t), bsp);
 
-  GLuint elements_buffer;
-  glGenBuffers(1, &elements_buffer);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements_buffer);
-
-  GLuint elements[MAX_BSP_BLOCK_DECALS * 3];
-  for (GLuint i = 0, v = 0, e = 0; i < MAX_BSP_BLOCK_DECALS; i++, v += 3, e += 3) {
-    elements[e + 0] = v + 0;
-    elements[e + 1] = v + 1;
-    elements[e + 2] = v + 2;
-  }
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements), elements, GL_STATIC_DRAW);
-
   const bsp_block_t *in = bsp->cm->file->blocks;
   for (int32_t i = 0; i < bsp->num_blocks; i++, in++, out++) {
 
@@ -319,7 +307,6 @@ static void R_LoadBspBlocks(r_bsp_model_t *bsp) {
 
     glGenBuffers(1, &decals->vertex_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, decals->vertex_buffer);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elements_buffer);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(r_decal_vertex_t), (void *) offsetof(r_decal_vertex_t, position));
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(r_decal_vertex_t), (void *) offsetof(r_decal_vertex_t, texcoord));
@@ -335,8 +322,6 @@ static void R_LoadBspBlocks(r_bsp_model_t *bsp) {
 
     glBindVertexArray(0);
   }
-
-  bsp->decal_elements_buffer = elements_buffer;
 
   const bsp_face_t *in_face = bsp->cm->file->faces;
   r_bsp_face_t *out_face = bsp->faces;
@@ -728,7 +713,6 @@ static void R_FreeBspModel(r_media_t *self) {
 
   glDeleteBuffers(1, &bsp->vertex_buffer);
   glDeleteBuffers(1, &bsp->elements_buffer);
-  glDeleteBuffers(1, &bsp->decal_elements_buffer);
 
   glDeleteVertexArrays(1, &bsp->vertex_array);
   glDeleteVertexArrays(1, &bsp->depth_pass.vertex_array);

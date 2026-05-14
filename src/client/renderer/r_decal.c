@@ -401,7 +401,7 @@ void R_DrawDecals(const r_view_t *view) {
       assert(d->image->texnum);
       glBindTexture(GL_TEXTURE_2D, d->image->texnum);
 
-      glDrawElements(GL_TRIANGLES, d->triangles->len * 3, GL_UNSIGNED_INT, NULL);
+      glDrawArrays(GL_TRIANGLES, 0, d->triangles->len * 3);
 
       r_stats.decals += d->triangles->len;
       r_stats.decal_draw_elements++;
