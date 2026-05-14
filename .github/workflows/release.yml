@@ -547,31 +547,31 @@ jobs:
 
         ## macOS
         ### New Install
-        - quetoo-bundle-universal-apple-darwin.dmg
+        - [quetoo-bundle-universal-apple-darwin.dmg](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/quetoo-bundle-universal-apple-darwin.dmg)
         ### Update from Existing Install
-        - quetoo-universal-apple-darwin.dmg
+        - [quetoo-universal-apple-darwin.dmg](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/quetoo-universal-apple-darwin.dmg)
 
         ## Linux x86-64
         ### New Install
-        - quetoo-bundle-x86_64-pc-linux.tar.gz
+        - [quetoo-bundle-x86_64-pc-linux.tar.gz](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/quetoo-bundle-x86_64-pc-linux.tar.gz)
         ### Update from Existing Install
-        - quetoo-x86_64-pc-linux.tar.gz
-        - quetoo-x86_64-pc-linux.deb
-        - quetoo-x86_64-pc-linux.rpm
+        - [quetoo-x86_64-pc-linux.tar.gz](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/quetoo-x86_64-pc-linux.tar.gz)
+        - [quetoo-x86_64-pc-linux.deb](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/quetoo-x86_64-pc-linux.deb)
+        - [quetoo-x86_64-pc-linux.rpm](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/quetoo-x86_64-pc-linux.rpm)
 
         ## Linux arm64
         ### New Install
-        - quetoo-bundle-aarch64-pc-linux.tar.gz
+        - [quetoo-bundle-aarch64-pc-linux.tar.gz](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/quetoo-bundle-aarch64-pc-linux.tar.gz)
         ### Update from Existing Install
-        - quetoo-aarch64-pc-linux.tar.gz
-        - quetoo-aarch64-pc-linux.deb
-        - quetoo-aarch64-pc-linux.rpm
+        - [quetoo-aarch64-pc-linux.tar.gz](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/quetoo-aarch64-pc-linux.tar.gz)
+        - [quetoo-aarch64-pc-linux.deb](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/quetoo-aarch64-pc-linux.deb)
+        - [quetoo-aarch64-pc-linux.rpm](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/quetoo-aarch64-pc-linux.rpm)
 
         ## Windows x86-64
         ### New Install
-        - quetoo-bundle-x86_64-pc-windows.zip
+        - [quetoo-bundle-x86_64-pc-windows.zip](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/quetoo-bundle-x86_64-pc-windows.zip)
         ### Update from Existing Install
-        - quetoo-x86_64-pc-windows.zip
+        - [quetoo-x86_64-pc-windows.zip](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/quetoo-x86_64-pc-windows.zip)
 
         For Linux package-managed installs, also install the matching [quetoo-data ${{ github.ref_name }}](https://github.com/jdolan/quetoo-data/releases/tag/${{ github.ref_name }}) release." \
           quetoo-bundle-universal-apple-darwin/quetoo-bundle-universal-apple-darwin.dmg \
