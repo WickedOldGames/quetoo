@@ -65,7 +65,7 @@ bool G_Ai_CanPickup(const g_client_t *cl, const g_entity_t *other) {
       return true;
     case ITEM_TECH:
       for (size_t i = 0; i < g_num_items; i++) {
-        if (G_ItemByIndex(i)->def.type == ITEM_TECH) {
+        if (g_items[i].def.type == ITEM_TECH) {
           if (inventory[i]) {
             return false;
           }
@@ -94,8 +94,8 @@ void G_Ai_InitItems(void) {
 
   ai_num_weapons = 0;
 
-  for (uint16_t i = 0; i < g_num_items; i++) {
-    if (G_ItemByIndex(i)->def.type == ITEM_WEAPON) {
+  for (size_t i = 0; i < g_num_items; i++) {
+    if (g_items[i].def.type == ITEM_WEAPON) {
       ai_num_weapons++;
     }
   }

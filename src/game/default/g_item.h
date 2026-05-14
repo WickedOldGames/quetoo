@@ -26,8 +26,7 @@
 #if defined(__GAME_LOCAL_H__)
 
   extern size_t g_num_items;
-  
-  const g_item_t *G_ItemList(void);
+  extern g_item_t *g_items;
 
   /**
    * @brief Item bounding box scaling.
@@ -78,7 +77,6 @@
   const g_item_t *G_FindItem(const char *name);
   const g_item_t *G_FindItemByClassName(const char *classname);
   const g_item_t *G_MappedWeapon(const g_item_t *weapon);
-  const g_item_t *G_ItemByIndex(uint16_t index);
   const g_item_t *G_ClientArmor(const g_client_t *cl);
   const g_armor_info_t *G_ArmorInfo(const g_item_t *armor);
   void G_PrecacheItem(const g_item_t *it);

@@ -178,7 +178,7 @@ void G_ClientStats(g_client_t *cl) {
 
   // ammo
   if (cl->weapon && cl->ammo_index) {
-    const g_item_t *ammo = G_ItemByIndex(cl->ammo_index);
+    const g_item_t *ammo = &g_items[cl->ammo_index];
     const g_item_t *weap = cl->weapon;
     cl->ps.stats[STAT_AMMO_ICON] = weap->icon_index;
     cl->ps.stats[STAT_AMMO] = cl->inventory[cl->ammo_index];

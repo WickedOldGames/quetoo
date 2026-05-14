@@ -27,7 +27,7 @@
 static void G_Give_f(g_client_t *cl) {
   const g_item_t *it;
   uint32_t quantity;
-  uint32_t i;
+  size_t i;
   bool give_all;
   g_entity_t *it_ent;
 
@@ -67,7 +67,7 @@ static void G_Give_f(g_client_t *cl) {
 
   if (give_all || g_ascii_strcasecmp(name, "armor") == 0) {
     for (i = 0; i < g_num_items; i++) {
-      it = G_ItemByIndex(i);
+      it = &g_items[i];
       if (!it->Pickup) {
         continue;
       }
@@ -86,7 +86,7 @@ static void G_Give_f(g_client_t *cl) {
 
   if (give_all || g_ascii_strcasecmp(name, "weapons") == 0) {
     for (i = 0; i < g_num_items; i++) {
-      it = G_ItemByIndex(i);
+      it = &g_items[i];
       if (!it->Pickup) {
         continue;
       }
@@ -105,7 +105,7 @@ static void G_Give_f(g_client_t *cl) {
 
   if (give_all || g_ascii_strcasecmp(name, "ammo") == 0) {
     for (i = 0; i < g_num_items; i++) {
-      it = G_ItemByIndex(i);
+      it = &g_items[i];
       if (!it->Pickup) {
         continue;
       }
@@ -371,7 +371,7 @@ static void G_WeaponLast_f(g_client_t *cl) {
     return;
   }
 
-  const g_item_t *it = G_ItemByIndex(index);
+  const g_item_t *it = &g_items[index];
 
   if (!it->Use) {
     return;

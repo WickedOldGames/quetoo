@@ -57,8 +57,8 @@ static bool G_Ai_IsArmed(const g_client_t *cl) {
   const float threshold = AI_ARMED_PRIORITY * Lerpf(1.25f, .6f, cl->ai->personality.aggression);
 
   for (size_t i = 0; i < g_num_items; i++) {
-    const g_item_t *item = G_ItemByIndex(i);
-    if (item->def.type == ITEM_WEAPON && cl->inventory[i] && item->def.priority >= threshold) {
+    const g_item_t *it = &g_items[i];
+    if (it->def.type == ITEM_WEAPON && cl->inventory[i] && it->def.priority >= threshold) {
       return true;
     }
   }
@@ -393,9 +393,9 @@ static void G_Ai_PickWeapon(g_client_t *cl) {
   const int16_t *inventory = cl->inventory;
 
   for (size_t i = 0; i < g_num_items; i++) {
-    const g_item_t *item = G_ItemByIndex(i);
+    const g_item_t *it = &g_items[i];
 
-    if (item->def.type != ITEM_WEAPON) { // not weapon
+    if (it->def.type != ITEM_WEAPON) { // not weapon
       continue;
     }
 
@@ -403,37 +403,37 @@ static void G_Ai_PickWeapon(g_client_t *cl) {
       continue;
     }
 
-    if (item->ammo_item) {
-      const int32_t ammo_have = inventory[item->ammo_item->index];
-      const int32_t ammo_need = item->def.quantity;
+    if (it->ammo_item) {
+      const int32_t ammo_have = inventory[it->ammo_item->index];
+      const int32_t ammo_need = it->def.quantity;
       if (ammo_have < ammo_need) {
         continue;
       }
     }
 
     // calculate weight, start with base weapon priority
-    float weight = item->def.priority;
+    float weight = it->def.priority;
 
     switch (targ_range) { // range bonus
       case RANGE_DONT_CARE:
         break;
       case RANGE_MELEE:
       case RANGE_SHORT:
-        if (item->def.flags & WF_SHORT_RANGE) {
+        if (it->def.flags & WF_SHORT_RANGE) {
           weight *= 2.5f;
         } else {
           weight /= 2.5f;
         }
         break;
       case RANGE_MED:
-        if (item->def.flags & WF_MED_RANGE) {
+        if (it->def.flags & WF_MED_RANGE) {
           weight *= 2.5f;
         } else {
           weight /= 2.5f;
         }
         break;
       case RANGE_LONG:
-        if (item->def.flags & WF_LONG_RANGE) {
+        if (it->def.flags & WF_LONG_RANGE) {
           weight *= 2.5f;
         } else {
           weight /= 2.5f;
@@ -443,26 +443,26 @@ static void G_Ai_PickWeapon(g_client_t *cl) {
 
     if (cl->ai->combat_target.type == AI_GOAL_ENTITY) {
       if ((cl->ai->combat_target.entity.ent->health < 25) &&
-          (item->def.flags & WF_EXPLOSIVE)) { // bonus for explosive at low enemy health
+          (it->def.flags & WF_EXPLOSIVE)) { // bonus for explosive at low enemy health
         weight *= 1.5f;
       }
     }
 
     // additional penalty for long range + projectile unless explicitly long range
-    if ((item->def.flags & WF_PROJECTILE) &&
-        !(item->def.flags & WF_LONG_RANGE)) {
+    if ((it->def.flags & WF_PROJECTILE) &&
+        !(it->def.flags & WF_LONG_RANGE)) {
       weight /= 2.f;
     }
 
     // penalty for explosive weapons at short range
-    if ((item->def.flags & WF_EXPLOSIVE) &&
+    if ((it->def.flags & WF_EXPLOSIVE) &&
         (targ_range != RANGE_DONT_CARE && targ_range <= RANGE_SHORT)) {
       weight /= 2.f;
     }
 
     // penalty for explosive weapons at low cl health
     if ((cl->entity->health < 25) &&
-        (item->def.flags & WF_EXPLOSIVE)) {
+        (it->def.flags & WF_EXPLOSIVE)) {
       weight /= 2.f;
     }
 
@@ -472,7 +472,7 @@ static void G_Ai_PickWeapon(g_client_t *cl) {
     }
 
     weapons[num_weapons++] = (ai_item_pick_t) {
-      .item = item,
+      .item = it,
       .weight = weight
     };
   }
@@ -515,8 +515,8 @@ static float G_Ai_EnemyPriority(const g_client_t *cl, const g_entity_t *target, 
   if (target->client) {
     const int16_t *inventory = target->client->inventory;
     for (size_t i = 0; i < g_num_items; i++) {
-      const g_item_t *item = G_ItemByIndex(i);
-      if (item->def.type == ITEM_FLAG && inventory[i]) {
+      const g_item_t *it = &g_items[i];
+      if (it->def.type == ITEM_FLAG && inventory[i]) {
         priority += 5.f;
         break;
       }
@@ -552,9 +552,9 @@ static bool G_Ai_ChaseEnemy(const g_client_t *cl, const g_entity_t *target) {
   const int16_t *inventory = target->client->inventory;
 
   for (size_t i = 0; i < g_num_items; i++) {
-    const g_item_t *item = G_ItemByIndex(i);
+    const g_item_t *it = &g_items[i];
 
-    if (item->def.type != ITEM_FLAG) { // not flag
+    if (it->def.type != ITEM_FLAG) { // not flag
       continue;
     } else if (!inventory[i]) {
       continue;

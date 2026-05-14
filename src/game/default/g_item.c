@@ -34,7 +34,7 @@ const box3_t ITEM_BOUNDS = {
 const g_item_t *G_FindItemByClassName(const char *classname) {
 
   for (size_t i = 0; i < g_num_items; i++) {
-    const g_item_t *it = G_ItemByIndex(i);
+    const g_item_t *it = &g_items[i];
 
     if (!it->def.classname) {
       continue;
@@ -60,7 +60,7 @@ const g_item_t *G_FindItem(const char *name) {
   const g_item_t *fallback = NULL;
 
   for (size_t i = 0; i < g_num_items; i++) {
-    const g_item_t *it = G_ItemByIndex(i);
+    const g_item_t *it = &g_items[i];
 
     if (!it->def.name) {
       continue;
@@ -1402,31 +1402,12 @@ void G_SpawnItem(g_entity_t *ent, const g_item_t *item) {
 /**
  * @brief The item list; allocated and initialized in G_InitItems.
  */
-static g_item_t *g_items;
+g_item_t *g_items;
 
 /**
  * @brief The total number of items in the item list.
  */
 size_t g_num_items;
-
-/**
- * @brief Fetch the item list.
- */
-const g_item_t *G_ItemList(void) {
-  return g_items;
-}
-
-/**
- * @brief Fetch an item by index.
- */
-const g_item_t *G_ItemByIndex(uint16_t index) {
-
-  if (index >= g_num_items) {
-    return NULL;
-  }
-
-  return &g_items[index];
-}
 
 /**
  * @brief Returns true if the item belongs to the active item set.
@@ -1707,7 +1688,7 @@ void G_InitItems(void) {
   }
 
   // second pass: resolve ammo_item pointers (requires all defs to be populated first)
-  for (uint16_t i = 0; i < g_num_items; i++) {
+  for (size_t i = 0; i < g_num_items; i++) {
     g_item_t *it = &g_items[i];
 
     if (it->def.ammo) {
