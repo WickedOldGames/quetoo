@@ -314,8 +314,6 @@ static void R_LoadBspBlocks(r_bsp_model_t *bsp) {
 
     decals->triangles = g_array_new(true, true, sizeof(r_decal_triangle_t));
 
-    decals->elements_buffer = elements_buffer;
-
     glGenVertexArrays(1, &decals->vertex_array);
     glBindVertexArray(decals->vertex_array);
 
@@ -337,6 +335,8 @@ static void R_LoadBspBlocks(r_bsp_model_t *bsp) {
 
     glBindVertexArray(0);
   }
+
+  bsp->decal_elements_buffer = elements_buffer;
 
   const bsp_face_t *in_face = bsp->cm->file->faces;
   r_bsp_face_t *out_face = bsp->faces;
@@ -728,6 +728,7 @@ static void R_FreeBspModel(r_media_t *self) {
 
   glDeleteBuffers(1, &bsp->vertex_buffer);
   glDeleteBuffers(1, &bsp->elements_buffer);
+  glDeleteBuffers(1, &bsp->decal_elements_buffer);
 
   glDeleteVertexArrays(1, &bsp->vertex_array);
   glDeleteVertexArrays(1, &bsp->depth_pass.vertex_array);
@@ -740,7 +741,6 @@ static void R_FreeBspModel(r_media_t *self) {
     }
 
     glDeleteBuffers(1, &block->decals.vertex_buffer);
-    glDeleteBuffers(1, &block->decals.elements_buffer);
 
     glDeleteVertexArrays(1, &block->decals.vertex_array);
 

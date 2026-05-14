@@ -669,11 +669,6 @@ typedef struct {
   GLuint vertex_buffer;
 
   /**
-   * @brief The decal elements buffer object.
-   */
-  GLuint elements_buffer;
-
-  /**
    * @brief The decal vertex array object.
    */
   GLuint vertex_array;
@@ -1120,6 +1115,11 @@ typedef struct {
    * @brief The first inline BSP model, aka worldspawn.
    */
   struct r_model_s *worldspawn;
+
+  /**
+   * @brief The shared decal elements buffer object (referenced by all block VAOs).
+   */
+  GLuint decal_elements_buffer;
 
 } r_bsp_model_t;
 

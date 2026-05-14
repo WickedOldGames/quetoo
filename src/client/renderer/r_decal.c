@@ -331,11 +331,11 @@ void R_UpdateDecals(const r_view_t *view) {
     for (int32_t j = 0; j < in->num_blocks; j++, block++) {
       r_bsp_block_decals_t *decals = &block->decals;
 
-      for (guint k = 0; k < decals->triangles->len; k++) {
-        r_decal_triangle_t *v = &g_array_index(decals->triangles, r_decal_triangle_t, k);
+      for (guint k = decals->triangles->len; k > 0; ) {
+        const r_decal_triangle_t *v = &g_array_index(decals->triangles, r_decal_triangle_t, --k);
 
         if (view->ticks - v->vertexes->time >= v->vertexes->lifetime) {
-          decals->triangles = g_array_remove_index(decals->triangles, k);
+          g_array_remove_index_fast(decals->triangles, k);
           decals->dirty = true;
         }
       }
