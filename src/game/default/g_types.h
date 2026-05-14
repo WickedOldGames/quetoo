@@ -854,7 +854,7 @@ typedef struct {
 
     uint16_t grenade;
     uint16_t quake_grenade;
-    uint16_t nail;
+    uint16_t quake_nail;
     uint16_t rocket;
     uint16_t quake_rocket;
     uint16_t hook;
