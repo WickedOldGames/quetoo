@@ -182,7 +182,7 @@ void G_ClientStats(g_client_t *cl) {
     const g_item_t *weap = cl->weapon;
     cl->ps.stats[STAT_AMMO_ICON] = weap->icon_index;
     cl->ps.stats[STAT_AMMO] = cl->inventory[cl->ammo_index];
-    cl->ps.stats[STAT_AMMO_LOW] = ammo->quantity;
+    cl->ps.stats[STAT_AMMO_LOW] = ammo->def.quantity;
   } else {
     cl->ps.stats[STAT_AMMO_ICON] = 0;
     cl->ps.stats[STAT_AMMO] = 0;
@@ -277,7 +277,7 @@ void G_ClientStats(g_client_t *cl) {
   if (weapon) {
     cl->ps.stats[STAT_WEAPON] = cl->weapon->model_index;
     cl->ps.stats[STAT_WEAPON_ICON] = weapon->icon_index;
-    const int32_t wb = g_level.weapons[weapon->tag];
+    const int32_t wb = g_level.weapons[weapon->def.tag];
     cl->ps.stats[STAT_WEAPON_BIT] = wb >= 0 ? wb + 1 : 0;
   } else {
     cl->ps.stats[STAT_WEAPON] = 0;
@@ -286,7 +286,7 @@ void G_ClientStats(g_client_t *cl) {
   }
 
   if (cl->next_weapon) {
-    const int32_t wb = g_level.weapons[cl->next_weapon->tag];
+    const int32_t wb = g_level.weapons[cl->next_weapon->def.tag];
     cl->ps.stats[STAT_WEAPON_BIT] |= ((wb >= 0 ? wb + 1 : 0) << 8);
   }
 
@@ -323,7 +323,7 @@ void G_ClientStats(g_client_t *cl) {
       const g_item_t *weapon = g_media.items.weapons[i];
       const g_item_t *ammo = weapon->ammo_item;
 
-      if (cl->inventory[weapon->index] && (!ammo || cl->inventory[ammo->index] >= weapon->quantity)) {
+      if (cl->inventory[weapon->index] && (!ammo || cl->inventory[ammo->index] >= weapon->def.quantity)) {
         if (bit < 16) {
           cl->ps.stats[STAT_WEAPONS] |= 1 << bit;
         } else {

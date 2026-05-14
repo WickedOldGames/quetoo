@@ -84,6 +84,7 @@ cgame_la_LIBADD = \
 	ui/play/libcguiplay.la \
 	ui/settings/libcguisettings.la \
 	ui/teams/libcguiteams.la \
+	$(top_builddir)/src/game/default/libitem.la \
 	$(top_builddir)/src/game/default/libpmove.la \
 	$(top_builddir)/deps/discord-rpc/src/libdiscord-rpc.la
 

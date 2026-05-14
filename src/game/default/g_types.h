@@ -23,6 +23,7 @@
 
 #include "shared/shared.h"
 #include "collision/cm_types.h"
+#include "bg_item.h"
 
 /**
  * @brief Game protocol version (protocol minor version). To be incremented
@@ -462,20 +463,7 @@ typedef enum {
   HOOK_SWING_AUTO
 } g_hook_style_t;
 
-/**
- * @brief Item types.
- */
-typedef enum {
-  ITEM_AMMO,
-  ITEM_ARMOR,
-  ITEM_FLAG,
-  ITEM_HEALTH,
-  ITEM_POWERUP,
-  ITEM_WEAPON,
-  ITEM_TECH,
-
-  ITEM_TOTAL
-} g_item_type_t;
+// g_item_type_t is defined in bg_item.h
 
 /**
  * @brief Weapon tags to inform the client game which weapon the player wields and
@@ -676,9 +664,9 @@ typedef enum {
 typedef struct g_item_s {
 
   /**
-   * @brief Entity classname used for map spawning.
+   * @brief Static definition shared with cgame (classname, model, icon, etc.).
    */
-  const char *classname;
+  g_item_def_t def;
 
   /**
    * @brief Called when a player touches the item; return false to prevent pickup.
@@ -699,81 +687,6 @@ typedef struct g_item_s {
    * @brief Called every frame for a player holding this weapon.
    */
   void (*Think)(g_client_t *cl);
-
-  /**
-   * @brief Name of the ammo item this weapon consumes.
-   */
-  const char *ammo;
-
-  /**
-   * @brief Sound to play on pickup.
-   */
-  const char *pickup_sound;
-
-  /**
-   * @brief World model path.
-   */
-  const char *model;
-
-  /**
-   * @brief Entity effect flags on the pickup entity.
-   */
-  uint32_t effects;
-
-  /**
-   * @brief Icon image path, used on HUD and in pickup messages.
-   */
-  const char *icon;
-
-  /**
-   * @brief Display name.
-   */
-  const char *name;
-
-  /**
-   * @brief Amount provided or consumed, depending on type.
-   */
-  uint16_t quantity;
-
-  /**
-   * @brief Maximum amount the player can carry (ammo/armor).
-   */
-  uint16_t max;
-
-  /**
-   * @brief Type-specific tag (e.g. g_weapon_tag_t, g_ammo_t).
-   */
-  uint16_t tag;
-
-  /**
-   * @brief Type-specific flags (e.g. g_weapon_flags_t).
-   */
-  uint16_t flags;
-
-  /**
-   * @brief Item type category.
-   */
-  g_item_type_t type;
-
-  /**
-   * @brief Relative priority used by AI for item selection.
-   */
-  float priority;
-
-  /**
-   * @brief Space-separated list of assets to precache.
-   */
-  const char *precaches;
-
-  /**
-   * @brief RGB color for EF_LIGHT emission. Ignored if light_radius is 0.
-   */
-  vec3_t light_color;
-
-  /**
-   * @brief Base radius for EF_LIGHT emission. 0 means no light.
-   */
-  float light_radius;
 
   /**
    * @brief Index in the global item list; calculated at init.

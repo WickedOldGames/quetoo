@@ -33,7 +33,7 @@ static void G_ChangeWeapon(g_client_t *cl, const g_item_t *item) {
     if (item) {
       cl->entity->s.model2 = item->model_index;
 
-      if (item->ammo) {
+      if (item->def.ammo) {
         cl->ammo_index = item->ammo_item->index;
       } else {
         cl->ammo_index = 0;
@@ -138,7 +138,7 @@ static bool G_HasWeapon(const g_client_t *cl, const g_item_t *weapon) {
     return false;
   }
 
-  if (weapon->ammo &&cl->inventory[weapon->ammo_item->index] < weapon->quantity) {
+  if (weapon->def.ammo &&cl->inventory[weapon->ammo_item->index] < weapon->def.quantity) {
     return false;
   }
 
@@ -163,7 +163,7 @@ void G_UseBestWeapon(g_client_t *cl) {
       continue;
     }
 
-    if (!item || weapon->priority > item->priority) {
+    if (!item || weapon->def.priority > item->def.priority) {
       item = weapon;
     }
   }
@@ -183,10 +183,10 @@ void G_UseWeapon(g_client_t *cl, const g_item_t *item) {
     return;
   }
 
-  if (item->ammo) { // ensure we have ammo
+  if (item->def.ammo) { // ensure we have ammo
 
     if (!cl->inventory[item->ammo_item->index]) {
-      gi.ClientPrint(cl, PRINT_HIGH, "Not enough ammo for %s\n", item->name);
+      gi.ClientPrint(cl, PRINT_HIGH, "Not enough ammo for %s\n", item->def.name);
       return;
     }
   }
@@ -208,7 +208,7 @@ g_entity_t *G_DropWeapon(g_client_t *cl, const g_item_t *item) {
 
   if (dropped) {
     // now adjust dropped ammo quantity to reflect what we actually had available
-    if (cl->inventory[ammo_index] < ammo->quantity) {
+    if (cl->inventory[ammo_index] < ammo->def.quantity) {
       dropped->health = cl->inventory[ammo_index];
     }
 
@@ -216,7 +216,7 @@ g_entity_t *G_DropWeapon(g_client_t *cl, const g_item_t *item) {
       G_AddAmmo(cl, ammo, -dropped->health);
     }
   } else {
-    G_Debug("Failed to drop %s\n", item->name);
+    G_Debug("Failed to drop %s\n", item->def.name);
   }
 
   return dropped;
@@ -229,7 +229,7 @@ g_entity_t *G_TossWeapon(g_client_t *cl) {
 
   const g_item_t *weapon = cl->weapon;
 
-  if (!weapon || !weapon->Drop || !weapon->ammo) { // don't drop if not holding
+  if (!weapon || !weapon->Drop || !weapon->def.ammo) { // don't drop if not holding
     return NULL;
   }
 
@@ -277,7 +277,7 @@ static bool G_FireWeapon(g_client_t *cl) {
     ammo = 0;
   }
 
-  const uint16_t ammo_needed = cl->weapon->quantity;
+  const uint16_t ammo_needed = cl->weapon->def.quantity;
 
   // if the client does not have enough ammo, change weapons
   if (cl->ammo_index && ammo < ammo_needed) {
@@ -312,7 +312,7 @@ void G_PlayTechSound(g_client_t *cl) {
 
   if (cl->tech_sound_time < g_level.time) {
     G_MulticastSound(&(const g_play_sound_t) {
-      .index = g_media.sounds.techs[tech->tag],
+      .index = g_media.sounds.techs[tech->def.tag],
       .entity = cl->entity,
       .atten = SOUND_ATTEN_LINEAR
     }, MULTICAST_PHS);
@@ -387,7 +387,7 @@ void G_ClientWeaponThink(g_client_t *cl) {
 
           cl->entity->s.model2 = item->model_index;
 
-          if (item->ammo) {
+          if (item->def.ammo) {
             cl->ammo_index = item->ammo_item->index;
           } else {
             cl->ammo_index = 0;
@@ -577,7 +577,7 @@ void G_FireBlaster(g_client_t *cl) {
 
     G_MuzzleFlash(cl->entity, MZ_BLASTER);
 
-    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_blaster_refire->value), cl->weapon->quantity);
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_blaster_refire->value), cl->weapon->def.quantity);
   }
 }
 
@@ -597,7 +597,7 @@ void G_FireShotgun(g_client_t *cl) {
 
     G_MuzzleFlash(cl->entity, MZ_SHOTGUN);
 
-    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_shotgun_refire->value), cl->weapon->quantity);
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_shotgun_refire->value), cl->weapon->def.quantity);
   }
 }
 
@@ -617,7 +617,7 @@ void G_FireSuperShotgun(g_client_t *cl) {
 
     G_MuzzleFlash(cl->entity, MZ_SUPER_SHOTGUN);
 
-    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_supershotgun_refire->value), cl->weapon->quantity);
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_supershotgun_refire->value), cl->weapon->def.quantity);
   }
 }
 
@@ -637,7 +637,7 @@ void G_FireMachinegun(g_client_t *cl) {
 
     G_MuzzleFlash(cl->entity, MZ_MACHINEGUN);
 
-    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_machinegun_refire->value), cl->weapon->quantity);
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_machinegun_refire->value), cl->weapon->def.quantity);
   }
 }
 
@@ -821,7 +821,7 @@ void G_FireGrenadeLauncher(g_client_t *cl) {
 
     G_MuzzleFlash(cl->entity, MZ_GRENADE_LAUNCHER);
 
-    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_grenadelauncher_refire->value), cl->weapon->quantity);
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_grenadelauncher_refire->value), cl->weapon->def.quantity);
   }
 }
 
@@ -841,7 +841,7 @@ void G_FireRocketLauncher(g_client_t *cl) {
 
     G_MuzzleFlash(cl->entity, MZ_ROCKET_LAUNCHER);
 
-    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_rocketlauncher_refire->value), cl->weapon->quantity);
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_rocketlauncher_refire->value), cl->weapon->def.quantity);
   }
 }
 
@@ -860,7 +860,7 @@ void G_FireHyperblaster(g_client_t *cl) {
 
     G_MuzzleFlash(cl->entity, MZ_HYPERBLASTER);
 
-    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_hyperblaster_refire->value), cl->weapon->quantity);
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_hyperblaster_refire->value), cl->weapon->def.quantity);
   }
 }
 
@@ -888,7 +888,7 @@ void G_FireLightning(g_client_t *cl) {
 
     G_LightningProjectile(cl->entity, org, forward, g_balance_lightning_damage->integer, g_balance_lightning_knockback->integer);
 
-    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_lightning_refire->value), cl->weapon->quantity);
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_lightning_refire->value), cl->weapon->def.quantity);
   }
 }
 
@@ -908,7 +908,7 @@ void G_FireRailgun(g_client_t *cl) {
 
     G_MuzzleFlash(cl->entity, MZ_RAILGUN);
 
-    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_railgun_refire->value), cl->weapon->quantity);
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_railgun_refire->value), cl->weapon->def.quantity);
   }
 }
 
@@ -932,7 +932,7 @@ void G_FireQuakeShotgun(g_client_t *cl) {
 
     G_MuzzleFlash(cl->entity, MZ_QUAKE_SHOTGUN);
 
-    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_shotgun_refire->value), cl->weapon->quantity);
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_shotgun_refire->value), cl->weapon->def.quantity);
   }
 }
 
@@ -953,7 +953,7 @@ void G_FireQuakeSuperShotgun(g_client_t *cl) {
 
     G_MuzzleFlash(cl->entity, MZ_QUAKE_SUPER_SHOTGUN);
 
-    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_supershotgun_refire->value), cl->weapon->quantity);
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_supershotgun_refire->value), cl->weapon->def.quantity);
   }
 }
 
@@ -976,7 +976,7 @@ void G_FireQuakeNailgun(g_client_t *cl) {
 
     G_MuzzleFlash(cl->entity, MZ_QUAKE_NAILGUN);
 
-    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_nailgun_refire->value), cl->weapon->quantity);
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_nailgun_refire->value), cl->weapon->def.quantity);
   }
 }
 
@@ -1005,7 +1005,7 @@ void G_FireQuakeSuperNailgun(g_client_t *cl) {
 
     G_MuzzleFlash(cl->entity, MZ_QUAKE_SUPER_NAILGUN);
 
-    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_supernailgun_refire->value), cl->weapon->quantity);
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_supernailgun_refire->value), cl->weapon->def.quantity);
   }
 }
 
@@ -1025,7 +1025,7 @@ void G_FireQuakeGrenadeLauncher(g_client_t *cl) {
 
     G_MuzzleFlash(cl->entity, MZ_QUAKE_GRENADE_LAUNCHER);
 
-    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_grenadelauncher_refire->value), cl->weapon->quantity);
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_grenadelauncher_refire->value), cl->weapon->def.quantity);
   }
 }
 
@@ -1045,7 +1045,7 @@ void G_FireQuakeRocketLauncher(g_client_t *cl) {
 
     G_MuzzleFlash(cl->entity, MZ_QUAKE_ROCKET_LAUNCHER);
 
-    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_rocketlauncher_refire->value), cl->weapon->quantity);
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_rocketlauncher_refire->value), cl->weapon->def.quantity);
   }
 }
 
@@ -1074,7 +1074,7 @@ void G_FireQuakeThunderbolt(g_client_t *cl) {
     G_LightningProjectile(cl->entity, org, forward, g_balance_quake_thunderbolt_damage->integer,
       g_balance_quake_thunderbolt_knockback->integer);
 
-    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_thunderbolt_refire->value), cl->weapon->quantity);
+    G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_thunderbolt_refire->value), cl->weapon->def.quantity);
   }
 }
 
@@ -1097,7 +1097,7 @@ static void G_FireBfg_(g_entity_t *ent) {
 
       G_MuzzleFlash(ent->owner, MZ_BFG10K);
 
-      G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_bfg_refire->value), cl->weapon->quantity);
+      G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_bfg_refire->value), cl->weapon->def.quantity);
     }
   }
 

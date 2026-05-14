@@ -35,28 +35,28 @@ bool G_Ai_CanPickup(const g_client_t *cl, const g_entity_t *other) {
 
   const int16_t *inventory = cl->inventory;
 
-  switch (item->type)
+  switch (item->def.type)
   {
     case ITEM_HEALTH:
-      if (item->tag == HEALTH_SMALL ||
-        item->tag == HEALTH_MEGA) {
+      if (item->def.tag == HEALTH_SMALL ||
+        item->def.tag == HEALTH_MEGA) {
         return true;
       }
 
       return cl->entity->health < cl->entity->max_health;
     case ITEM_ARMOR:
-      if (item->tag == ARMOR_SHARD ||
-        inventory[item->index] < item->max) {
+      if (item->def.tag == ARMOR_SHARD ||
+        inventory[item->index] < item->def.max) {
         return true;
       }
 
       return false;
     case ITEM_AMMO:
-      return inventory[item->index] < item->max;
+      return inventory[item->index] < item->def.max;
     case ITEM_WEAPON:
       if (inventory[item->index]) {
         if (item->ammo_item) {
-          return inventory[item->ammo_item->index] < item->ammo_item->max;
+          return inventory[item->ammo_item->index] < item->ammo_item->def.max;
         }
 
         return false;
@@ -65,7 +65,7 @@ bool G_Ai_CanPickup(const g_client_t *cl, const g_entity_t *other) {
       return true;
     case ITEM_TECH:
       for (size_t i = 0; i < g_num_items; i++) {
-        if (G_ItemByIndex(i)->type == ITEM_TECH) {
+        if (G_ItemByIndex(i)->def.type == ITEM_TECH) {
           if (inventory[i]) {
             return false;
           }
@@ -75,7 +75,7 @@ bool G_Ai_CanPickup(const g_client_t *cl, const g_entity_t *other) {
       return true;
     case ITEM_FLAG: {
       const g_team_id_t team = cl->persistent.team->id;
-      if ((g_team_id_t) item->tag == team && other->owner == NULL) {
+      if ((g_team_id_t) item->def.tag == team && other->owner == NULL) {
         return false;
       }
 
@@ -95,7 +95,7 @@ void G_Ai_InitItems(void) {
   ai_num_weapons = 0;
 
   for (uint16_t i = 0; i < g_num_items; i++) {
-    if (G_ItemByIndex(i)->type == ITEM_WEAPON) {
+    if (G_ItemByIndex(i)->def.type == ITEM_WEAPON) {
       ai_num_weapons++;
     }
   }

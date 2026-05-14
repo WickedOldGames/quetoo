@@ -387,7 +387,7 @@ void G_Explode(g_entity_t *ent, int16_t damage, int16_t knockback, float radius,
 
   const g_item_t *item = ent->item;
   if (item) {
-    switch (item->type) {
+    switch (item->def.type) {
       case ITEM_TECH:
         G_ResetDroppedTech(ent);
         break;
@@ -483,7 +483,7 @@ g_team_t *G_TeamForFlag(const g_entity_t *ent) {
     return NULL;
   }
 
-  if (!ent->item || ent->item->type != ITEM_FLAG) {
+  if (!ent->item || ent->item->def.type != ITEM_FLAG) {
     return NULL;
   }
 

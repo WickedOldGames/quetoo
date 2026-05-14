@@ -292,7 +292,7 @@ void G_ResetItems(void) {
       continue;
     }
 
-    if (ent->item->type == ITEM_TECH) {
+    if (ent->item->def.type == ITEM_TECH) {
       G_FreeEntity(ent);
       continue;
     }
@@ -773,7 +773,7 @@ static void G_CheckRules(void) {
           continue;
         }
 
-        if (ent->item->type != ITEM_WEAPON) {
+        if (ent->item->def.type != ITEM_WEAPON) {
           continue;
         }
 

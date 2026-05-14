@@ -585,10 +585,10 @@ static void G_Give(g_client_t *cl, char *it, int16_t quantity) {
 
   const uint16_t index = item->index;
 
-  if (item->type == ITEM_WEAPON) { // weapons receive quantity as ammo
+  if (item->def.type == ITEM_WEAPON) { // weapons receive quantity as ammo
     cl->inventory[index]++;
 
-    if (item->ammo) {
+    if (item->def.ammo) {
       const g_item_t *ammo = item->ammo_item;
       if (ammo) {
         const uint16_t ammo_index = ammo->index;
@@ -596,7 +596,7 @@ static void G_Give(g_client_t *cl, char *it, int16_t quantity) {
         if (quantity > -1) {
           cl->inventory[ammo_index] = quantity;
         } else {
-          cl->inventory[ammo_index] = ammo->quantity;
+          cl->inventory[ammo_index] = ammo->def.quantity;
         }
       }
     }
@@ -604,7 +604,7 @@ static void G_Give(g_client_t *cl, char *it, int16_t quantity) {
     if (quantity > -1) {
       cl->inventory[index] = quantity;
     } else {
-      cl->inventory[index] = item->quantity;
+      cl->inventory[index] = item->def.quantity;
     }
   }
 }

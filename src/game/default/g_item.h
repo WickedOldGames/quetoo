@@ -25,7 +25,7 @@
 
 #if defined(__GAME_LOCAL_H__)
 
-  extern const size_t g_num_items;
+  extern size_t g_num_items;
   
   const g_item_t *G_ItemList(void);
 

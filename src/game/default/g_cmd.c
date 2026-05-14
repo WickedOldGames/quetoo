@@ -71,13 +71,13 @@ static void G_Give_f(g_client_t *cl) {
       if (!it->Pickup) {
         continue;
       }
-      if (it->type != ITEM_ARMOR) {
+      if (it->def.type != ITEM_ARMOR) {
         continue;
       }
       if (!G_ArmorInfo(it)) {
         continue;
       }
-      cl->inventory[i] = it->max;
+      cl->inventory[i] = it->def.max;
     }
     if (!give_all) {
       return;
@@ -90,10 +90,10 @@ static void G_Give_f(g_client_t *cl) {
       if (!it->Pickup) {
         continue;
       }
-      if (it->type != ITEM_WEAPON) {
+      if (it->def.type != ITEM_WEAPON) {
         continue;
       }
-      if (g_level.weapons[it->tag] < 0) {
+      if (g_level.weapons[it->def.tag] < 0) {
         continue;
       }
       cl->inventory[i] += 1;
@@ -109,7 +109,7 @@ static void G_Give_f(g_client_t *cl) {
       if (!it->Pickup) {
         continue;
       }
-      if (it->type != ITEM_AMMO) {
+      if (it->def.type != ITEM_AMMO) {
         continue;
       }
       // Give ammo if it's in the active set or used by an entity-promoted weapon.
@@ -152,15 +152,15 @@ static void G_Give_f(g_client_t *cl) {
     return;
   }
 
-  if (it->type == ITEM_AMMO) { // give the requested ammo quantity
+  if (it->def.type == ITEM_AMMO) { // give the requested ammo quantity
 
     if (gi.Argc() == 3) {
       cl->inventory[it->index] = quantity;
     } else {
-      cl->inventory[it->index] += it->quantity;
+      cl->inventory[it->index] += it->def.quantity;
     }
   } else { // or spawn and touch whatever they asked for
-    it_ent = G_AllocEntity(it->classname);
+    it_ent = G_AllocEntity(it->def.classname);
 
     G_SpawnItem(it_ent, it);
     G_TouchItem(it_ent, cl->entity, NULL);
@@ -265,7 +265,7 @@ static void G_Use_f(g_client_t *cl) {
 
   // In Quake item set maps, redirect Quetoo weapon names to their Quake equivalents
   // so that generic bindings (e.g. "use Rocket Launcher") work across both item sets.
-  if (g_level.items == ITEMS_QUAKE && it->type == ITEM_WEAPON) {
+  if (g_level.items == ITEMS_QUAKE && it->def.type == ITEM_WEAPON) {
     const g_item_t *mapped = G_MappedWeapon(it);
     if (mapped) {
       it = mapped;
@@ -332,8 +332,8 @@ static void G_Drop_f(g_client_t *cl) {
 
   int32_t drop_quantity;
 
-  if (it->type == ITEM_AMMO) {
-    drop_quantity = it->quantity;
+  if (it->def.type == ITEM_AMMO) {
+    drop_quantity = it->def.quantity;
   } else {
     drop_quantity = 1;
   }
@@ -349,7 +349,7 @@ static void G_Drop_f(g_client_t *cl) {
   it->Drop(cl, it);
 
   // adjust weapon if we need to
-  if (it->type == ITEM_WEAPON) {
+  if (it->def.type == ITEM_WEAPON) {
     if (cl->weapon == it && !cl->next_weapon && !cl->inventory[index]) {
       G_UseBestWeapon(cl);
     }
@@ -377,7 +377,7 @@ static void G_WeaponLast_f(g_client_t *cl) {
     return;
   }
 
-  if (it->type != ITEM_WEAPON) {
+  if (it->def.type != ITEM_WEAPON) {
     return;
   }
 
@@ -443,7 +443,7 @@ static const char *G_ExpandVariable(g_client_t *cl, char v) {
 
     case 'd': // last dropped item
       if (cl->last_dropped) {
-        return cl->last_dropped->name;
+        return cl->last_dropped->def.name;
       }
       return "";
 

@@ -711,6 +711,10 @@
 		CEFC7A931D9CB75D000FA6B2 /* libcommon.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CE80FDE31C5E3E1100A21A51 /* libcommon.a */; };
 		CEFC7A941D9CB75D000FA6B2 /* libshared.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CE80FDD51C5E3D4E00A21A51 /* libshared.a */; };
 		CEFC7A961D9CB776000FA6B2 /* libglib-2.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = CE12D8231C5C69A800CD0B13 /* libglib-2.0.0.dylib */; };
+		08962C395D0FB0E620F78625 /* bg_item.c in Sources */ = {isa = PBXBuildFile; fileRef = 7966EA6596003F9303BC00FA /* bg_item.c */; };
+		1384B3692A611AB241B9C51C /* bg_item.h in Headers */ = {isa = PBXBuildFile; fileRef = F7E7256984E276048C2A155E /* bg_item.h */; };
+		FCC98BF568490D2F2305B0A1 /* libgame-item.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 93837BFDD89832004989509B /* libgame-item.a */; };
+		C0ABDA2643FBD2CB55EB732A /* libgame-item.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 93837BFDD89832004989509B /* libgame-item.a */; };
 		CEFC7B8B1D9D2E9C000FA6B2 /* bg_pmove.c in Sources */ = {isa = PBXBuildFile; fileRef = CE12D6411C5C58C300CD0B13 /* bg_pmove.c */; };
 		CEFC7B8C1D9D2EB5000FA6B2 /* bg_pmove.h in Headers */ = {isa = PBXBuildFile; fileRef = CE12D6421C5C58C300CD0B13 /* bg_pmove.h */; };
 		CEFC7B931D9D2FB3000FA6B2 /* libgame-pmove.a in Frameworks */ = {isa = PBXBuildFile; fileRef = CEFC7B8A1D9D2E71000FA6B2 /* libgame-pmove.a */; };
@@ -1942,6 +1946,9 @@
 		CEF7B4B22EDB871F00B551CA /* SHADOWMAP_OPTIMIZATION.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = SHADOWMAP_OPTIMIZATION.md; sourceTree = "<group>"; };
 		CEF7B4B42EDB873E00B551CA /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		CEF7B4B52EDB875400B551CA /* INDEX.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = INDEX.md; sourceTree = "<group>"; };
+		93837BFDD89832004989509B /* libgame-item.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libgame-item.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		7966EA6596003F9303BC00FA /* bg_item.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = bg_item.c; sourceTree = "<group>"; };
+		F7E7256984E276048C2A155E /* bg_item.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = bg_item.h; sourceTree = "<group>"; };
 		CEFC7B8A1D9D2E71000FA6B2 /* libgame-pmove.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libgame-pmove.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CEFD07F62B671DE600642169 /* bsp_vs.glsl */ = {isa = PBXFileReference; lastKnownFileType = text; path = bsp_vs.glsl; sourceTree = "<group>"; };
 		CEFD07F72B671DE700642169 /* bsp_fs.glsl */ = {isa = PBXFileReference; lastKnownFileType = text; path = bsp_fs.glsl; sourceTree = "<group>"; };
@@ -2035,6 +2042,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FCC98BF568490D2F2305B0A1 /* libgame-item.a in Frameworks */,
 				CED4381E1D9D33AF0052BAFA /* libgame-pmove.a in Frameworks */,
 				CE80FDD61C5E3D9700A21A51 /* libshared.a in Frameworks */,
 				CE12D8241C5C69A800CD0B13 /* libglib-2.0.0.dylib in Frameworks */,
@@ -2048,6 +2056,7 @@
 				CE82F2962D0F9FBE004EE5DF /* libc++.1.tbd in Frameworks */,
 				CE27E42927AC8F24003D56AC /* libdiscord-rpc.a in Frameworks */,
 				CE6EE40E1F720F3A00FBC830 /* libcgame-ui.a in Frameworks */,
+				C0ABDA2643FBD2CB55EB732A /* libgame-item.a in Frameworks */,
 				CEFC7B931D9D2FB3000FA6B2 /* libgame-pmove.a in Frameworks */,
 				CEF18C3E23F43D6B00B85FD8 /* libshared.a in Frameworks */,
 				CE1A28221F748B59005F62A9 /* libObjectively.dylib in Frameworks */,
@@ -2872,6 +2881,8 @@
 		CE12D6401C5C58C300CD0B13 /* default */ = {
 			isa = PBXGroup;
 			children = (
+				7966EA6596003F9303BC00FA /* bg_item.c */,
+				F7E7256984E276048C2A155E /* bg_item.h */,
 				CE12D6411C5C58C300CD0B13 /* bg_pmove.c */,
 				CE12D6421C5C58C300CD0B13 /* bg_pmove.h */,
 				CE27E9F127BDA2AE003D56AC /* g_ai_goal.c */,
@@ -3121,6 +3132,7 @@
 				CE80FF6A1C5E494E00A21A51 /* libclient-null.a */,
 				CE80FF7F1C5E49C400A21A51 /* libserver.a */,
 				CEA029F41C5E558100341079 /* quetoo-master */,
+				93837BFDD89832004989509B /* libgame-item.a */,
 				CEFC7B8A1D9D2E71000FA6B2 /* libgame-pmove.a */,
 				CED438AD1D9D34450052BAFA /* libclient-renderer.a */,
 				CED4393B1D9D344E0052BAFA /* libclient-sound.a */,
@@ -3901,6 +3913,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		EF51A88A40ACECD77232CEA2 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1384B3692A611AB241B9C51C /* bg_item.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		CEFC7B821D9D2E71000FA6B2 /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
@@ -4535,6 +4555,23 @@
 			productReference = CEE3A10121EE2B3F0070FD3E /* check_cm_entity */;
 			productType = "com.apple.product-type.tool";
 		};
+		B839A3CD57EFE5571755AB98 /* game-item */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 52FE983FA642A6603A115FEF /* Build configuration list for PBXNativeTarget "game-item" */;
+			buildPhases = (
+				BDC6897E82CD8786B29A1A79 /* Sources */,
+				BCFAA6B50F41ACED50754C0D /* Frameworks */,
+				EF51A88A40ACECD77232CEA2 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "game-item";
+			productName = game;
+			productReference = 93837BFDD89832004989509B /* libgame-item.a */;
+			productType = "com.apple.product-type.library.static";
+		};
 		CEFC7B761D9D2E71000FA6B2 /* game-pmove */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = CEFC7B871D9D2E71000FA6B2 /* Build configuration list for PBXNativeTarget "game-pmove" */;
@@ -4609,6 +4646,7 @@
 				CE80FE0E1C5E421900A21A51 /* collision */,
 				CE80FE431C5E431000A21A51 /* net */,
 				CE80FF6D1C5E49C400A21A51 /* server */,
+				B839A3CD57EFE5571755AB98 /* game-item */,
 				CEFC7B761D9D2E71000FA6B2 /* game-pmove */,
 				CE12D7CC1C5C5D5C00CD0B13 /* game */,
 				CE80FF581C5E494E00A21A51 /* client-null */,
@@ -5153,6 +5191,21 @@
 			files = (
 				CEE3A0F421EE2B3F0070FD3E /* tests.c in Sources */,
 				CEA509072EA5D21F00F27205 /* check_cm_entity.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BDC6897E82CD8786B29A1A79 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				08962C395D0FB0E620F78625 /* bg_item.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BCFAA6B50F41ACED50754C0D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -6068,6 +6121,22 @@
 			};
 			name = Release;
 		};
+		A7B1BB97F5361E990B64778B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		5F77C54AE17C47CA328A1CB7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				EXECUTABLE_PREFIX = lib;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		CEFC7B881D9D2E71000FA6B2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -6434,6 +6503,15 @@
 			buildConfigurations = (
 				CEE3A0FF21EE2B3F0070FD3E /* Debug */,
 				CEE3A10021EE2B3F0070FD3E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		52FE983FA642A6603A115FEF /* Build configuration list for PBXNativeTarget "game-item" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A7B1BB97F5361E990B64778B /* Debug */,
+				5F77C54AE17C47CA328A1CB7 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

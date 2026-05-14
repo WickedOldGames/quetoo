@@ -58,7 +58,7 @@ static bool G_Ai_IsArmed(const g_client_t *cl) {
 
   for (size_t i = 0; i < g_num_items; i++) {
     const g_item_t *item = G_ItemByIndex(i);
-    if (item->type == ITEM_WEAPON && cl->inventory[i] && item->priority >= threshold) {
+    if (item->def.type == ITEM_WEAPON && cl->inventory[i] && item->def.priority >= threshold) {
       return true;
     }
   }
@@ -274,12 +274,12 @@ static uint32_t G_Ai_FindItems(g_client_t *cl, pm_cmd_t *cmd) {
       continue;
     }
 
-    float weight = (AI_MAX_ITEM_DISTANCE - distance) * item->priority;
+    float weight = (AI_MAX_ITEM_DISTANCE - distance) * item->def.priority;
 
     // boost weapons when unarmed, health/armor when retreating
-    if (!G_Ai_IsArmed(cl) && item->type == ITEM_WEAPON) {
+    if (!G_Ai_IsArmed(cl) && item->def.type == ITEM_WEAPON) {
       weight *= 3.f;
-    } else if (G_Ai_ShouldRetreat(cl) && (item->type == ITEM_HEALTH || item->type == ITEM_ARMOR)) {
+    } else if (G_Ai_ShouldRetreat(cl) && (item->def.type == ITEM_HEALTH || item->def.type == ITEM_ARMOR)) {
       weight *= 3.f;
     }
 
@@ -395,7 +395,7 @@ static void G_Ai_PickWeapon(g_client_t *cl) {
   for (size_t i = 0; i < g_num_items; i++) {
     const g_item_t *item = G_ItemByIndex(i);
 
-    if (item->type != ITEM_WEAPON) { // not weapon
+    if (item->def.type != ITEM_WEAPON) { // not weapon
       continue;
     }
 
@@ -405,35 +405,35 @@ static void G_Ai_PickWeapon(g_client_t *cl) {
 
     if (item->ammo_item) {
       const int32_t ammo_have = inventory[item->ammo_item->index];
-      const int32_t ammo_need = item->quantity;
+      const int32_t ammo_need = item->def.quantity;
       if (ammo_have < ammo_need) {
         continue;
       }
     }
 
     // calculate weight, start with base weapon priority
-    float weight = item->priority;
+    float weight = item->def.priority;
 
     switch (targ_range) { // range bonus
       case RANGE_DONT_CARE:
         break;
       case RANGE_MELEE:
       case RANGE_SHORT:
-        if (item->flags & WF_SHORT_RANGE) {
+        if (item->def.flags & WF_SHORT_RANGE) {
           weight *= 2.5f;
         } else {
           weight /= 2.5f;
         }
         break;
       case RANGE_MED:
-        if (item->flags & WF_MED_RANGE) {
+        if (item->def.flags & WF_MED_RANGE) {
           weight *= 2.5f;
         } else {
           weight /= 2.5f;
         }
         break;
       case RANGE_LONG:
-        if (item->flags & WF_LONG_RANGE) {
+        if (item->def.flags & WF_LONG_RANGE) {
           weight *= 2.5f;
         } else {
           weight /= 2.5f;
@@ -443,26 +443,26 @@ static void G_Ai_PickWeapon(g_client_t *cl) {
 
     if (cl->ai->combat_target.type == AI_GOAL_ENTITY) {
       if ((cl->ai->combat_target.entity.ent->health < 25) &&
-          (item->flags & WF_EXPLOSIVE)) { // bonus for explosive at low enemy health
+          (item->def.flags & WF_EXPLOSIVE)) { // bonus for explosive at low enemy health
         weight *= 1.5f;
       }
     }
 
     // additional penalty for long range + projectile unless explicitly long range
-    if ((item->flags & WF_PROJECTILE) &&
-        !(item->flags & WF_LONG_RANGE)) {
+    if ((item->def.flags & WF_PROJECTILE) &&
+        !(item->def.flags & WF_LONG_RANGE)) {
       weight /= 2.f;
     }
 
     // penalty for explosive weapons at short range
-    if ((item->flags & WF_EXPLOSIVE) &&
+    if ((item->def.flags & WF_EXPLOSIVE) &&
         (targ_range != RANGE_DONT_CARE && targ_range <= RANGE_SHORT)) {
       weight /= 2.f;
     }
 
     // penalty for explosive weapons at low cl health
     if ((cl->entity->health < 25) &&
-        (item->flags & WF_EXPLOSIVE)) {
+        (item->def.flags & WF_EXPLOSIVE)) {
       weight /= 2.f;
     }
 
@@ -489,10 +489,10 @@ static void G_Ai_PickWeapon(g_client_t *cl) {
     return;
   }
 
-  gi.TokenizeString(va("use %s", best_weapon->item->name));
+  gi.TokenizeString(va("use %s", best_weapon->item->def.name));
   ge.ClientCommand(cl);
   cl->ai->weapon_check_time = g_level.time + 300; // don't try again for a bit
-  G_Ai_Debug("weapon choice: %s (%d choices)\n", best_weapon->item->name, (int32_t) num_weapons);
+  G_Ai_Debug("weapon choice: %s (%d choices)\n", best_weapon->item->def.name, (int32_t) num_weapons);
 }
 
 /**
@@ -516,7 +516,7 @@ static float G_Ai_EnemyPriority(const g_client_t *cl, const g_entity_t *target, 
     const int16_t *inventory = target->client->inventory;
     for (size_t i = 0; i < g_num_items; i++) {
       const g_item_t *item = G_ItemByIndex(i);
-      if (item->type == ITEM_FLAG && inventory[i]) {
+      if (item->def.type == ITEM_FLAG && inventory[i]) {
         priority += 5.f;
         break;
       }
@@ -541,7 +541,7 @@ static bool G_Ai_ChaseEnemy(const g_client_t *cl, const g_entity_t *target) {
 
   // base chance is our weapon's weight
   const g_item_t *const weapon = cl->weapon;
-  float chance = weapon->priority;
+  float chance = weapon->def.priority;
 
   // if they're low health, higher chance
   if (target->health < 50) {
@@ -554,7 +554,7 @@ static bool G_Ai_ChaseEnemy(const g_client_t *cl, const g_entity_t *target) {
   for (size_t i = 0; i < g_num_items; i++) {
     const g_item_t *item = G_ItemByIndex(i);
 
-    if (item->type != ITEM_FLAG) { // not flag
+    if (item->def.type != ITEM_FLAG) { // not flag
       continue;
     } else if (!inventory[i]) {
       continue;
@@ -1456,7 +1456,7 @@ static uint32_t G_Ai_Turn(g_client_t *cl, pm_cmd_t *cmd) {
     vec3_t aim_direction;
     const g_item_t *const weapon = cl->weapon;
 
-    if (weapon->flags & WF_PROJECTILE) {
+    if (weapon->def.flags & WF_PROJECTILE) {
       const float dist = Vec3_Distance(eye_origin, enemy_center);
       // skilled bots predict more accurately (tighter speed estimate range)
       const float spread = Lerpf(300.f, 100.f, cl->ai->personality.skill);
@@ -1561,11 +1561,11 @@ static uint32_t G_Ai_LongRange(g_client_t *cl, pm_cmd_t *cmd) {
       }
 
       // situational weighting: boost weapons when unarmed, health/armor when low
-      weight = ent->item->priority;
+      weight = ent->item->def.priority;
 
-      if (!G_Ai_IsArmed(cl) && ent->item->type == ITEM_WEAPON) {
+      if (!G_Ai_IsArmed(cl) && ent->item->def.type == ITEM_WEAPON) {
         weight *= 3.f;
-      } else if (G_Ai_ShouldRetreat(cl) && (ent->item->type == ITEM_HEALTH || ent->item->type == ITEM_ARMOR)) {
+      } else if (G_Ai_ShouldRetreat(cl) && (ent->item->def.type == ITEM_HEALTH || ent->item->def.type == ITEM_ARMOR)) {
         weight *= 3.f;
       }
     }

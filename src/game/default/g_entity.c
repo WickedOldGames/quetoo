@@ -150,11 +150,11 @@ static void G_SpawnEntity(cm_entity_t *def) {
   for (size_t i = 0; i < g_num_items; i++) {
 
     const g_item_t *item = G_ItemByIndex(i);
-    if (!item->classname) {
+    if (!item->def.classname) {
       continue;
     }
 
-    if (!g_strcmp0(item->classname, ent->classname)) {
+    if (!g_strcmp0(item->def.classname, ent->classname)) {
       G_SpawnItem(ent, item);
       return;
     }
@@ -593,7 +593,7 @@ void G_SpawnTech(const g_item_t *item) {
 
   g_entity_t *spawn = G_SelectTechSpawnPoint();
 
-  g_entity_t *ent = G_AllocEntity(item->classname);
+  g_entity_t *ent = G_AllocEntity(item->def.classname);
   ent->s.origin = spawn->s.origin;
 
   G_SpawnItem(ent, item);
