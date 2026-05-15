@@ -165,6 +165,11 @@
       <Project>{a2f31748-6b8c-4d5e-9e0f-b3c4d5e6f7a8}</Project>
     </ProjectReference>
     <ProjectReference Include="libs\libpmove.vcxproj">
+      <Project>{B1E86937-5A7A-48F6-9DAB-A1D2900C3AE1}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{C8CF2939-7614-4820-9CF5-B433456764D3}</ProjectGuid>
     <RootNamespace>cgame</RootNamespace>
   </PropertyGroup>
   <ImportGroup Label="PropertySheets">

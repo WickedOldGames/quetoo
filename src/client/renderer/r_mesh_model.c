@@ -156,7 +156,7 @@ static void R_SaveMeshConfig(const r_mesh_config_t *cfg, const char *path) {
 /**
  * @brief Saves all `r_mesh_config_t` for the specified `r_model_t`.
  */
-void R_SaveMeshConfigs(const r_model_t *mod) {
+static void R_SaveMeshConfigs(const r_model_t *mod) {
   char path[MAX_QPATH];
 
   Dirname(mod->media.name, path);
@@ -167,6 +167,25 @@ void R_SaveMeshConfigs(const r_model_t *mod) {
     R_SaveMeshConfig(&mod->mesh->config.link, va("%s/link.cfg", path));
     R_SaveMeshConfig(&mod->mesh->config.view, va("%s/view.cfg", path));
   }
+}
+
+/**
+ * @brief Saves the mesh configs for the model named by the first command argument.
+ */
+void R_SaveMeshConfigs_f(void) {
+
+  const r_model_t *mod = (r_model_t *) R_FindMedia(Cmd_Argv(1), R_MEDIA_MODEL);
+  if (!mod) {
+    Com_Warn("Model not found: %s\n", Cmd_Argv(1));
+    return;
+  }
+
+  if (!IS_MESH_MODEL(mod)) {
+    Com_Warn("Not a mesh model: %s\n", Cmd_Argv(1));
+    return;
+  }
+
+  R_SaveMeshConfigs(mod);
 }
 
 /**

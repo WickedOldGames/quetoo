@@ -811,12 +811,6 @@ typedef struct cg_import_s {
   r_model_t *(*LoadModel)(const char *name);
 
   /**
-   * @brief Saves the mesh configs (world.cfg, link.cfg, view.cfg) for the specified model.
-   * @param mod The model whose configs should be saved.
-   */
-  void (*SaveMeshConfigs)(const r_model_t *mod);
-
-  /**
    * @return The world model for the currently loaded level.
    */
   r_model_t *(*WorldModel)(void);
