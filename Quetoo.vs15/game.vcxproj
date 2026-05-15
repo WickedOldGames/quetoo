@@ -86,6 +86,9 @@
     <ProjectReference Include="libs\libpmove.vcxproj">
       <Project>{B1E86937-5A7A-48F6-9DAB-A1D2900C3AE1}</Project>
     </ProjectReference>
+    <ProjectReference Include="libs\libshared.vcxproj">
+      <Project>{2F1C792E-6243-462B-AF0D-E2554E77D5C5}</Project>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{A663B8E2-126D-45DA-B3F8-B381AB866E7D}</ProjectGuid>
