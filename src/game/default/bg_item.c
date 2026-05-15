@@ -28,6 +28,8 @@
  */
 const g_item_def_t bg_item_defs[] = {
 
+  { /* ITEM_NONE */ },
+
   {
     .classname = "weapon_blaster",
     .pickup_sound = "weapons/common/pickup.wav",
