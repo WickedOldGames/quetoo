@@ -684,8 +684,7 @@ static void G_InitClientInventory(g_client_t *cl) {
   }
   // dm gets the blaster, or the quake shotgun + shells in quake item sets
   else if (g_level.items == ITEMS_QUAKE) {
-    G_Give(cl, "Shotgun", 1);
-    G_Give(cl, "Shells", 10);
+    G_Give(cl, "Shotgun", 10);
     item = &g_items[WEAPON_QUAKE_SHOTGUN];
   } else {
     G_Give(cl, "Blaster", -1);
