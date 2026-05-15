@@ -241,6 +241,9 @@ static void G_Use_f(g_client_t *cl) {
   
   if (s && *s) {
     it = G_FindItem(s);
+    if (!it) {
+      it = G_FindItemByClassName(s);
+    }
   } else {
     it = cl->last_pickup;
 

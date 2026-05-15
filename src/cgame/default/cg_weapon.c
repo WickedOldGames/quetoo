@@ -132,10 +132,11 @@ void Cg_AddWeapon(cl_entity_t *ent, r_entity_t *self) {
     return; // spectating
   }
 
-  const int16_t active = Cg_ActiveWeapon(ps);
-  if (active == WEAPON_SELECT_OFF) {
+  const int16_t tag = ps->stats[STAT_WEAPON] & 0xFF;
+  if (tag < WEAPON_FIRST || tag >= WEAPON_LAST) {
     return; // no weapon, e.g. level intermission
   }
+  const int16_t active = tag - WEAPON_FIRST;
 
   memset(&w, 0, sizeof(w));
 

@@ -970,19 +970,33 @@ static void Cg_SelectWeapon(const int8_t dir) {
     return;
   }
 
-  Cg_ValidateSelectedWeapon(ps);
+  bool has[WEAPON_TOTAL] = { false };
+  for (int32_t i = 0; i < WEAPON_TOTAL; i++) {
+    has[i] = ps->inventory[WEAPON_FIRST + i] > 0;
+  }
+
+  int16_t bit = cg_hud_state.weapon.bit;
+  if (bit < 0 || bit >= WEAPON_TOTAL || !has[bit]) {
+    const int16_t current_tag = ps->stats[STAT_WEAPON] & 0xFF;
+    if (current_tag >= WEAPON_FIRST && current_tag < WEAPON_LAST) {
+      bit = current_tag - WEAPON_FIRST;
+    } else {
+      bit = WEAPON_SELECT_OFF;
+    }
+  }
 
   for (int32_t i = 0; i < WEAPON_TOTAL; i++) {
 
-    cg_hud_state.weapon.bit += dir;
+    bit += dir;
 
-    if (cg_hud_state.weapon.bit < 0) {
-      cg_hud_state.weapon.bit = WEAPON_TOTAL - 1;
-    } else if (cg_hud_state.weapon.bit >= WEAPON_TOTAL) {
-      cg_hud_state.weapon.bit = 0;
+    if (bit < 0) {
+      bit = WEAPON_TOTAL - 1;
+    } else if (bit >= WEAPON_TOTAL) {
+      bit = 0;
     }
 
-    if (cg_hud_state.weapon.has[cg_hud_state.weapon.bit]) {
+    if (has[bit]) {
+      cg_hud_state.weapon.bit = bit;
       cg_hud_state.weapon.time = cgi.client->unclamped_time + cg_select_weapon_delay->integer;
       cg_hud_state.weapon.bar_time = cgi.client->unclamped_time + cg_select_weapon_interval->integer;
       return;
@@ -1004,8 +1018,8 @@ bool Cg_AttemptSelectWeapon(const player_state_t *ps) {
     cg_hud_state.weapon.bit != -1) {
 
     if (cg_hud_state.weapon.bit != Cg_ActiveWeapon(ps)) {
-      const char *name = bg_item_defs[cg_weapons[cg_hud_state.weapon.bit].tag].name;
-      cgi.Cbuf(va("use %s\n", name));
+      const char *classname = bg_item_defs[cg_weapons[cg_hud_state.weapon.bit].tag].classname;
+      cgi.Cbuf(va("use %s\n", classname));
 
       cg_hud_state.weapon.time = cgi.client->unclamped_time + cg_select_weapon_interval->integer;
       cg_hud_state.weapon.bar_time = cgi.client->unclamped_time + cg_select_weapon_interval->integer;
