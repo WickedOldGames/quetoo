@@ -8,6 +8,7 @@
 *.manifest
 *.o
 *.swp
+*.dSYM/
 .deps/
 .dirstamp
 .DS_Store
@@ -63,4 +64,3 @@ target
 test-driver
 xcuserdata
 /Quetoo.vs15/.vs/quetoo/v15/*.suo
-*.dSYM/
