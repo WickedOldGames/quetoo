@@ -113,9 +113,31 @@ void R_LoadMeshConfigs(r_model_t *mod) {
 }
 
 /**
+ * @brief Returns true if the mesh config is identity (all defaults).
+ */
+static bool R_MeshConfigIsIdentity(const r_mesh_config_t *config) {
+  return Vec3_Equal(config->translate, Vec3_Zero()) &&
+         Vec3_Equal(config->rotate, Vec3_Zero()) &&
+         config->scale == 1.f &&
+         Vec3_Equal(config->muzzle, Vec3_Zero());
+}
+
+/**
  * @brief Saves the specified `r_mesh_config_t` to the file at path.
+ * If the config is identity, deletes the file if it exists.
  */
 static void R_SaveMeshConfig(const r_mesh_config_t *cfg, const char *path) {
+
+  if (R_MeshConfigIsIdentity(cfg)) {
+    if (Fs_Exists(path)) {
+      if (Fs_Delete(path)) {
+        Com_Debug(DEBUG_RENDERER, "Deleted %s\n", path);
+      } else {
+        Com_Warn("Failed to delete %s\n", path);
+      }
+    }
+    return;
+  }
 
   file_t *file = Fs_OpenWrite(path);
   if (!file) {
@@ -159,11 +181,8 @@ static void R_SaveMeshConfigs(const r_model_t *mod) {
   Dirname(mod->media.name, path);
 
   R_SaveMeshConfig(&mod->mesh->config.world, va("%s/world.cfg", path));
-
-  if (g_str_has_prefix(mod->media.name, "models/weapons/")) {
-    R_SaveMeshConfig(&mod->mesh->config.link, va("%s/link.cfg", path));
-    R_SaveMeshConfig(&mod->mesh->config.view, va("%s/view.cfg", path));
-  }
+  R_SaveMeshConfig(&mod->mesh->config.link, va("%s/link.cfg", path));
+  R_SaveMeshConfig(&mod->mesh->config.view, va("%s/view.cfg", path));
 }
 
 /**
