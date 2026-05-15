@@ -120,7 +120,7 @@ static void viewWillAppear(ViewController *self) {
 
   const cg_editor_trace_t tr = Cg_MaterialSelectionTrace(start, end);
   if (tr.trace.fraction < 1.f && tr.trace.material) {
-    material = cgi.LoadMaterial(tr.trace.material->name, ASSET_CONTEXT_TEXTURES);
+    material = cgi.LoadMaterial(tr.trace.material->name, tr.trace.material->context);
   }
 
   $(this, setMaterial, material);

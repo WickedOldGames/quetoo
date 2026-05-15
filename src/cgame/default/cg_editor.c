@@ -477,7 +477,7 @@ cg_editor_trace_t Cg_MaterialSelectionTrace(const vec3_t start, const vec3_t end
         out.ent = edit;
         out.trace = tr;
       }
-    } else if (edit->ent && edit->model && IS_MESH_MODEL(edit->model)) {
+    } else if (IS_MESH_MODEL(edit->model)) {
 
       const entity_state_t *s = &edit->ent->current;
       const box3_t bounds = Box3_Translate(s->bounds, s->origin);

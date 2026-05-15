@@ -1375,8 +1375,11 @@ typedef struct {
    * @brief The indices pointer in the shared mesh VAO.
    */
   GLvoid *indices;
-  struct {
 
+  /**
+   * @brief The transform and normalization configurations.
+   */
+  struct {
     /**
      * @brief The world-space normalization configuration.
      */
