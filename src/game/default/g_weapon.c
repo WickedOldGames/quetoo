@@ -541,6 +541,14 @@ void G_HookThink(g_client_t *cl, const bool refire) {
     return;
   }
 
+  if (G_Ai_InDeveloperMode()) {
+    if (cl->hook_entity) {
+      G_HookDetach(cl);
+    }
+    cl->latched_buttons &= ~BUTTON_HOOK;
+    return;
+  }
+
   // send off to the proper sub-function
 
   if (refire) {
