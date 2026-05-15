@@ -141,10 +141,11 @@ void Cg_PopulateEditorScene(const cl_frame_t *frame) {
 
     const cl_entity_t *ent = edit->ent;
 
-    vec4_t color = Color32_Vec4(ent->current.color);
+    const vec4_t debug_color = ent->current.color.rgba ? Color32_Vec4(ent->current.color) : color_white.vec4;
+    vec4_t model_color = color_white.vec4;
 
     if (!g_strcmp0(classname, "light")) {
-      color = Cg_AddEditorEntity_Light(edit);
+      model_color = Cg_AddEditorEntity_Light(edit);
     } else {
 
       // check for a client-side entity like misc_flame
@@ -170,7 +171,7 @@ void Cg_PopulateEditorScene(const cl_frame_t *frame) {
         .scale = cgi.EntityValue(edit->def, "scale")->value ?: 1.f,
         .bounds = Box3_Null(),
         .abs_bounds = Box3_Null(),
-        .color = color,
+        .color = model_color,
         .effects = ent->current.effects,
         .model = edit->model
       });
@@ -183,7 +184,7 @@ void Cg_PopulateEditorScene(const cl_frame_t *frame) {
       } else if (g_strcmp0(classname, "worldspawn")) {
         for (guint j = 0; j < edit->brushes->len; j++) {
           const cm_bsp_brush_t *brush = g_ptr_array_index(edit->brushes, j);
-          cgi.Draw3DBox(brush->bounds, Color4fv(color), true);
+          cgi.Draw3DBox(brush->bounds, Color4fv(debug_color), true);
         }
       }
 
@@ -195,7 +196,7 @@ void Cg_PopulateEditorScene(const cl_frame_t *frame) {
         .scale = cgi.EntityValue(edit->def, "scale")->value ?: 1.f,
         .bounds = ent->bounds,
         .abs_bounds = ent->abs_bounds,
-        .color = color,
+        .color = model_color,
         .effects = ent->current.effects,
         .model = edit->model
       });
@@ -216,7 +217,7 @@ void Cg_PopulateEditorScene(const cl_frame_t *frame) {
           }
         }
       } else {
-        cgi.Draw3DBox(Box3_Expand(ent->abs_bounds, 2.f), Color4fv(color), true);
+        cgi.Draw3DBox(Box3_Expand(ent->abs_bounds, 2.f), Color4fv(debug_color), true);
       }
     }
 
