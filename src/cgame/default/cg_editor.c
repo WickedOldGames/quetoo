@@ -447,8 +447,6 @@ cg_editor_trace_t Cg_EntitySelectionTrace(const vec3_t start, const vec3_t end) 
 
 /**
  * @brief Traces the view ray for material selection.
- * @details Includes worldspawn so that wall and floor surfaces are reachable, and skips
- *   point entities (they carry no surface material).
  */
 cg_editor_trace_t Cg_MaterialSelectionTrace(const vec3_t start, const vec3_t end) {
 
@@ -478,6 +476,28 @@ cg_editor_trace_t Cg_MaterialSelectionTrace(const vec3_t start, const vec3_t end
 
         out.ent = edit;
         out.trace = tr;
+      }
+    } else if (edit->ent && edit->model && IS_MESH_MODEL(edit->model)) {
+
+      const entity_state_t *s = &edit->ent->current;
+      const box3_t bounds = Box3_Translate(s->bounds, s->origin);
+
+      const float frac = Box3_RayFraction(start, end, bounds);
+      if (frac >= out.trace.fraction) {
+        continue;
+      }
+
+      const r_mesh_model_t *mesh = edit->model->mesh;
+      for (int32_t j = 0; j < mesh->num_faces; j++) {
+        if (mesh->faces[j].material) {
+          out.ent = edit;
+          out.trace = (cm_trace_t) {
+            .fraction = frac,
+            .end = Vec3_Mix(start, end, frac),
+            .material = mesh->faces[j].material->cm,
+          };
+          break;
+        }
       }
     }
   }
