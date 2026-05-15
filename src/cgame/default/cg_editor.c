@@ -21,6 +21,7 @@
 
 #include "cg_local.h"
 
+#include "game/default/bg_item.h"
 #include "ui/editor/EditorViewController.h"
 
 /**
@@ -187,7 +188,7 @@ void Cg_PopulateEditorScene(const cl_frame_t *frame) {
       }
 
     } else {
-      cgi.AddEntity(cgi.view, &(const r_entity_t) {
+      const r_entity_t *e = cgi.AddEntity(cgi.view, &(const r_entity_t) {
         .id = edit,
         .origin = ent->origin,
         .angles = ent->angles,
@@ -201,6 +202,19 @@ void Cg_PopulateEditorScene(const cl_frame_t *frame) {
 
       if (is_selected) {
         cgi.Draw3DBox(Box3_Expand(ent->abs_bounds, 2.f), color_red, true);
+
+        if (edit->model && IS_MESH_MODEL(edit->model)) {
+          const r_mesh_config_t *view = &edit->model->mesh->config.view;
+          if (!Vec3_Equal(Vec3_Zero(), view->muzzle)) {
+            const vec3_t muzzle = Mat4_Transform(e->matrix, view->muzzle);
+            Cg_AddSprite(&(cg_sprite_t) {
+              .animation = cg_sprite_impact_spark_01,
+              .origin = muzzle,
+              .size = 30.f,
+              .color = Vec3(1.f, .9f, .7f),
+            });
+          }
+        }
       } else {
         cgi.Draw3DBox(Box3_Expand(ent->abs_bounds, 2.f), Color4fv(color), true);
       }
@@ -240,7 +254,17 @@ static void Cg_InitEditorEntity(int16_t number) {
   edit->def = cgi.EntityFromInfoString(info);
 
   const char *mod = cgi.EntityValue(edit->def, "model")->string;
-  edit->model = strlen(mod) ? cgi.LoadModel(mod) : NULL;
+  if (strlen(mod)) {
+    edit->model = cgi.LoadModel(mod);
+  } else {
+    const char *classname = cgi.EntityValue(edit->def, "classname")->string;
+    for (size_t i = 0; i < bg_num_items; i++) {
+      if (!g_strcmp0(bg_item_defs[i].classname, classname)) {
+        edit->model = cgi.LoadModel(bg_item_defs[i].model);
+        break;
+      }
+    }
+  }
 
   if (number < cgi.Bsp()->num_entities) {
     edit->brushes = cgi.EntityBrushes(cgi.Bsp()->entities[number]);

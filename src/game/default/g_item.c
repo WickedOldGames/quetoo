@@ -26,21 +26,15 @@ const box3_t ITEM_BOUNDS = {
   .maxs = { {  16.0,  16.0,  32.0 } }
 };
 
-#define ITEM_SCALE 1.0
-
 /**
  * @brief Finds an item by its entity class name.
  */
 const g_item_t *G_FindItemByClassName(const char *classname) {
 
-  for (size_t i = 0; i < g_num_items; i++) {
-    const g_item_t *it = G_ItemByIndex(i);
+  for (g_item_tag_t t = WEAPON_FIRST; t < ITEM_TOTAL; t++) {
+    const g_item_t *it = &g_items[t];
 
-    if (!it->classname) {
-      continue;
-    }
-
-    if (!g_strcmp0(it->classname, classname)) {
+    if (!g_strcmp0(it->def.classname, classname)) {
       return it;
     }
   }
@@ -58,15 +52,10 @@ const g_item_t *G_FindItem(const char *name) {
   }
 
   const g_item_t *fallback = NULL;
+  for (g_item_tag_t t = WEAPON_FIRST; t < ITEM_TOTAL; t++) {
+    const g_item_t *it = &g_items[t];
 
-  for (size_t i = 0; i < g_num_items; i++) {
-    const g_item_t *it = G_ItemByIndex(i);
-
-    if (!it->name) {
-      continue;
-    }
-
-    if (!g_ascii_strcasecmp(it->name, name)) {
+    if (!g_ascii_strcasecmp(it->def.name, name)) {
       if (G_ItemAvailable(it)) {
         return it;
       }
@@ -82,40 +71,40 @@ const g_item_t *G_FindItem(const char *name) {
 /**
  * @brief Maps Quetoo weapon tags to their Quake equivalent, by gameplay role.
  *  Used to redirect generic bindings (e.g. "use Rocket Launcher") to the
- *  appropriate weapon when g_level.items == ITEMS_QUAKE.
- *  WEAPON_NONE means no equivalent exists.
+ *  appropriate weapon when `g_level.items == ITEMS_QUAKE`.
+ *  `WEAPON_NONE` means no equivalent exists.
  */
-static const g_weapon_tag_t g_quake_weapon_map[WEAPON_TOTAL] = {
+static const g_item_tag_t g_quake_weapon_map[WEAPON_LAST] = {
   [WEAPON_BLASTER]          = WEAPON_QUAKE_SHOTGUN,
   [WEAPON_SHOTGUN]          = WEAPON_QUAKE_SHOTGUN,
   [WEAPON_SUPER_SHOTGUN]    = WEAPON_QUAKE_SUPER_SHOTGUN,
   [WEAPON_MACHINEGUN]       = WEAPON_QUAKE_NAILGUN,
-  [WEAPON_HAND_GRENADE]     = WEAPON_NONE,
+  [WEAPON_HAND_GRENADE]     = ITEM_NONE,
   [WEAPON_GRENADE_LAUNCHER] = WEAPON_QUAKE_GRENADE_LAUNCHER,
   [WEAPON_ROCKET_LAUNCHER]  = WEAPON_QUAKE_ROCKET_LAUNCHER,
   [WEAPON_HYPERBLASTER]     = WEAPON_QUAKE_SUPER_NAILGUN,
   [WEAPON_LIGHTNING]        = WEAPON_QUAKE_THUNDERBOLT,
   [WEAPON_RAILGUN]          = WEAPON_QUAKE_THUNDERBOLT,
-  [WEAPON_BFG10K]           = WEAPON_NONE,
+  [WEAPON_BFG10K]           = ITEM_NONE,
 };
 
 /**
  * @brief Returns the Quake equivalent of a Quetoo weapon item when
- *  g_level.items == ITEMS_QUAKE, or NULL if no mapping exists or the item is
+ *  `g_level.items == ITEMS_QUAKE`, or `NULL` if no mapping exists or the item is
  *  already a Quake weapon.
  */
 const g_item_t *G_MappedWeapon(const g_item_t *weapon) {
 
-  if (weapon->tag == WEAPON_NONE || weapon->tag >= WEAPON_QUAKE_SHOTGUN) {
+  if (weapon->def.tag < WEAPON_FIRST || weapon->def.tag >= WEAPON_QUAKE_SHOTGUN) {
     return NULL; // already a Quake weapon, or unmapped
   }
 
-  const g_weapon_tag_t mapped = g_quake_weapon_map[weapon->tag];
-  if (mapped == WEAPON_NONE) {
+  const g_item_tag_t mapped = g_quake_weapon_map[weapon->def.tag];
+  if (!mapped) {
     return NULL;
   }
 
-  return g_media.items.weapons[mapped];
+  return &g_items[mapped];
 }
 
 /**
@@ -126,10 +115,10 @@ const g_item_t *G_MappedWeapon(const g_item_t *weapon) {
 const g_item_t *G_ClientArmor(const g_client_t *cl) {
 
 
-  for (g_armor_t armor = ARMOR_QUAKE_BODY; armor > ARMOR_SHARD; armor--) {
+  for (g_item_tag_t armor = ARMOR_QUAKE_BODY; armor > ARMOR_SHARD; armor--) {
 
-    if (cl->inventory[g_media.items.armor[armor]->index]) {
-      return g_media.items.armor[armor];
+    if (cl->inventory[armor]) {
+      return &g_items[armor];
     }
   }
 
@@ -193,11 +182,11 @@ static bool G_PickupAdrenaline(g_client_t *cl, g_entity_t *ent) {
  */
 static bool G_PickupQuadDamage(g_client_t *cl, g_entity_t *ent) {
 
-  if (cl->inventory[g_media.items.powerups[POWERUP_QUAD]->index]) {
+  if (cl->inventory[POWERUP_QUAD]) {
     return false; // already have it
   }
 
-  cl->inventory[g_media.items.powerups[POWERUP_QUAD]->index] = 1;
+  cl->inventory[POWERUP_QUAD] = 1;
 
   uint32_t delta = 3000;
 
@@ -222,18 +211,18 @@ static bool G_PickupQuadDamage(g_client_t *cl, g_entity_t *ent) {
 g_entity_t *G_TossQuadDamage(g_client_t *cl) {
   g_entity_t *quad;
 
-  if (!cl->inventory[g_media.items.powerups[POWERUP_QUAD]->index]) {
+  if (!cl->inventory[POWERUP_QUAD]) {
     return NULL;
   }
 
-  quad = G_DropItem(cl, g_media.items.powerups[POWERUP_QUAD]);
+  quad = G_DropItem(cl, &g_items[POWERUP_QUAD]);
 
   if (quad) {
     quad->timestamp = cl->quad_damage_time;
   }
 
   cl->quad_damage_time = 0.0;
-  cl->inventory[g_media.items.powerups[POWERUP_QUAD]->index] = 0;
+  cl->inventory[POWERUP_QUAD] = 0;
 
   return quad;
 }
@@ -243,11 +232,11 @@ g_entity_t *G_TossQuadDamage(g_client_t *cl) {
  */
 static bool G_PickupInvisibility(g_client_t *cl, g_entity_t *ent) {
 
-  if (cl->inventory[g_media.items.powerups[POWERUP_INVISIBILITY]->index]) {
+  if (cl->inventory[POWERUP_INVISIBILITY]) {
     return false; // already have it
   }
 
-  cl->inventory[g_media.items.powerups[POWERUP_INVISIBILITY]->index] = 1;
+  cl->inventory[POWERUP_INVISIBILITY] = 1;
 
   if (ent->spawn_flags & SF_ITEM_DROPPED) {
     cl->invisibility_time = ent->next_think;
@@ -272,18 +261,18 @@ static bool G_PickupInvisibility(g_client_t *cl, g_entity_t *ent) {
  */
 g_entity_t *G_TossInvisibility(g_client_t *cl) {
 
-  if (!cl->inventory[g_media.items.powerups[POWERUP_INVISIBILITY]->index]) {
+  if (!cl->inventory[POWERUP_INVISIBILITY]) {
     return NULL;
   }
 
-  g_entity_t *item = G_DropItem(cl, g_media.items.powerups[POWERUP_INVISIBILITY]);
+  g_entity_t *item = G_DropItem(cl, &g_items[POWERUP_INVISIBILITY]);
 
   if (item) {
     item->timestamp = cl->invisibility_time;
   }
 
   cl->invisibility_time = 0;
-  cl->inventory[g_media.items.powerups[POWERUP_INVISIBILITY]->index] = 0;
+  cl->inventory[POWERUP_INVISIBILITY] = 0;
   cl->entity->s.effects &= ~EF_INVISIBILITY;
 
   return item;
@@ -294,11 +283,11 @@ g_entity_t *G_TossInvisibility(g_client_t *cl) {
  */
 static bool G_PickupInvulnerability(g_client_t *cl, g_entity_t *ent) {
 
-  if (cl->inventory[g_media.items.powerups[POWERUP_INVULNERABILITY]->index]) {
+  if (cl->inventory[POWERUP_INVULNERABILITY]) {
     return false; // already have it
   }
 
-  cl->inventory[g_media.items.powerups[POWERUP_INVULNERABILITY]->index] = 1;
+  cl->inventory[POWERUP_INVULNERABILITY] = 1;
 
   uint32_t delta = 3000;
 
@@ -329,11 +318,11 @@ static bool G_PickupInvulnerability(g_client_t *cl, g_entity_t *ent) {
  */
 g_entity_t *G_TossInvulnerability(g_client_t *cl) {
 
-  if (!cl->inventory[g_media.items.powerups[POWERUP_INVULNERABILITY]->index]) {
+  if (!cl->inventory[POWERUP_INVULNERABILITY]) {
     return NULL;
   }
 
-  g_entity_t *item = G_DropItem(cl, g_media.items.powerups[POWERUP_INVULNERABILITY]);
+  g_entity_t *item = G_DropItem(cl, &g_items[POWERUP_INVULNERABILITY]);
 
   if (item) {
     item->timestamp = cl->invulnerability_time;
@@ -341,7 +330,7 @@ g_entity_t *G_TossInvulnerability(g_client_t *cl) {
 
   cl->invulnerability_time = 0;
   cl->invulnerability_countdown_time = 0;
-  cl->inventory[g_media.items.powerups[POWERUP_INVULNERABILITY]->index] = 0;
+  cl->inventory[POWERUP_INVULNERABILITY] = 0;
   cl->entity->s.effects &= ~EF_INVULNERABILITY;
 
   return item;
@@ -351,14 +340,13 @@ g_entity_t *G_TossInvulnerability(g_client_t *cl) {
  * @brief Adds the given amount of ammo to the client's inventory, clamped to the item's maximum.
  */
 bool G_AddAmmo(g_client_t *cl, const g_item_t *item, int16_t count) {
-  uint16_t index;
-  int16_t max = item->max;
+  int16_t max = item->def.max;
 
   if (!max) {
     return false;
   }
 
-  index = item->index;
+  const g_item_tag_t index = item->def.tag;
 
   cl->inventory[index] += count;
 
@@ -375,14 +363,13 @@ bool G_AddAmmo(g_client_t *cl, const g_item_t *item, int16_t count) {
  * @brief Sets the client's ammo count for the given item to an absolute value, clamped to its maximum.
  */
 bool G_SetAmmo(g_client_t *cl, const g_item_t *item, int16_t count) {
-  uint16_t index;
-  int16_t max = item->max;
+  int16_t max = item->def.max;
 
   if (!max) {
     return false;
   }
 
-  index = item->index;
+  const g_item_tag_t index = item->def.tag;
 
   cl->inventory[index] = count;
 
@@ -404,7 +391,7 @@ static bool G_PickupAmmo(g_client_t *cl, g_entity_t *ent) {
   if (ent->count) {
     count = ent->count;
   } else {
-    count = ent->item->quantity;
+    count = ent->item->def.quantity;
   }
 
   if (!G_AddAmmo(cl, ent->item, count)) {
@@ -425,12 +412,12 @@ static bool G_PickupGrenades(g_client_t *cl, g_entity_t *ent) {
 
   const bool pickup = G_PickupAmmo(cl, ent);
   if (pickup) {
-    if (!cl->inventory[g_media.items.weapons[WEAPON_HAND_GRENADE]->index]) {
-      cl->inventory[g_media.items.weapons[WEAPON_HAND_GRENADE]->index]++;
+    if (!cl->inventory[WEAPON_HAND_GRENADE]) {
+      cl->inventory[WEAPON_HAND_GRENADE]++;
     }
 
-    if (cl->weapon == g_media.items.weapons[WEAPON_BLASTER]) {
-      G_UseWeapon(cl, g_media.items.weapons[WEAPON_HAND_GRENADE]);
+    if (cl->weapon == &g_items[WEAPON_BLASTER]) {
+      G_UseWeapon(cl, &g_items[WEAPON_HAND_GRENADE]);
     }
   }
 
@@ -451,8 +438,8 @@ static bool G_PickupGrenadeLauncher(g_client_t *cl, g_entity_t *ent) {
 
   const bool pickup = G_PickupWeapon(cl, ent);
   if (pickup) {
-    if (!cl->inventory[g_media.items.weapons[WEAPON_HAND_GRENADE]->index]) {
-      cl->inventory[g_media.items.weapons[WEAPON_HAND_GRENADE]->index]++;
+    if (!cl->inventory[WEAPON_HAND_GRENADE]) {
+      cl->inventory[WEAPON_HAND_GRENADE]++;
     }
   }
 
@@ -465,14 +452,14 @@ static bool G_PickupGrenadeLauncher(g_client_t *cl, g_entity_t *ent) {
 static bool G_PickupHealth(g_client_t *cl, g_entity_t *ent) {
   int32_t h, max;
 
-  const uint16_t tag = ent->item->tag;
+  const uint16_t tag = ent->item->def.tag;
 
   const bool always_add = tag == HEALTH_SMALL;
   const bool always_pickup = (tag == HEALTH_SMALL || tag == HEALTH_MEGA || tag == HEALTH_QUAKE_MEGA);
 
   if (cl->entity->health < cl->entity->max_health || always_add || always_pickup) {
 
-    h = cl->entity->health + ent->item->quantity; // target health points
+    h = cl->entity->health + ent->item->def.quantity; // target health points
     max = cl->entity->max_health;
 
     if (always_pickup) { // resolve max
@@ -522,7 +509,7 @@ static bool G_PickupHealth(g_client_t *cl, g_entity_t *ent) {
 }
 
 /**
- * @return The g_armor_info_t for the specified item.
+ * @return The `g_armor_info_t` for the specified item.
  */
 const g_armor_info_t *G_ArmorInfo(const g_item_t *armor) {
   static const g_armor_info_t armor_info[] = {
@@ -539,7 +526,7 @@ const g_armor_info_t *G_ArmorInfo(const g_item_t *armor) {
   }
 
   for (size_t i = 0; i < lengthof(armor_info); i++) {
-    if (armor->tag == armor_info[i].tag) {
+    if (armor->def.tag == armor_info[i].tag) {
       return &armor_info[i];
     }
   }
@@ -560,31 +547,31 @@ static bool G_PickupArmor(g_client_t *cl, g_entity_t *ent) {
 
   bool taken = false;
 
-  if (new_armor->tag == ARMOR_SHARD) { // always take it, ignoring cap
+  if (new_armor->def.tag == ARMOR_SHARD) { // always take it, ignoring cap
     if (current_armor) {
-      cl->inventory[current_armor->index] =
-          Clampf(cl->inventory[current_armor->index] + new_armor->quantity,
+      cl->inventory[current_armor->def.tag] =
+          Clampf(cl->inventory[current_armor->def.tag] + new_armor->def.quantity,
                 0, cl->max_armor);
     } else {
-      cl->inventory[g_media.items.armor[ARMOR_JACKET]->index] =
-          Clampf((int16_t) new_armor->quantity, 0, cl->max_armor);
+      cl->inventory[ARMOR_JACKET] =
+          Clampf((int16_t) new_armor->def.quantity, 0, cl->max_armor);
     }
 
     taken = true;
   } else if (!current_armor) { // no current armor, take it
-    cl->inventory[new_armor->index] =
-        Clampf((int16_t) new_armor->quantity, 0, cl->max_armor);
+    cl->inventory[new_armor->def.tag] =
+        Clampf((int16_t) new_armor->def.quantity, 0, cl->max_armor);
 
     taken = true;
-  } else if (new_armor->tag >= ARMOR_QUAKE_JACKET) {
+  } else if (new_armor->def.tag >= ARMOR_QUAKE_JACKET) {
     // Quake-family armor uses Q1 effective-score logic: full swap, no salvage.
     // A pickup is only accepted if it strictly improves the player's effective score.
-    const float current_score = current_info->normal_protection * cl->inventory[current_armor->index];
-    const float new_score = new_info->normal_protection * new_armor->quantity;
+    const float current_score = current_info->normal_protection * cl->inventory[current_armor->def.tag];
+    const float new_score = new_info->normal_protection * new_armor->def.quantity;
 
     if (new_score > current_score) {
-      cl->inventory[current_armor->index] = 0;
-      cl->inventory[new_armor->index] = Clampf((int16_t) new_armor->quantity, 0, cl->max_armor);
+      cl->inventory[current_armor->def.tag] = 0;
+      cl->inventory[new_armor->def.tag] = Clampf((int16_t) new_armor->def.quantity, 0, cl->max_armor);
       taken = true;
     }
   } else {
@@ -595,14 +582,14 @@ static bool G_PickupArmor(g_client_t *cl, g_entity_t *ent) {
       // get the ratio between the new and old armor to add a portion to
       // new armor pickup. Ganked from q2pro (thanks skuller)
       const float salvage = current_info->normal_protection / new_info->normal_protection;
-      const int16_t salvage_count = salvage * cl->inventory[current_armor->index];
+      const int16_t salvage_count = salvage * cl->inventory[current_armor->def.tag];
 
-      const int16_t new_count = Clampf(salvage_count + new_armor->quantity, 0, new_armor->max);
+      const int16_t new_count = Clampf(salvage_count + new_armor->def.quantity, 0, new_armor->def.max);
 
       if (new_count < cl->max_armor) {
-        cl->inventory[current_armor->index] = 0;
+        cl->inventory[current_armor->def.tag] = 0;
 
-        cl->inventory[new_armor->index] =
+        cl->inventory[new_armor->def.tag] =
             Clampf(new_count, 0, cl->max_armor);
       }
 
@@ -610,15 +597,15 @@ static bool G_PickupArmor(g_client_t *cl, g_entity_t *ent) {
     } else {
       // we picked up the same, or weaker
       const float salvage = new_info->normal_protection / current_info->normal_protection;
-      const int16_t salvage_count = salvage * new_armor->quantity;
+      const int16_t salvage_count = salvage * new_armor->def.quantity;
 
-      int16_t new_count = salvage_count + cl->inventory[current_armor->index];
-      new_count = Clampf(new_count, 0, current_armor->max);
+      int16_t new_count = salvage_count + cl->inventory[current_armor->def.tag];
+      new_count = Clampf(new_count, 0, current_armor->def.max);
 
       // take it
-      if (cl->inventory[current_armor->index] < new_count &&
-              cl->inventory[current_armor->index] < cl->max_armor) {
-        cl->inventory[current_armor->index] =
+      if (cl->inventory[current_armor->def.tag] < new_count &&
+              cl->inventory[current_armor->def.tag] < cl->max_armor) {
+        cl->inventory[current_armor->def.tag] =
             Clampf(new_count, 0, cl->max_armor);
 
         taken = true;
@@ -627,7 +614,7 @@ static bool G_PickupArmor(g_client_t *cl, g_entity_t *ent) {
   }
 
   if (taken && !(ent->spawn_flags & SF_ITEM_DROPPED)) {
-    switch (new_armor->tag) {
+    switch (new_armor->def.tag) {
       case ARMOR_SHARD:
         G_SetItemRespawn(ent, g_balance_armor_shard_respawn->integer * 1000);
         break;
@@ -650,7 +637,7 @@ static bool G_PickupArmor(g_client_t *cl, g_entity_t *ent) {
         G_SetItemRespawn(ent, g_balance_armor_body_respawn->integer * 1000);
         break;
       default:
-        G_Debug("Invalid armor tag: %d\n", new_armor->tag);
+        G_Debug("Invalid armor tag: %d\n", new_armor->def.tag);
         break;
     }
   }
@@ -725,10 +712,10 @@ static bool G_PickupFlag(g_client_t *cl, g_entity_t *ent) {
     }
 
     if (carried_flag) {
-      const g_team_t *other_team = &g_team_list[carried_flag->tag];
+      const g_team_t *other_team = &g_team_list[carried_flag->def.tag - FLAG_FIRST];
       g_entity_t *other_team_flag = G_FlagForTeam(other_team);
 
-      index = other_team_flag->item->index;
+      index = other_team_flag->item->def.tag;
       if (cl->inventory[index]) { // capture
 
         cl->inventory[index] = 0;
@@ -769,7 +756,7 @@ static bool G_PickupFlag(g_client_t *cl, g_entity_t *ent) {
 
   gi.LinkEntity(team_flag);
 
-  index = team_flag->item->index;
+  index = team_flag->item->def.tag;
   cl->inventory[index] = 1;
 
   // link the flag model to the player
@@ -796,8 +783,8 @@ g_entity_t *G_TossFlag(g_client_t *cl) {
     return NULL;
   }
 
-  const g_team_t *team = &g_team_list[flag->tag];
-  const int32_t index = flag->index;
+  const g_team_t *team = &g_team_list[flag->def.tag - FLAG_FIRST];
+  const g_item_tag_t index = flag->def.tag;
 
   if (!cl->inventory[index]) {
     return NULL;
@@ -825,16 +812,16 @@ static g_entity_t *G_DropFlag(g_client_t *cl, const g_item_t *item) {
  */
 static void G_DropItem_SetExpiration(g_entity_t *ent) {
 
-  if (ent->item->type == ITEM_FLAG) { // flags go back to base
+  if (ent->item->def.type == ITEM_FLAG) { // flags go back to base
     ent->Think = G_ResetDroppedFlag;
-  } else if (ent->item->type == ITEM_TECH) {
+  } else if (ent->item->def.type == ITEM_TECH) {
     ent->Think = G_ResetDroppedTech;
   } else { // everything else just gets freed
     ent->Think = G_FreeEntity;
   }
 
   uint32_t expiration;
-  if (ent->item->type == ITEM_POWERUP) { // expire from last touch
+  if (ent->item->def.type == ITEM_POWERUP) { // expire from last touch
     expiration = ent->timestamp - g_level.time;
   } else { // general case
     expiration = 30000;
@@ -909,14 +896,14 @@ void G_TouchItem(g_entity_t *ent, g_entity_t *other, const cm_trace_t *trace) {
     }
 
     cl->ps.stats[STAT_PICKUP_ICON] = icon;
-    cl->ps.stats[STAT_PICKUP_STRING] = CS_ITEMS + ent->item->index;
+    cl->ps.stats[STAT_PICKUP_STRING] = CS_ITEMS + ent->item->def.tag;
     
     if (ent->item->Use) {
       cl->last_pickup = ent->item;
     }
     cl->pickup_msg_time = g_level.time + 3000;
 
-    if (ent->item->pickup_sound) {
+    if (ent->item->def.pickup_sound) {
       G_MulticastSound(&(const g_play_sound_t) {
         .index = ent->item->pickup_sound_index,
         .origin = &other->s.origin,
@@ -946,7 +933,7 @@ void G_TouchItem(g_entity_t *ent, g_entity_t *other, const cm_trace_t *trace) {
 g_entity_t *G_DropItem(g_client_t *cl, const g_item_t *item) {
   vec3_t forward;
 
-  g_entity_t *it = G_AllocEntity(item->classname);
+  g_entity_t *it = G_AllocEntity(item->def.classname);
   it->owner = cl->entity;
 
   it->bounds = Box3_Scale(ITEM_BOUNDS, ITEM_SCALE);
@@ -969,9 +956,9 @@ g_entity_t *G_DropItem(g_client_t *cl, const g_item_t *item) {
 
   // we're in a bad spot, forget it
   if (tr.start_solid) {
-    if (item->type == ITEM_TECH) {
+    if (item->def.type == ITEM_TECH) {
       G_ResetDroppedTech(it);
-    } else if (item->type == ITEM_FLAG) {
+    } else if (item->def.type == ITEM_FLAG) {
       G_ResetDroppedFlag(it);
     } else {
       G_FreeEntity(it);
@@ -985,21 +972,21 @@ g_entity_t *G_DropItem(g_client_t *cl, const g_item_t *item) {
   it->spawn_flags |= SF_ITEM_DROPPED;
   it->move_type = MOVE_TYPE_BOUNCE;
   it->Touch = G_TouchItem;
-  it->s.effects = item->effects;
+  it->s.effects = item->def.effects;
 
-  if (item->light_radius) {
+  if (item->def.light_radius) {
     it->s.effects |= EF_LIGHT | EF_LIGHT_PULSE;
-    it->s.color = Color_Color32(Color3fv(item->light_color));
-    it->s.termination.x = item->light_radius;
+    it->s.color = Color_Color32(Color3fv(item->def.light_color));
+    it->s.termination.x = item->def.light_radius;
   }
   it->touch_time = g_level.time + 1000;
 
   it->s.model1 = item->model_index;
 
-  if (item->type == ITEM_WEAPON) {
+  if (item->def.type == ITEM_WEAPON) {
     const g_item_t *ammo = item->ammo_item;
     if (ammo) {
-      it->health = ammo->quantity;
+      it->health = ammo->def.quantity;
     }
   }
 
@@ -1040,11 +1027,11 @@ static float G_TechRangeFromSpawn(const g_entity_t *spawn) {
   float best_dist = FLT_MAX;
   bool any = false;
 
-  for (g_tech_t tech = TECH_HASTE; tech < TECH_TOTAL; tech++) {
+  for (g_item_tag_t tech = TECH_FIRST; tech < TECH_LAST; tech++) {
 
     g_entity_t *ent = NULL;
     G_ForEachEntity(e, {
-      if (e->item == g_media.items.techs[tech]) {
+      if (e->item == &g_items[tech]) {
         ent = e;
         break;
       }
@@ -1122,8 +1109,8 @@ void G_ResetDroppedTech(g_entity_t *ent) {
 /**
  * @brief Check if a player has the specified tech.
  */
-bool G_HasTech(const g_client_t *cl, const g_tech_t tech) {
-  return !!cl->inventory[g_media.items.techs[tech]->index];
+bool G_HasTech(const g_client_t *cl, g_item_tag_t tech) {
+  return !!cl->inventory[tech];
 }
 
 /**
@@ -1131,7 +1118,7 @@ bool G_HasTech(const g_client_t *cl, const g_tech_t tech) {
  */
 static bool G_PickupTech(g_client_t *cl, g_entity_t *ent) {
 
-  for (g_tech_t tech = TECH_HASTE; tech < TECH_TOTAL; tech++) {
+  for (g_item_tag_t tech = TECH_FIRST; tech < TECH_LAST; tech++) {
 
     if (G_HasTech(cl, tech)) {
       return false;
@@ -1139,7 +1126,7 @@ static bool G_PickupTech(g_client_t *cl, g_entity_t *ent) {
   }
 
   // add the weapon to inventory
-  cl->inventory[ent->item->index]++;
+  cl->inventory[ent->item->def.tag]++;
 
   return true;
 }
@@ -1149,10 +1136,10 @@ static bool G_PickupTech(g_client_t *cl, g_entity_t *ent) {
  */
 const g_item_t *G_GetTech(const g_client_t *cl) {
 
-  for (g_tech_t i = TECH_HASTE; i < TECH_TOTAL; i++) {
+  for (g_item_tag_t i = TECH_FIRST; i < TECH_LAST; i++) {
 
     if (G_HasTech(cl, i)) {
-      return g_media.items.techs[i];
+      return &g_items[i];
     }
   }
 
@@ -1169,7 +1156,7 @@ g_entity_t *G_TossTech(g_client_t *cl) {
     return NULL;
   }
 
-  cl->inventory[tech->index] = 0;
+  cl->inventory[tech->def.tag] = 0;
 
   return G_DropItem(cl, tech);
 }
@@ -1190,9 +1177,10 @@ void G_ResetItem(g_entity_t *ent) {
   ent->sv_flags &= ~SVF_NO_CLIENT;
   ent->Touch = G_TouchItem;
 
-  if (ent->item->type == ITEM_FLAG) {
-    if (g_level.ctf == false ||
-      ent->item->tag >= g_level.num_teams) {
+  if (ent->item->def.type == ITEM_FLAG) {
+    const g_team_id_t flag_team = ent->item->def.tag - FLAG_FIRST;
+    const g_team_id_t last_team = FLAG_FIRST + g_level.num_teams - 1;
+    if (g_level.ctf == false || flag_team > last_team) {
       ent->sv_flags |= SVF_NO_CLIENT;
       ent->solid = SOLID_NOT;
     }
@@ -1210,7 +1198,7 @@ void G_ResetItem(g_entity_t *ent) {
   }
 
   const bool inhibited = (g_level.gameplay == GAME_ARENA || g_level.gameplay == GAME_INSTAGIB)
-                          && ent->item->type != ITEM_FLAG;
+                          && ent->item->def.type != ITEM_FLAG;
 
   if (inhibited || (ent->flags & FL_TEAM_SLAVE)) {
     ent->sv_flags |= SVF_NO_CLIENT;
@@ -1298,18 +1286,18 @@ void G_PrecacheItem(const g_item_t *it) {
     return;
   }
 
-  if (it->pickup_sound) {
-    gi.SoundIndex(it->pickup_sound);
+  if (it->def.pickup_sound) {
+    gi.SoundIndex(it->def.pickup_sound);
   }
-  if (it->model) {
-    gi.ModelIndex(it->model);
+  if (it->def.model) {
+    gi.ModelIndex(it->def.model);
   }
-  if (it->icon) {
-    gi.ImageIndex(it->icon);
+  if (it->def.icon) {
+    gi.ImageIndex(it->def.icon);
   }
 
   // parse everything for its ammo
-  if (it->ammo) {
+  if (it->def.ammo) {
     const g_item_t *ammo = it->ammo_item;
 
     if (ammo != it) {
@@ -1318,7 +1306,7 @@ void G_PrecacheItem(const g_item_t *it) {
   }
 
   // parse the space-separated precache string for other items
-  s = it->precaches;
+  s = it->def.precaches;
   if (!s || !s[0]) {
     return;
   }
@@ -1331,7 +1319,7 @@ void G_PrecacheItem(const g_item_t *it) {
 
     len = s - start;
     if (len >= MAX_QPATH || len < 5) {
-      gi.Error("%s has bad precache string\n", it->classname);
+      gi.Error("%s has bad precache string\n", it->def.classname);
     }
     memcpy(data, start, len);
     data[len] = '\0';
@@ -1347,12 +1335,12 @@ void G_PrecacheItem(const g_item_t *it) {
     } else if (g_str_has_suffix(data, ".png") || g_str_has_suffix(data, ".jpg") || g_str_has_suffix(data, ".tga")) {
       gi.ImageIndex(data);
     } else {
-      gi.Error("%s has unknown data type\n", it->classname);
+      gi.Error("%s has unknown data type\n", it->def.classname);
     }
   }
 }
 
-static void G_InitItem(g_item_t *item);
+static void G_InitItem(g_item_t *it, const g_item_def_t *def);
 
 /**
  * @brief Sets the clipping size and plants the object on the floor.
@@ -1370,29 +1358,29 @@ void G_SpawnItem(g_entity_t *ent, const g_item_t *item) {
   if (ent->model) {
     ent->s.model1 = gi.ModelIndex(ent->model);
   } else {
-    G_InitItem((g_item_t *) ent->item);
+    G_InitItem((g_item_t *) ent->item, &ent->item->def);
     ent->s.model1 = ent->item->model_index;
   }
 
-  ent->s.effects = item->effects;
+  ent->s.effects = item->def.effects;
 
-  if (item->light_radius) {
+  if (item->def.light_radius) {
     ent->s.effects |= EF_LIGHT | EF_LIGHT_PULSE;
-    ent->s.color = Color_Color32(Color3fv(item->light_color));
-    ent->s.termination.x = item->light_radius;
+    ent->s.color = Color_Color32(Color3fv(item->def.light_color));
+    ent->s.termination.x = item->def.light_radius;
   }
 
   // weapons override the health field to store their ammo count
-  if (ent->item->type == ITEM_WEAPON) {
+  if (ent->item->def.type == ITEM_WEAPON) {
     const g_item_t *ammo = ent->item->ammo_item;
     if (ammo) {
-      ent->health = ammo->quantity;
+      ent->health = ammo->def.quantity;
     } else {
       ent->health = 0;
     }
-  } else if (ent->item->type == ITEM_FLAG) {
-    // pass flag tint over
-    ent->s.animation1 = item->tag;
+  } else if (ent->item->def.type == ITEM_FLAG) {
+    // pass flag tint over (0-based team index)
+    ent->s.animation1 = item->def.tag - FLAG_FIRST;
   }
 
   ent->next_think = g_level.time + QUETOO_TICK_MILLIS * 2;
@@ -1400,1919 +1388,48 @@ void G_SpawnItem(g_entity_t *ent, const g_item_t *item) {
 }
 
 /**
- * @brief This is the magical list of items that the game runs by. All structs created here
- * should use the syntax provided below (order not necessary) so that it's easy to read and
- * protects against future struct changes. Note that there are a few private, auto-generated
- * members at the bottom of g_item_t that you shouldn't initialize here, since they'll be
- * overwritten by G_InitItems.
+ * @brief The item list; allocated and initialized in G_InitItems.
  */
-static g_item_t g_items[] = {
-  /*QUAKED item_armor_body (.8 .2 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Body armor (+200).
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/armor/body/tris.md3"
-   */
-  {
-    .classname = "item_armor_body",
-    .Pickup = G_PickupArmor,
-    .Use = NULL,
-    .Drop = NULL,
-    .Think = NULL,
-    .pickup_sound = "armor/body/pickup.wav",
-    .model = "models/armor/body/tris.md3",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/i_armor_body",
-    .name = "Body Armor",
-    .quantity = 100,
-    .max = 200,
-    .ammo = NULL,
-    .type = ITEM_ARMOR,
-    .tag = ARMOR_BODY,
-    .priority = 0.80,
-    .precaches = ""
-  },
-
-  /*QUAKED item_armor_combat (.8 .8 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Combat armor (+100).
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/armor/combat/tris.md3"
-   */
-  {
-    .classname = "item_armor_combat",
-    .Pickup = G_PickupArmor,
-    .Use = NULL,
-    .Drop = NULL,
-    .Think = NULL,
-    .pickup_sound = "armor/combat/pickup.wav",
-    .model = "models/armor/combat/tris.md3",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/i_armor_combat",
-    .name = "Combat Armor",
-    .quantity = 50,
-    .max = 100,
-    .ammo = NULL,
-    .type = ITEM_ARMOR,
-    .tag = ARMOR_COMBAT,
-    .priority = 0.66,
-    .precaches = ""
-  },
-
-  /*QUAKED item_armor_jacket (.2 .8 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Jacket armor (+50).
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/armor/jacket/tris.md3"
-   */
-  {
-    .classname = "item_armor_jacket",
-    .Pickup = G_PickupArmor,
-    .Use = NULL,
-    .Drop = NULL,
-    .Think = NULL,
-    .pickup_sound = "armor/jacket/pickup.wav",
-    .model = "models/armor/jacket/tris.md3",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/i_armor_jacket",
-    .name = "Jacket Armor",
-    .quantity = 25,
-    .max = 50,
-    .ammo = NULL,
-    .type = ITEM_ARMOR,
-    .tag = ARMOR_JACKET,
-    .priority = 0.50,
-    .precaches = ""
-  },
-
-  /*QUAKED item_armor_shard (.1 .6 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Shard armor (+3).
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/armor/shard/tris.md3"
-   */
-  {
-    .classname = "item_armor_shard",
-    .Pickup = G_PickupArmor,
-    .Use = NULL,
-    .Drop = NULL,
-    .Think = NULL,
-    .pickup_sound = "armor/shard/pickup.wav",
-    .model = "models/armor/shard/tris.md3",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/i_armor_shard",
-    .name = "Armor Shard",
-    .quantity = 2,
-    .ammo = NULL,
-    .type = ITEM_ARMOR,
-    .tag = ARMOR_SHARD,
-    .priority = 0.10,
-    .precaches = ""
-  },
-
-  /*QUAKED item_quake_armor_body (.8 .2 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Quake Red Armor (+200). Absorbs 80% of damage.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/armor/quake_body/tris.obj"
-   */
-  {
-    .classname = "item_quake_armor_body",
-    .Pickup = G_PickupArmor,
-    .Use = NULL,
-    .Drop = NULL,
-    .Think = NULL,
-    .pickup_sound = "armor/body/pickup.wav",
-    .model = "models/armor/quake_body/tris.obj",
-    .effects = EF_ROTATE,
-    .icon = "pics/i_quake_armor_body",
-    .name = "Red Armor",
-    .quantity = 200,
-    .max = 200,
-    .ammo = NULL,
-    .type = ITEM_ARMOR,
-    .tag = ARMOR_QUAKE_BODY,
-    .priority = 0.90,
-    .precaches = ""
-  },
-
-  /*QUAKED item_quake_armor_combat (.8 .8 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Quake Yellow Armor (+150). Absorbs 60% of damage.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/armor/quake_combat/tris.obj"
-   */
-  {
-    .classname = "item_quake_armor_combat",
-    .Pickup = G_PickupArmor,
-    .Use = NULL,
-    .Drop = NULL,
-    .Think = NULL,
-    .pickup_sound = "armor/combat/pickup.wav",
-    .model = "models/armor/quake_combat/tris.obj",
-    .effects = EF_ROTATE,
-    .icon = "pics/i_quake_armor_combat",
-    .name = "Yellow Armor",
-    .quantity = 150,
-    .max = 150,
-    .ammo = NULL,
-    .type = ITEM_ARMOR,
-    .tag = ARMOR_QUAKE_COMBAT,
-    .priority = 0.75,
-    .precaches = ""
-  },
-
-  /*QUAKED item_quake_armor_jacket (.2 .8 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Quake Green Armor (+100). Absorbs 30% of damage.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/armor/quake_jacket/tris.obj"
-   */
-  {
-    .classname = "item_quake_armor_jacket",
-    .Pickup = G_PickupArmor,
-    .Use = NULL,
-    .Drop = NULL,
-    .Think = NULL,
-    .pickup_sound = "armor/jacket/pickup.wav",
-    .model = "models/armor/quake_jacket/tris.obj",
-    .effects = EF_ROTATE,
-    .icon = "pics/i_quake_armor_jacket",
-    .name = "Green Armor",
-    .quantity = 100,
-    .max = 100,
-    .ammo = NULL,
-    .type = ITEM_ARMOR,
-    .tag = ARMOR_QUAKE_JACKET,
-    .priority = 0.60,
-    .precaches = ""
-  },
-
-  /*QUAKED weapon_blaster (.8 .8 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Blaster.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/weapons/shotgun/tris.obj"
-   */
-  {
-    .classname = "weapon_blaster",
-    .Pickup = G_PickupWeapon,
-    .Use = G_UseWeapon,
-    .Drop = NULL,
-    .Think = G_FireBlaster,
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/blaster/tris.md3",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/w_blaster",
-    .name = "Blaster",
-    .quantity = 0,
-    .ammo = NULL,
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_BLASTER,
-    .flags = WF_PROJECTILE,
-    .priority = 0.10,
-    .precaches = "weapons/blaster/fire.wav"
-  },
-
-  /*QUAKED weapon_shotgun (.6 .6 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Shotgun.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/weapons/shotgun/tris.obj"
-   */
-  {
-    .classname = "weapon_shotgun",
-    .Pickup = G_PickupWeapon,
-    .Use = G_UseWeapon,
-    .Drop = G_DropWeapon,
-    .Think = G_FireShotgun,
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/shotgun/tris.obj",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/w_shotgun",
-    .name = "Shotgun",
-    .quantity = 1,
-    .ammo = "Shells",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_SHOTGUN,
-    .flags = WF_HITSCAN | WF_SHORT_RANGE | WF_MED_RANGE,
-    .priority = 0.15,
-    .precaches = "weapons/shotgun/fire.wav"
-  },
-
-  /*QUAKED weapon_supershotgun (.6 .6 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Super shotgun.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/weapons/supershotgun/tris.obj"
-   */
-  {
-    .classname = "weapon_supershotgun",
-    .Pickup = G_PickupWeapon,
-    .Use = G_UseWeapon,
-    .Drop = G_DropWeapon,
-    .Think = G_FireSuperShotgun,
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/supershotgun/tris.obj",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/w_supershotgun",
-    .name = "Super Shotgun",
-    .quantity = 2,
-    .ammo = "Shells",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_SUPER_SHOTGUN,
-    .flags = WF_HITSCAN | WF_SHORT_RANGE,
-    .priority = 0.25,
-    .precaches = "weapons/supershotgun/fire.wav"
-  },
-
-  /*QUAKED weapon_machinegun (.8 .8 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Machinegun.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/weapons/machinegun/tris.obj"
-   */
-  {
-    .classname = "weapon_machinegun",
-    .Pickup = G_PickupWeapon,
-    .Use = G_UseWeapon,
-    .Drop = G_DropWeapon,
-    .Think = G_FireMachinegun,
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/machinegun/tris.obj",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/w_machinegun",
-    .name = "Machinegun",
-    .quantity = 1,
-    .ammo = "Bullets",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_MACHINEGUN,
-    .flags = WF_HITSCAN | WF_SHORT_RANGE | WF_MED_RANGE,
-    .priority = 0.30,
-    .precaches = "weapons/machinegun/fire_1.wav weapons/machinegun/fire_2.wav "
-    "weapons/machinegun/fire_3.wav weapons/machinegun/fire_4.wav"
-  },
-
-  /*QUAKED weapon_handgrenades (.2 .8 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Hand Grenades.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/projectiles/grenade/tris.md3"
-   */
-  {
-    .classname = "weapon_handgrenades",
-    .Pickup = G_PickupWeapon,
-    .Use = G_UseWeapon,
-    .Drop = NULL,
-    .Think = G_FireHandGrenade,
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/projectiles/grenade/tris.md3",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/a_handgrenades",
-    .name = "Hand Grenades",
-    .quantity = 1,
-    .ammo = "Grenades",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_HAND_GRENADE,
-    .flags = WF_PROJECTILE | WF_EXPLOSIVE | WF_TIMED | WF_MED_RANGE,
-    .priority = 0.30,
-    .precaches = "weapons/handgrenades/hg_throw.wav weapons/handgrenades/hg_clang.ogg "
-    "weapons/handgrenades/hg_tick.ogg"
-  },
-
-  /*QUAKED weapon_grenadelauncher (.2 .8 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Grenade Launcher.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/weapons/grenadelauncher/tris.obj"
-   */
-  {
-    .classname = "weapon_grenadelauncher",
-    .Pickup = G_PickupGrenadeLauncher,
-    .Use = G_UseWeapon,
-    .Drop = G_DropWeapon,
-    .Think = G_FireGrenadeLauncher,
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/grenadelauncher/tris.obj",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/w_grenadelauncher",
-    .name = "Grenade Launcher",
-    .quantity = 1,
-    .ammo = "Grenades",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_GRENADE_LAUNCHER,
-    .flags = WF_PROJECTILE | WF_EXPLOSIVE,
-    .priority = 0.40,
-    .precaches = "models/projectiles/grenade/tris.md3 weapons/grenadelauncher/fire.wav"
-  },
-
-  /*QUAKED weapon_rocketlauncher (.8 .2 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Rocket Launcher.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/weapons/rocketlauncher/tris.md3"
-   */
-  {
-    .classname = "weapon_rocketlauncher",
-    .Pickup = G_PickupWeapon,
-    .Use = G_UseWeapon,
-    .Drop = G_DropWeapon,
-    .Think = G_FireRocketLauncher,
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/rocketlauncher/tris.md3",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/w_rocketlauncher",
-    .name = "Rocket Launcher",
-    .quantity = 1,
-    .ammo = "Rockets",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_ROCKET_LAUNCHER,
-    .flags = WF_PROJECTILE | WF_EXPLOSIVE | WF_MED_RANGE | WF_LONG_RANGE,
-    .priority = 0.50,
-    .precaches = "models/projectiles/rocket/tris.obj projectiles/rocket/fly.wav "
-    "weapons/rocketlauncher/fire.wav"
-  },
-
-  /*QUAKED weapon_hyperblaster (.4 .7 1) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Hyperblaster.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/weapons/hyperblaster/tris.obj"
-   */
-  {
-    .classname = "weapon_hyperblaster",
-    .Pickup = G_PickupWeapon,
-    .Use = G_UseWeapon,
-    .Drop = G_DropWeapon,
-    .Think = G_FireHyperblaster,
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/hyperblaster/tris.obj",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/w_hyperblaster",
-    .name = "Hyperblaster",
-    .quantity = 1,
-    .ammo = "Cells",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_HYPERBLASTER,
-    .flags = WF_PROJECTILE | WF_MED_RANGE,
-    .priority = 0.50,
-    .precaches = "weapons/hyperblaster/fire.wav weapons/hyperblaster/hit.wav"
-  },
-
-  /*QUAKED weapon_lightning (.9 .9 .9) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Lightning.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/weapons/lightning/tris.obj"
-   */
-  {
-    .classname = "weapon_lightning",
-    .Pickup = G_PickupWeapon,
-    .Use = G_UseWeapon,
-    .Drop = G_DropWeapon,
-    .Think = G_FireLightning,
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/lightning/tris.obj",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/w_lightning",
-    .name = "Lightning Gun",
-    .quantity = 1,
-    .ammo = "Bolts",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_LIGHTNING,
-    .flags = WF_HITSCAN | WF_SHORT_RANGE,
-    .priority = 0.50,
-    .precaches = "weapons/lightning/fire.wav weapons/lightning/fly.wav "
-    "weapons/lightning/discharge.wav"
-  },
-
-  /*QUAKED weapon_railgun (.1 .1 .8) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Railgun.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/weapons/railgun/tris.obj"
-   */
-  {
-    .classname = "weapon_railgun",
-    .Pickup = G_PickupWeapon,
-    .Use = G_UseWeapon,
-    .Drop = G_DropWeapon,
-    .Think = G_FireRailgun,
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/railgun/tris.obj",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/w_railgun",
-    .name = "Railgun",
-    .quantity = 1,
-    .ammo = "Slugs",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_RAILGUN,
-    .flags = WF_HITSCAN | WF_LONG_RANGE,
-    .priority = 0.60,
-    .precaches = "weapons/railgun/fire.wav"
-  },
-
-  /*QUAKED weapon_bfg (.4 1 .5) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   BFG10K.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/weapons/bfg/tris.obj"
-   */
-  {
-    .classname = "weapon_bfg",
-    .Pickup = G_PickupWeapon,
-    .Use = G_UseWeapon,
-    .Drop = G_DropWeapon,
-    .Think = G_FireBfg,
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/bfg/tris.obj",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/w_bfg",
-    .name = "BFG10K",
-    .quantity = 1,
-    .ammo = "Nukes",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_BFG10K,
-    .flags = WF_PROJECTILE | WF_MED_RANGE | WF_LONG_RANGE,
-    .priority = 0.66,
-    .precaches = "weapons/bfg/prime.wav weapons/bfg/hit.wav"
-  },
-
-  /*QUAKED ammo_shells (.6 .6 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Shells for the Shotgun and Super Shotgun.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/ammo/shells/tris.md3"
-   */
-  {
-    .classname = "ammo_shells",
-    .Pickup = G_PickupAmmo,
-    .Use = NULL,
-    .Drop = G_DropItem,
-    .Think = NULL,
-    .pickup_sound = "ammo/common/pickup.wav",
-    .model = "models/ammo/shells/tris.md3",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/a_shells",
-    .name = "Shells",
-    .quantity = 10,
-    .max = 80,
-    .ammo = NULL,
-    .type = ITEM_AMMO,
-    .tag = AMMO_SHELLS,
-    .priority = 0.15,
-    .precaches = ""
-  },
-
-  /*QUAKED ammo_bullets (.8 .8 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Bullets for the Machinegun.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/ammo/bullets/tris.md3"
-   */
-  {
-    .classname = "ammo_bullets",
-    .Pickup = G_PickupAmmo,
-    .Use = NULL,
-    .Drop = G_DropItem,
-    .Think = NULL,
-    .pickup_sound = "ammo/common/pickup.wav",
-    .model = "models/ammo/bullets/tris.md3",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/a_bullets",
-    .name = "Bullets",
-    .quantity = 50,
-    .max = 200,
-    .ammo = NULL,
-    .type = ITEM_AMMO,
-    .tag = AMMO_BULLETS,
-    .priority = 0.15,
-    .precaches = ""
-  },
-
-  /*QUAKED ammo_grenades (.2 .8 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Grenades for the Grenade Launcher.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/ammo/grenades/tris.md3"
-   */
-  {
-    .classname = "ammo_grenades",
-    .Pickup = G_PickupGrenades,
-    .Use = G_UseGrenades,
-    .Drop = G_DropItem,
-    .Think = NULL,
-    .pickup_sound = "ammo/common/pickup.wav",
-    .model = "models/ammo/grenades/tris.md3",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/a_handgrenades",
-    .name = "Grenades",
-    .quantity = 10,
-    .max = 50,
-    .ammo = "grenades",
-    .type = ITEM_AMMO,
-    .tag = AMMO_GRENADES,
-    .priority = 0.15,
-    .precaches = "weapons/handgrenades/hg_throw.wav weapons/handgrenades/hg_clang.ogg "
-    "weapons/handgrenades/hg_tick.ogg"
-  },
-
-  /*QUAKED ammo_rockets (.8 .2 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Rockets for the Rocket Launcher.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/ammo/rockets/tris.md3"
-   */
-  {
-    .classname = "ammo_rockets",
-    .Pickup = G_PickupAmmo,
-    .Use = NULL,
-    .Drop = G_DropItem,
-    .Think = NULL,
-    .pickup_sound = "ammo/common/pickup.wav",
-    .model = "models/ammo/rockets/tris.md3",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/a_rockets",
-    .name = "Rockets",
-    .quantity = 10,
-    .max = 50,
-    .ammo = NULL,
-    .type = ITEM_AMMO,
-    .tag = AMMO_ROCKETS,
-    .priority = 0.15,
-    .precaches = ""
-  },
-
-  /*QUAKED ammo_cells (.4 .7 1) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Cells for the Hyperblaster.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/ammo/cells/tris.md3"
-   */
-  {
-    .classname = "ammo_cells",
-    .Pickup = G_PickupAmmo,
-    .Use = NULL,
-    .Drop = G_DropItem,
-    .Think = NULL,
-    .pickup_sound = "ammo/common/pickup.wav",
-    .model = "models/ammo/cells/tris.md3",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/a_cells",
-    .name = "Cells",
-    .quantity = 50,
-    .max = 200,
-    .ammo = NULL,
-    .type = ITEM_AMMO,
-    .tag = AMMO_CELLS,
-    .priority = 0.15,
-    .precaches = ""
-  },
-
-  /*QUAKED ammo_bolts (.9 .9 .9) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Bolts for the Lightning.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/ammo/bolts/tris.md3"
-   */
-  {
-    .classname = "ammo_bolts",
-    .Pickup = G_PickupAmmo,
-    .Use = NULL,
-    .Drop = G_DropItem,
-    .Think = NULL,
-    .pickup_sound = "ammo/common/pickup.wav",
-    .model = "models/ammo/bolts/tris.md3",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/a_bolts",
-    .name = "Bolts",
-    .quantity = 25,
-    .max = 150,
-    .ammo = NULL,
-    .type = ITEM_AMMO,
-    .tag = AMMO_BOLTS,
-    .priority = 0.15,
-    .precaches = ""
-  },
-
-  /*QUAKED ammo_slugs (.1 .1 .8) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Slugs for the Railgun.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/ammo/slugs/tris.md3"
-   */
-  {
-    .classname = "ammo_slugs",
-    .Pickup = G_PickupAmmo,
-    .Use = NULL,
-    .Drop = G_DropItem,
-    .Think = NULL,
-    .pickup_sound = "ammo/common/pickup.wav",
-    .model = "models/ammo/slugs/tris.md3",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/a_slugs",
-    .name = "Slugs",
-    .quantity = 10,
-    .max = 50,
-    .ammo = NULL,
-    .type = ITEM_AMMO,
-    .tag = AMMO_SLUGS,
-    .priority = 0.15,
-    .precaches = ""
-  },
-
-  /*QUAKED ammo_nukes (.4 1 .5) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Nukes for the BFG10K.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/ammo/nukes/tris.md3"
-   */
-  {
-    .classname = "ammo_nukes",
-    .Pickup = G_PickupAmmo,
-    .Use = NULL,
-    .Drop = G_DropItem,
-    .Think = NULL,
-    .pickup_sound = "ammo/common/pickup.wav",
-    .model = "models/ammo/nukes/tris.md3",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/a_nukes",
-    .name = "Nukes",
-    .quantity = 2,
-    .max = 10,
-    .ammo = NULL,
-    .type = ITEM_AMMO,
-    .tag = AMMO_NUKES,
-    .priority = 0.15,
-    .precaches = ""
-  },
-
-  /*QUAKED item_adrenaline (.3 .3 1) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Adrenaline (=100).
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/powerups/adrenaline/tris.obj"
-   */
-  {
-    .classname = "item_adrenaline",
-    .Pickup = G_PickupAdrenaline,
-    .Use = NULL,
-    .Drop = NULL,
-    .Think = NULL,
-    .pickup_sound = "powerups/adrenaline/pickup.wav",
-    .model = "models/powerups/adrenaline/tris.obj",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/i_adrenaline",
-    .name = "Adrenaline",
-    .quantity = 0,
-    .ammo = NULL,
-    .type = ITEM_POWERUP,
-    .tag = POWERUP_ADRENALINE,
-    .priority = 0.45,
-    .precaches = ""
-  },
-
-  /*QUAKED item_health_small (.3 1 .3) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Small health (+3).
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/health/small/tris.obj"
-   */
-  {
-    .classname = "item_health_small",
-    .Pickup = G_PickupHealth,
-    .Use = NULL,
-    .Drop = NULL,
-    .Think = NULL,
-    .pickup_sound = "health/small/pickup.wav",
-    .model = "models/health/small/tris.obj",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/i_health_small",
-    .name = "Small Health",
-    .quantity = 3,
-    .ammo = NULL,
-    .type = ITEM_HEALTH,
-    .tag = HEALTH_SMALL,
-    .priority = 0.10,
-    .precaches = ""
-  },
-
-  /*QUAKED item_health (.8 .8 0) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Health (+15).
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/health/medium/tris.obj"
-   */
-  {
-    .classname = "item_health",
-    .Pickup = G_PickupHealth,
-    .Use = NULL,
-    .Drop = NULL,
-    .Think = NULL,
-    .pickup_sound = "health/medium/pickup.wav",
-    .model = "models/health/medium/tris.obj",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/i_health_medium",
-    .name = "Medium Health",
-    .quantity = 15,
-    .ammo = NULL,
-    .type = ITEM_HEALTH,
-    .tag = HEALTH_MEDIUM,
-    .priority = 0.25,
-    .precaches = ""
-  },
-
-  /*QUAKED item_health_large (1 0 0) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Large health (+25).
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/health/large/tris.obj"
-   */
-  {
-    .classname = "item_health_large",
-    .Pickup = G_PickupHealth,
-    .Use = NULL,
-    .Drop = NULL,
-    .Think = NULL,
-    .pickup_sound = "health/large/pickup.wav",
-    .model = "models/health/large/tris.obj",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/i_health_large",
-    .name = "Large Health",
-    .quantity = 25,
-    .ammo = NULL,
-    .type = ITEM_HEALTH,
-    .tag = HEALTH_LARGE,
-    .priority = 0.40,
-    .precaches = ""
-  },
-
-  /*QUAKED item_health_mega (.3 .3 1) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Mega health (+75).
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/health/mega/tris.obj"
-   */
-  {
-    .classname = "item_health_mega",
-    .Pickup = G_PickupHealth,
-    .Use = NULL,
-    .Drop = NULL,
-    .Think = NULL,
-    .pickup_sound = "health/mega/pickup.wav",
-    .model = "models/health/mega/tris.obj",
-    .effects = EF_ROTATE | EF_BOB,
-    .icon = "pics/i_health_mega",
-    .name = "Mega Health",
-    .quantity = 100,
-    .ammo = NULL,
-    .type = ITEM_HEALTH,
-    .tag = HEALTH_MEGA,
-    .priority = 0.60,
-    .precaches = ""
-  },
-
-  /*QUAKED item_health_quake_medium (.8 .8 0) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Quake Health (+15).
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/health/quake_medium/tris.obj"
-   */
-  {
-    .classname = "item_health_quake_medium",
-    .Pickup = G_PickupHealth,
-    .Use = NULL,
-    .Drop = NULL,
-    .Think = NULL,
-    .pickup_sound = "health/medium/pickup.wav",
-    .model = "models/health/quake_medium/tris.obj",
-    .effects = 0,
-    .icon = "pics/i_quake_health_medium",
-    .name = "Medium Health",
-    .quantity = 15,
-    .ammo = NULL,
-    .type = ITEM_HEALTH,
-    .tag = HEALTH_QUAKE_MEDIUM,
-    .priority = 0.25,
-    .precaches = ""
-  },
-
-  /*QUAKED item_health_quake_large (1 0 0) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Quake Large Health (+25).
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/health/quake_large/tris.obj"
-   */
-  {
-    .classname = "item_health_quake_large",
-    .Pickup = G_PickupHealth,
-    .Use = NULL,
-    .Drop = NULL,
-    .Think = NULL,
-    .pickup_sound = "health/large/pickup.wav",
-    .model = "models/health/quake_large/tris.obj",
-    .effects = 0,
-    .icon = "pics/i_quake_health_large",
-    .name = "Large Health",
-    .quantity = 25,
-    .ammo = NULL,
-    .type = ITEM_HEALTH,
-    .tag = HEALTH_QUAKE_LARGE,
-    .priority = 0.40,
-    .precaches = ""
-  },
-
-  /*QUAKED item_health_quake_mega (.3 .3 1) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Quake Mega Health (+100).
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/health/quake_mega/tris.obj"
-   */
-  {
-    .classname = "item_health_quake_mega",
-    .Pickup = G_PickupHealth,
-    .Use = NULL,
-    .Drop = NULL,
-    .Think = NULL,
-    .pickup_sound = "health/mega/pickup.wav",
-    .model = "models/health/quake_mega/tris.obj",
-    .effects = 0,
-    .icon = "pics/i_quake_health_mega",
-    .name = "Mega Health",
-    .quantity = 100,
-    .ammo = NULL,
-    .type = ITEM_HEALTH,
-    .tag = HEALTH_QUAKE_MEGA,
-    .priority = 0.60,
-    .precaches = ""
-  },
-
-  /*QUAKED item_flag_team1 (.2 .2 1) (-16 -16 -24) (16 16 32) triggered no_touch hover
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/ctf/flag/tris.obj"
-   */
-  {
-    .classname = "item_flag_team1",
-    .Pickup = G_PickupFlag,
-    .Use = NULL,
-    .Drop = G_DropFlag,
-    .Think = NULL,
-    .pickup_sound = NULL,
-    .model = "models/ctf/flag/tris.obj",
-    .effects = EF_BOB | EF_ROTATE  | EF_TEAM_TINT,
-    .icon = "pics/i_flag1",
-    .name = "Enemy Flag",
-    .quantity = 0,
-    .ammo = NULL,
-    .type = ITEM_FLAG,
-    .tag = TEAM_RED,
-    .priority = 0.75,
-    .precaches = "ctf/capture.wav ctf/steal.wav ctf/return.wav"
-  },
-
-  /*QUAKED item_flag_team2 (1 .2 .2) (-16 -16 -24) (16 16 32) triggered no_touch hover
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/ctf/flag/tris.obj"
-   */
-  {
-    .classname = "item_flag_team2",
-    .Pickup = G_PickupFlag,
-    .Use = NULL,
-    .Drop = G_DropFlag,
-    .Think = NULL,
-    .pickup_sound = NULL,
-    .model = "models/ctf/flag/tris.obj",
-    .effects = EF_BOB | EF_ROTATE  | EF_TEAM_TINT,
-    .icon = "pics/i_flag2",
-    .name = "Enemy Flag",
-    .quantity = 0,
-    .ammo = NULL,
-    .type = ITEM_FLAG,
-    .tag = TEAM_BLUE,
-    .priority = 0.75,
-    .precaches = "ctf/capture.wav ctf/steal.wav ctf/return.wav"
-  },
-
-  /*QUAKED item_flag_team3 (1 .2 .2) (-16 -16 -24) (16 16 32) triggered no_touch hover
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/ctf/flag/tris.obj"
-   */
-  {
-    .classname = "item_flag_team3",
-    .Pickup = G_PickupFlag,
-    .Use = NULL,
-    .Drop = G_DropFlag,
-    .Think = NULL,
-    .pickup_sound = NULL,
-    .model = "models/ctf/flag/tris.obj",
-    .effects = EF_BOB | EF_ROTATE  | EF_TEAM_TINT,
-    .icon = "pics/i_flag3",
-    .name = "Enemy Flag",
-    .quantity = 0,
-    .ammo = NULL,
-    .type = ITEM_FLAG,
-    .tag = TEAM_YELLOW,
-    .priority = 0.75,
-    .precaches = "ctf/capture.wav ctf/steal.wav ctf/return.wav"
-  },
-
-  /*QUAKED item_flag_team4 (1 .2 .2) (-16 -16 -24) (16 16 32) triggered no_touch hover
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/ctf/flag/tris.obj"
-   */
-  {
-    .classname = "item_flag_team4",
-    .Pickup = G_PickupFlag,
-    .Use = NULL,
-    .Drop = G_DropFlag,
-    .Think = NULL,
-    .pickup_sound = NULL,
-    .model = "models/ctf/flag/tris.obj",
-    .effects = EF_BOB | EF_ROTATE  | EF_TEAM_TINT,
-    .icon = "pics/i_flag4",
-    .name = "Enemy Flag",
-    .quantity = 0,
-    .ammo = NULL,
-    .type = ITEM_FLAG,
-    .tag = TEAM_GREEN,
-    .priority = 0.75,
-    .precaches = "ctf/capture.wav ctf/steal.wav ctf/return.wav"
-  },
-
-  /*QUAKED item_quad (.2 .4 1) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Quad damage.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/powerups/quad/tris.obj"
-   */
-  {
-    .classname = "item_quad",
-    .Pickup = G_PickupQuadDamage,
-    .Use = NULL,
-    .Drop = NULL,
-    .Think = NULL,
-    .pickup_sound = "powerups/quad/pickup.wav",
-    .model = "models/powerups/quad/tris.obj",
-    .effects = EF_BOB | EF_ROTATE,
-    .icon = "pics/i_quad",
-    .name = "Quad Damage",
-    .quantity = 0,
-    .ammo = NULL,
-    .type = ITEM_POWERUP,
-    .tag = POWERUP_QUAD,
-    .priority = 0.80,
-    .precaches = "powerups/quad/attack.wav powerups/quad/expire.wav",
-    .light_color = { { .2f, .4f, 1.f } },
-    .light_radius = 160.f
-  },
-
-  {
-    .classname = "item_tech_haste",
-    .Pickup = G_PickupTech,
-    .Use = NULL,
-    .Drop = G_DropTech,
-    .Think = NULL,
-    .pickup_sound = "powerups/common/pickup.wav",
-    .model = "models/techs/haste/tris.obj",
-    .effects = EF_BOB | EF_ROTATE ,
-    .icon = "pics/i_haste",
-    .name = "Haste",
-    .quantity = 0,
-    .ammo = NULL,
-    .type = ITEM_TECH,
-    .tag = TECH_HASTE,
-    .priority = 0.80,
-    .precaches = ""
-  },
-
-  {
-    .classname = "item_tech_regen",
-    .Pickup = G_PickupTech,
-    .Use = NULL,
-    .Drop = G_DropTech,
-    .Think = NULL,
-    .pickup_sound = "powerups/common/pickup.wav",
-    .model = "models/techs/regen/tris.obj",
-    .effects = EF_BOB | EF_ROTATE ,
-    .icon = "pics/i_regen",
-    .name = "Regeneration",
-    .quantity = 0,
-    .ammo = NULL,
-    .type = ITEM_TECH,
-    .tag = TECH_REGEN,
-    .priority = 0.80,
-    .precaches = ""
-  },
-
-  {
-    .classname = "item_tech_resist",
-    .Pickup = G_PickupTech,
-    .Use = NULL,
-    .Drop = G_DropTech,
-    .Think = NULL,
-    .pickup_sound = "powerups/common/pickup.wav",
-    .model = "models/techs/resist/tris.obj",
-    .effects = EF_BOB | EF_ROTATE ,
-    .icon = "pics/i_resist",
-    .name = "Resist",
-    .quantity = 0,
-    .ammo = NULL,
-    .type = ITEM_TECH,
-    .tag = TECH_RESIST,
-    .priority = 0.80,
-    .precaches = ""
-  },
-
-  {
-    .classname = "item_tech_strength",
-    .Pickup = G_PickupTech,
-    .Use = NULL,
-    .Drop = G_DropTech,
-    .Think = NULL,
-    .pickup_sound = "powerups/common/pickup.wav",
-    .model = "models/techs/strength/tris.obj",
-    .effects = EF_BOB | EF_ROTATE ,
-    .icon = "pics/i_strength",
-    .name = "Strength",
-    .quantity = 0,
-    .ammo = NULL,
-    .type = ITEM_TECH,
-    .tag = TECH_STRENGTH,
-    .priority = 0.80,
-    .precaches = ""
-  },
-
-  {
-    .classname = "item_tech_vampire",
-    .Pickup = G_PickupTech,
-    .Use = NULL,
-    .Drop = G_DropTech,
-    .Think = NULL,
-    .pickup_sound = "powerups/common/pickup.wav",
-    .model = "models/techs/vampire/tris.obj",
-    .effects = EF_BOB | EF_ROTATE ,
-    .icon = "pics/i_vampire",
-    .name = "Vampire",
-    .quantity = 0,
-    .ammo = NULL,
-    .type = ITEM_TECH,
-    .tag = TECH_VAMPIRE,
-    .priority = 0.80,
-    .precaches = ""
-  },
-
-  /*QUAKED ammo_quake_shells (.6 .6 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Shells for the Quake Super Shotgun.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/ammo/quake_shells/tris.obj"
-   */
-  {
-    .classname = "ammo_quake_shells",
-    .Pickup = G_PickupAmmo,
-    .Use = NULL,
-    .Drop = G_DropItem,
-    .Think = NULL,
-    .pickup_sound = "ammo/common/pickup.wav",
-    .model = "models/ammo/quake_shells/tris.obj",
-    .effects = 0,
-    .icon = "pics/a_quake_shells",
-    .name = "Shells",
-    .quantity = 10,
-    .max = 80,
-    .ammo = NULL,
-    .type = ITEM_AMMO,
-    .tag = AMMO_QUAKE_SHELLS,
-    .priority = 0.15,
-    .precaches = ""
-  },
-
-  /*QUAKED ammo_quake_nails (.6 .6 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Nails for the Quake Nailgun and Super Nailgun.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/ammo/quake_nails/tris.obj"
-   */
-  {
-    .classname = "ammo_quake_nails",
-    .Pickup = G_PickupAmmo,
-    .Use = NULL,
-    .Drop = G_DropItem,
-    .Think = NULL,
-    .pickup_sound = "ammo/common/pickup.wav",
-    .model = "models/ammo/quake_nails/tris.obj",
-    .effects = 0,
-    .icon = "pics/a_quake_nails",
-    .name = "Nails",
-    .quantity = 25,
-    .max = 200,
-    .ammo = NULL,
-    .type = ITEM_AMMO,
-    .tag = AMMO_QUAKE_NAILS,
-    .priority = 0.15,
-    .precaches = ""
-  },
-
-  /*QUAKED ammo_quake_rockets (.8 .2 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Rockets for the Quake Grenade Launcher and Rocket Launcher.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/ammo/quake_rockets/tris.obj"
-   */
-  {
-    .classname = "ammo_quake_rockets",
-    .Pickup = G_PickupAmmo,
-    .Use = NULL,
-    .Drop = G_DropItem,
-    .Think = NULL,
-    .pickup_sound = "ammo/common/pickup.wav",
-    .model = "models/ammo/quake_rockets/tris.obj",
-    .effects = 0,
-    .icon = "pics/a_quake_rockets",
-    .name = "Rockets",
-    .quantity = 5,
-    .max = 100,
-    .ammo = NULL,
-    .type = ITEM_AMMO,
-    .tag = AMMO_QUAKE_ROCKETS,
-    .priority = 0.20,
-    .precaches = ""
-  },
-
-  /*QUAKED ammo_quake_bolts (.9 .9 .9) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Bolts for the Quake Thunderbolt (Lightning Gun).
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/ammo/quake_bolts/tris.obj"
-   */
-  {
-    .classname = "ammo_quake_bolts",
-    .Pickup = G_PickupAmmo,
-    .Use = NULL,
-    .Drop = G_DropItem,
-    .Think = NULL,
-    .pickup_sound = "ammo/common/pickup.wav",
-    .model = "models/ammo/quake_bolts/tris.obj",
-    .effects = 0,
-    .icon = "pics/a_quake_bolts",
-    .name = "Bolts",
-    .quantity = 15,
-    .max = 200,
-    .ammo = NULL,
-    .type = ITEM_AMMO,
-    .tag = AMMO_QUAKE_BOLTS,
-    .priority = 0.20,
-    .precaches = ""
-  },
-
-  /*QUAKED weapon_quake_shotgun (.6 .6 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Quake Shotgun. The starting weapon; fires a tight spread of pellets.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/weapons/quake_shotgun/tris.obj"
-   */
-  {
-    .classname = "weapon_quake_shotgun",
-    .Pickup = G_PickupWeapon,
-    .Use = G_UseWeapon,
-    .Drop = G_DropWeapon,
-    .Think = G_FireQuakeShotgun,
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/quake_shotgun/tris.obj",
-    .effects = EF_ROTATE,
-    .icon = "pics/w_quake_shotgun",
-    .name = "Shotgun",
-    .quantity = 1,
-    .ammo = "Shells",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_QUAKE_SHOTGUN,
-    .flags = WF_HITSCAN | WF_SHORT_RANGE,
-    .priority = 0.15,
-    .precaches = "weapons/shotgun/fire.wav"
-  },
-
-  /*QUAKED weapon_quake_supershotgun (.6 .6 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Quake Super Shotgun. Fires a wider spread of shells than the standard super shotgun.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/weapons/quake_supershotgun/tris.obj"
-   */
-  {
-    .classname = "weapon_quake_supershotgun",
-    .Pickup = G_PickupWeapon,
-    .Use = G_UseWeapon,
-    .Drop = G_DropWeapon,
-    .Think = G_FireQuakeSuperShotgun,
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/quake_supershotgun/tris.obj",
-    .effects = EF_ROTATE,
-    .icon = "pics/w_quake_supershotgun",
-    .name = "Super Shotgun",
-    .quantity = 2,
-    .ammo = "Shells",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_QUAKE_SUPER_SHOTGUN,
-    .flags = WF_HITSCAN | WF_SHORT_RANGE,
-    .priority = 0.25,
-    .precaches = "weapons/supershotgun/fire.wav"
-  },
-
-  /*QUAKED weapon_quake_nailgun (.6 .6 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Quake Nailgun. Rapid-fire nail weapon.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/weapons/quake_nailgun/tris.obj"
-   */
-  {
-    .classname = "weapon_quake_nailgun",
-    .Pickup = G_PickupWeapon,
-    .Use = G_UseWeapon,
-    .Drop = G_DropWeapon,
-    .Think = G_FireQuakeNailgun,
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/quake_nailgun/tris.obj",
-    .effects = EF_ROTATE,
-    .icon = "pics/w_quake_nailgun",
-    .name = "Nailgun",
-    .quantity = 1,
-    .ammo = "Nails",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_QUAKE_NAILGUN,
-    .flags = WF_HITSCAN | WF_MED_RANGE,
-    .priority = 0.30,
-    .precaches = "weapons/machinegun/fire_1.wav"
-  },
-
-  /*QUAKED weapon_quake_supernailgun (.6 .6 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Quake Super Nailgun. Fires two nails per shot.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/weapons/quake_supernailgun/tris.obj"
-   */
-  {
-    .classname = "weapon_quake_supernailgun",
-    .Pickup = G_PickupWeapon,
-    .Use = G_UseWeapon,
-    .Drop = G_DropWeapon,
-    .Think = G_FireQuakeSuperNailgun,
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/quake_supernailgun/tris.obj",
-    .effects = EF_ROTATE,
-    .icon = "pics/w_quake_supernailgun",
-    .name = "Super Nailgun",
-    .quantity = 2,
-    .ammo = "Nails",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_QUAKE_SUPER_NAILGUN,
-    .flags = WF_HITSCAN | WF_MED_RANGE,
-    .priority = 0.40,
-    .precaches = "weapons/machinegun/fire_1.wav"
-  },
-
-  /*QUAKED weapon_quake_grenadelauncher (.6 .6 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Quake Grenade Launcher. Fires slower, more arcing grenades than the standard launcher.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/weapons/quake_grenadelauncher/tris.obj"
-   */
-  {
-    .classname = "weapon_quake_grenadelauncher",
-    .Pickup = G_PickupWeapon,
-    .Use = G_UseWeapon,
-    .Drop = G_DropWeapon,
-    .Think = G_FireQuakeGrenadeLauncher,
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/quake_grenadelauncher/tris.obj",
-    .effects = EF_ROTATE,
-    .icon = "pics/w_quake_grenadelauncher",
-    .name = "Grenade Launcher",
-    .quantity = 1,
-    .ammo = "Rockets",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_QUAKE_GRENADE_LAUNCHER,
-    .flags = WF_PROJECTILE | WF_EXPLOSIVE | WF_MED_RANGE,
-    .priority = 0.45,
-    .precaches = "weapons/grenadelauncher/fire.wav"
-  },
-
-  /*QUAKED weapon_quake_rocketlauncher (.8 .2 .2) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Quake Rocket Launcher. Fires slightly slower rockets than the standard launcher.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/weapons/quake_rocketlauncher/tris.obj"
-   */
-  {
-    .classname = "weapon_quake_rocketlauncher",
-    .Pickup = G_PickupWeapon,
-    .Use = G_UseWeapon,
-    .Drop = G_DropWeapon,
-    .Think = G_FireQuakeRocketLauncher,
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/quake_rocketlauncher/tris.obj",
-    .effects = EF_ROTATE,
-    .icon = "pics/w_quake_rocketlauncher",
-    .name = "Rocket Launcher",
-    .quantity = 1,
-    .ammo = "Rockets",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_QUAKE_ROCKET_LAUNCHER,
-    .flags = WF_PROJECTILE | WF_EXPLOSIVE | WF_MED_RANGE | WF_LONG_RANGE,
-    .priority = 0.60,
-    .precaches = "weapons/rocketlauncher/fire.wav"
-  },
-
-  /*QUAKED weapon_quake_thunderbolt (.9 .9 .9) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Quake Thunderbolt (Lightning Gun). Shorter range than the standard lightning gun.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/weapons/quake_thunderbolt/tris.obj"
-   */
-  {
-    .classname = "weapon_quake_thunderbolt",
-    .Pickup = G_PickupWeapon,
-    .Use = G_UseWeapon,
-    .Drop = G_DropWeapon,
-    .Think = G_FireQuakeThunderbolt,
-    .pickup_sound = "weapons/common/pickup.wav",
-    .model = "models/weapons/quake_thunderbolt/tris.obj",
-    .effects = EF_ROTATE,
-    .icon = "pics/w_quake_thunderbolt",
-    .name = "Thunderbolt",
-    .quantity = 1,
-    .ammo = "Bolts",
-    .type = ITEM_WEAPON,
-    .tag = WEAPON_QUAKE_THUNDERBOLT,
-    .flags = WF_HITSCAN | WF_SHORT_RANGE,
-    .priority = 0.55,
-    .precaches = "weapons/lightning/fire.wav weapons/lightning/fly.wav "
-    "weapons/lightning/discharge.wav"
-  },
-
-  /*QUAKED item_invisibility (.2 .2 .4) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Invisibility. Makes the player nearly invisible for 30 seconds.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/powerups/invisibility/tris.obj"
-   */
-  {
-    .classname = "item_invisibility",
-    .Pickup = G_PickupInvisibility,
-    .Use = NULL,
-    .Drop = NULL,
-    .Think = NULL,
-    .pickup_sound = "powerups/common/pickup.wav",
-    .model = "models/powerups/invisibility/tris.obj",
-    .effects = EF_ROTATE,
-    .icon = "pics/i_invisibility",
-    .name = "Invisibility",
-    .quantity = 0,
-    .ammo = NULL,
-    .type = ITEM_POWERUP,
-    .tag = POWERUP_INVISIBILITY,
-    .priority = 0.80,
-    .precaches = "powerups/invisibility/expire.wav",
-    .light_color = { { 1.f, .9f, 0.f } },
-    .light_radius = 120.f
-  },
-
-  /*QUAKED item_invulnerability (.8 .1 .1) (-16 -16 -16) (16 16 16) triggered no_touch hover
-   Invulnerability. Grants full invulnerability for 30 seconds.
-
-   -------- Keys --------
-   team : The team name for alternating item spawns.
-
-   -------- Spawn flags --------
-   triggered : Item will not appear until triggered.
-   no_touch : Item will interact as solid instead of being picked up by player.
-   hover : Item will spawn where it was placed in the map and won't drop the floor.
-
-   -------- Radiant config --------
-   model="models/powerups/invulnerability/tris.obj"
-   */
-  {
-    .classname = "item_invulnerability",
-    .Pickup = G_PickupInvulnerability,
-    .Use = NULL,
-    .Drop = NULL,
-    .Think = NULL,
-    .pickup_sound = "powerups/common/pickup.wav",
-    .model = "models/powerups/invulnerability/tris.obj",
-    .effects = EF_ROTATE,
-    .icon = "pics/i_invulnerability",
-    .name = "Invulnerability",
-    .quantity = 0,
-    .ammo = NULL,
-    .type = ITEM_POWERUP,
-    .tag = POWERUP_INVULNERABILITY,
-    .priority = 0.90,
-    .precaches = "powerups/invulnerability/expire.wav",
-    .light_color = { { 1.f, .2f, .2f } },
-    .light_radius = 160.f
-  },
-};
-
-/**
- * @brief The total number of items in the item list.
- */
-const size_t g_num_items = lengthof(g_items);
-
-/**
- * @brief Fetch the item list.
- */
-const g_item_t *G_ItemList(void) {
-  return g_items;
-}
-
-/**
- * @brief Fetch an item by index.
- */
-const g_item_t *G_ItemByIndex(uint16_t index) {
-
-  if (index >= g_num_items) {
-    return NULL;
-  }
-
-  return &g_items[index];
-}
+g_item_t *g_items;
 
 /**
  * @brief Returns true if the item belongs to the active item set.
  */
 bool G_ItemAvailable(const g_item_t *item) {
 
-  if (item->type == ITEM_WEAPON) {
+  if (item->def.type == ITEM_WEAPON) {
     if (g_level.items == ITEMS_QUAKE) {
-      return item->tag >= WEAPON_QUAKE_SHOTGUN;
+      return item->def.tag >= WEAPON_QUAKE_SHOTGUN;
     } else {
-      return item->tag < WEAPON_QUAKE_SHOTGUN;
+      return item->def.tag < WEAPON_QUAKE_SHOTGUN;
     }
   }
 
-  if (item->type == ITEM_AMMO) {
+  if (item->def.type == ITEM_AMMO) {
     if (g_level.items == ITEMS_QUAKE) {
-      return item->tag >= AMMO_QUAKE_SHELLS;
+      return item->def.tag >= AMMO_QUAKE_SHELLS;
     } else {
-      return item->tag < AMMO_QUAKE_SHELLS;
+      return item->def.tag < AMMO_QUAKE_SHELLS;
     }
   }
 
-  if (item->type == ITEM_ARMOR) {
+  if (item->def.type == ITEM_ARMOR) {
     if (g_level.items == ITEMS_QUAKE) {
-      return item->tag >= ARMOR_QUAKE_JACKET;
+      return item->def.tag >= ARMOR_QUAKE_JACKET;
     } else {
-      return item->tag < ARMOR_QUAKE_JACKET;
+      return item->def.tag < ARMOR_QUAKE_JACKET;
     }
   }
 
-  if (item->type == ITEM_HEALTH) {
+  if (item->def.type == ITEM_HEALTH) {
     if (g_level.items == ITEMS_QUAKE) {
-      return item->tag >= HEALTH_QUAKE_MEDIUM;
+      return item->def.tag >= HEALTH_QUAKE_MEDIUM;
     } else {
-      return item->tag < HEALTH_QUAKE_MEDIUM;
+      return item->def.tag < HEALTH_QUAKE_MEDIUM;
     }
   }
 
-  if (item->type == ITEM_POWERUP) {
+  if (item->def.type == ITEM_POWERUP) {
     return true;
   }
 
@@ -3322,8 +1439,8 @@ bool G_ItemAvailable(const g_item_t *item) {
 /**
  * @brief Called to set up the special string for weapons usable by the player.
  * Filters to the active item set, then scans for out-of-set weapons placed by
- * the mapper. Populates g_level.weapon_bits[] and caps at 16 (STAT_WEAPONS
- * is a uint16_t).
+ * the mapper. Populates `g_level.weapon_bits[]` and caps at 16 (`STAT_WEAPONS`
+ * is a `uint16_t`).
  */
 static void G_InitWeapons(void) {
   char weapon_info[MAX_STRING_CHARS] = { '\0' };
@@ -3332,9 +1449,17 @@ static void G_InitWeapons(void) {
   memset(g_level.weapons, -1, sizeof(g_level.weapons));
 
   // First pass: include all weapons in the active item set.
-  for (int32_t t = WEAPON_NONE + 1; t < WEAPON_TOTAL; t++) {
+  for (g_item_tag_t t = WEAPON_FIRST; t < WEAPON_LAST; t++) {
 
-    const g_item_t *weapon = g_media.items.weapons[t];
+    g_item_t *weapon = &g_items[t];
+
+    if (weapon->def.ammo) {
+      weapon->ammo_item = G_FindItem(weapon->def.ammo);
+
+      if (!weapon->ammo_item) {
+        gi.Error("Invalid ammo specified for %s\n", weapon->def.name);
+      }
+    }
 
     if (!G_ItemAvailable(weapon)) {
       continue;
@@ -3344,23 +1469,23 @@ static void G_InitWeapons(void) {
       strcat(weapon_info, "\\");
     }
 
-    strcat(weapon_info, va("%i\\%i", weapon->icon_index, weapon->index));
-    g_level.weapons[t] = bit++;
+    strcat(weapon_info, va("%i\\%i", weapon->icon_index, weapon->def.tag));
+    g_level.weapons[t - WEAPON_FIRST] = bit++;
   }
 
   // Second pass: entity-promoted weapons placed by the mapper outside the
   // active item set (e.g. item_quake_nailgun in a default-items map).
-  for (int32_t t = WEAPON_NONE + 1; t < WEAPON_TOTAL; t++) {
+  for (g_item_tag_t t = WEAPON_FIRST; t < WEAPON_LAST; t++) {
 
-    if (g_level.weapons[t] >= 0) {
+    if (g_level.weapons[t - WEAPON_FIRST] >= 0) {
       continue;
     }
 
-    const g_item_t *weapon = g_media.items.weapons[t];
+    const g_item_t *weapon = &g_items[t];
 
     bool found = false;
     G_ForEachEntity(ent, {
-      if (!g_strcmp0(ent->classname, weapon->classname)) {
+      if (!g_strcmp0(ent->classname, weapon->def.classname)) {
         found = true;
         break;
       }
@@ -3371,7 +1496,7 @@ static void G_InitWeapons(void) {
     }
 
     if (bit >= 16) {
-      gi.Warn("Map exceeds 16 weapons; %s will not be selectable\n", weapon->name);
+      gi.Warn("Map exceeds 16 weapons; %s will not be selectable\n", weapon->def.name);
       continue;
     }
 
@@ -3379,35 +1504,121 @@ static void G_InitWeapons(void) {
       strcat(weapon_info, "\\");
     }
 
-    strcat(weapon_info, va("%i\\%i", weapon->icon_index, weapon->index));
-    g_level.weapons[t] = bit++;
+    strcat(weapon_info, va("%i\\%i", weapon->icon_index, weapon->def.tag));
+    g_level.weapons[t - WEAPON_FIRST] = bit++;
   }
 
   gi.SetConfigString(CS_WEAPONS, weapon_info);
 }
 
 /**
- * @brief Called to set up a specific item in the item list. This might be called
- * during item spawning (since bmodels have to spawn before any modelindex calls
- * can safely be made) but will be called for every other item once that is done.
+ * @brief Called to set up a specific item in the item list.
  */
-static void G_InitItem(g_item_t *item) {
+static void G_InitItem(g_item_t *it, const g_item_def_t *def) {
 
-  item->index = (uint16_t) (ptrdiff_t) (item - g_items);
+  it->def = *def;
 
-  if (item->ammo) {
-    item->ammo_item = G_FindItem(item->ammo);
+  switch (it->def.type) {
+    case ITEM_ARMOR:
+      it->Pickup = G_PickupArmor;
+      break;
 
-    if (!item->ammo_item) {
-      gi.Error("Invalid ammo specified for weapon\n");
-    }
+    case ITEM_WEAPON:
+      it->Pickup = G_PickupWeapon;
+      it->Use = G_UseWeapon;
+      it->Drop = G_DropWeapon;
+
+      if (!g_strcmp0(it->def.classname, "weapon_blaster") ||
+          !g_strcmp0(it->def.classname, "weapon_handgrenades")) {
+        it->Drop = NULL;
+      } else if (!g_strcmp0(it->def.classname, "weapon_grenadelauncher")) {
+        it->Pickup = G_PickupGrenadeLauncher;
+      }
+
+      if (!g_strcmp0(it->def.classname, "weapon_blaster")) {
+        it->Think = G_FireBlaster;
+      } else if (!g_strcmp0(it->def.classname, "weapon_shotgun")) {
+        it->Think = G_FireShotgun;
+      } else if (!g_strcmp0(it->def.classname, "weapon_supershotgun")) {
+        it->Think = G_FireSuperShotgun;
+      } else if (!g_strcmp0(it->def.classname, "weapon_machinegun")) {
+        it->Think = G_FireMachinegun;
+      } else if (!g_strcmp0(it->def.classname, "weapon_handgrenades")) {
+        it->Think = G_FireHandGrenade;
+      } else if (!g_strcmp0(it->def.classname, "weapon_grenadelauncher")) {
+        it->Think = G_FireGrenadeLauncher;
+      } else if (!g_strcmp0(it->def.classname, "weapon_rocketlauncher")) {
+        it->Think = G_FireRocketLauncher;
+      } else if (!g_strcmp0(it->def.classname, "weapon_hyperblaster")) {
+        it->Think = G_FireHyperblaster;
+      } else if (!g_strcmp0(it->def.classname, "weapon_lightning")) {
+        it->Think = G_FireLightning;
+      } else if (!g_strcmp0(it->def.classname, "weapon_railgun")) {
+        it->Think = G_FireRailgun;
+      } else if (!g_strcmp0(it->def.classname, "weapon_bfg")) {
+        it->Think = G_FireBfg;
+      } else if (!g_strcmp0(it->def.classname, "weapon_quake_shotgun")) {
+        it->Think = G_FireQuakeShotgun;
+      } else if (!g_strcmp0(it->def.classname, "weapon_quake_supershotgun")) {
+        it->Think = G_FireQuakeSuperShotgun;
+      } else if (!g_strcmp0(it->def.classname, "weapon_quake_nailgun")) {
+        it->Think = G_FireQuakeNailgun;
+      } else if (!g_strcmp0(it->def.classname, "weapon_quake_supernailgun")) {
+        it->Think = G_FireQuakeSuperNailgun;
+      } else if (!g_strcmp0(it->def.classname, "weapon_quake_grenadelauncher")) {
+        it->Think = G_FireQuakeGrenadeLauncher;
+      } else if (!g_strcmp0(it->def.classname, "weapon_quake_rocketlauncher")) {
+        it->Think = G_FireQuakeRocketLauncher;
+      } else if (!g_strcmp0(it->def.classname, "weapon_quake_thunderbolt")) {
+        it->Think = G_FireQuakeThunderbolt;
+      }
+      break;
+
+    case ITEM_AMMO:
+      it->Pickup = G_PickupAmmo;
+      it->Drop = G_DropItem;
+      if (!g_strcmp0(it->def.classname, "ammo_grenades")) {
+        it->Pickup = G_PickupGrenades;
+        it->Use = G_UseGrenades;
+      }
+      break;
+
+    case ITEM_HEALTH:
+      it->Pickup = G_PickupHealth;
+      break;
+
+    case ITEM_FLAG:
+      it->Pickup = G_PickupFlag;
+      it->Drop = G_DropFlag;
+      break;
+
+    case ITEM_POWERUP:
+      if (!g_strcmp0(it->def.classname, "item_adrenaline")) {
+        it->Pickup = G_PickupAdrenaline;
+      } else if (!g_strcmp0(it->def.classname, "item_quad")) {
+        it->Pickup = G_PickupQuadDamage;
+      } else if (!g_strcmp0(it->def.classname, "item_invisibility")) {
+        it->Pickup = G_PickupInvisibility;
+      } else if (!g_strcmp0(it->def.classname, "item_invulnerability")) {
+        it->Pickup = G_PickupInvulnerability;
+      }
+      break;
+
+    case ITEM_TECH:
+      it->Pickup = G_PickupTech;
+      it->Drop = G_DropTech;
+      break;
+
+    default:
+      gi.Error("Item %s has an invalid type\n", it->def.name);
+      break;
   }
 
-  item->icon_index = gi.ImageIndex(item->icon);
-  item->model_index = gi.ModelIndex(item->model);
-  item->pickup_sound_index = gi.SoundIndex(item->pickup_sound);
+  it->icon_index = gi.ImageIndex(it->def.icon);
+  it->model_index = gi.ModelIndex(it->def.model);
+  it->pickup_sound_index = gi.SoundIndex(it->def.pickup_sound);
 
-  gi.SetConfigString(CS_ITEMS + item->index, item->name);
+  gi.SetConfigString(CS_ITEMS + it->def.tag, it->def.name);
 }
 
 /**
@@ -3415,52 +1626,10 @@ static void G_InitItem(g_item_t *item) {
  */
 void G_InitItems(void) {
 
-  for (uint16_t i = 0; i < g_num_items; i++) {
+  g_items = gi.Malloc(ITEM_TOTAL * sizeof(g_item_t), MEM_TAG_GAME);
 
-    g_item_t *item = &g_items[i];
-    G_InitItem(item);
-
-    // set up media pointers
-    const g_item_t **array = NULL;
-
-    switch (item->type) {
-    default:
-      gi.Error("Item %s has an invalid type\n", item->name);
-    case ITEM_AMMO:
-      array = g_media.items.ammo;
-      break;
-    case ITEM_ARMOR:
-      array = g_media.items.armor;
-      break;
-    case ITEM_FLAG:
-      array = g_media.items.flags;
-      break;
-    case ITEM_HEALTH:
-      array = g_media.items.health;
-      break;
-    case ITEM_POWERUP:
-      array = g_media.items.powerups;
-      break;
-    case ITEM_WEAPON:
-      array = g_media.items.weapons;
-      break;
-    case ITEM_TECH:
-      array = g_media.items.techs;
-      break;
-    }
-
-    if (array[item->tag]) {
-      gi.Error("Item %s has the same tag as %s\n", item->name, array[item->tag]->name);
-    }
-
-    array[item->tag] = item;
-
-    // precache all weapons/health/armor, even if the map doesn't contain them
-    if (item->type == ITEM_WEAPON ||
-      item->type == ITEM_HEALTH ||
-      item->type == ITEM_ARMOR) {
-      G_PrecacheItem(item);
-    }
+  for (size_t i = 0; i < bg_num_items; i++) {
+    G_InitItem(&g_items[bg_item_defs[i].tag], &bg_item_defs[i]);
   }
 
   G_InitWeapons();

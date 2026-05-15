@@ -6,7 +6,7 @@ Panel.editor {
 Panel.editor .tabPageView {
   autoresizing-mask: none;
   width: 420;
-  height: 500;
+  height: 720;
 }
 
 #entity {

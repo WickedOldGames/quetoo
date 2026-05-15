@@ -43,7 +43,7 @@ jobs:
     - name: Install dependencies
       run: |
         brew update
-        brew install \
+        brew install --quiet \
           autoconf automake libtool pkg-config \
           glib ncurses check \
           sdl3 sdl3_image sdl3_ttf \
@@ -127,7 +127,7 @@ jobs:
         zip -r ../../quetoo-${{ matrix.build }}.zip Quetoo.app
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: quetoo-${{ matrix.build }}
         path: quetoo/quetoo-${{ matrix.build }}.zip
@@ -138,7 +138,7 @@ jobs:
 
     steps:
     - name: Download arm64 artifact
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v8
       with:
         name: quetoo-arm64-apple-darwin
 
@@ -217,13 +217,13 @@ jobs:
       run: security delete-keychain build.keychain
 
     - name: Upload binary DMG artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: quetoo-universal-apple-darwin
         path: quetoo-universal-apple-darwin.dmg
 
     - name: Upload bundle artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: quetoo-bundle-universal-apple-darwin
         path: quetoo-bundle-universal-apple-darwin.dmg
@@ -351,19 +351,19 @@ jobs:
         make archive deb rpm VERSION=${GITHUB_REF_NAME#v}
 
     - name: Upload archive artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: quetoo-${{ matrix.build }}-archive
         path: quetoo/linux/target/quetoo-${{ matrix.build }}.tar.gz
 
     - name: Upload .deb artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: quetoo-${{ matrix.build }}-deb
         path: quetoo/linux/target/quetoo_*.deb
 
     - name: Upload .rpm artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: quetoo-${{ matrix.build }}-rpm
         path: quetoo/linux/target/quetoo-*.rpm
@@ -396,7 +396,7 @@ jobs:
         fetch-depth: 0
 
     - name: Add MSBuild to PATH
-      uses: microsoft/setup-msbuild@v2
+      uses: microsoft/setup-msbuild@v3
 
     - name: Cache vcpkg installed packages
       id: cache-vcpkg
@@ -477,7 +477,7 @@ jobs:
         Compress-Archive -Path windows\target\quetoo\* -DestinationPath quetoo-x86_64-pc-windows.zip
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v6
+      uses: actions/upload-artifact@v7
       with:
         name: quetoo-x86_64-pc-windows
         path: quetoo/quetoo-x86_64-pc-windows.zip
@@ -493,7 +493,7 @@ jobs:
         fetch-depth: 0
 
     - name: Download all artifacts
-      uses: actions/download-artifact@v6
+      uses: actions/download-artifact@v8
 
     - name: Publish version to S3
       env:

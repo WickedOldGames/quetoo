@@ -1178,23 +1178,6 @@ static void Cg_CtfEffectTrail(cl_entity_t *ent, const vec3_t start, const vec3_t
 }
 
 /**
- * @brief Determines the initial position and directional vectors of a projectile. This is a copy of G_InitProjectile.
- * If that function changes, make sure this one is modified too.
- */
-static void Cg_InitProjectile(const cl_entity_t *ent, vec3_t *forward, vec3_t *right, vec3_t *up, vec3_t *org) {
-
-  const cg_client_info_t *ci = &cg_state.clients[ent->current.client];
-
-  *org = ci->weapon_muzzle;
-
-  if (forward) {
-    *forward = cgi.view->forward;
-    const vec3_t euler = Vec3_Euler(*forward);
-    Vec3_Vectors(euler, NULL, right, up);
-  }
-}
-
-/**
  * @brief Apply unique trails to entities between their previous packet origin
  * and their current interpolated origin. Beam trails are a special case: the
  * old origin field is overridden to specify the endpoint of the beam.

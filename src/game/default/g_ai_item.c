@@ -21,8 +21,6 @@
 
 #include "g_local.h"
 
-size_t ai_num_weapons;
-
 /**
  * @return True if the bot entity can pick up the item entity.
  */
@@ -35,28 +33,28 @@ bool G_Ai_CanPickup(const g_client_t *cl, const g_entity_t *other) {
 
   const int16_t *inventory = cl->inventory;
 
-  switch (item->type)
+  switch (item->def.type)
   {
     case ITEM_HEALTH:
-      if (item->tag == HEALTH_SMALL ||
-        item->tag == HEALTH_MEGA) {
+      if (item->def.tag == HEALTH_SMALL ||
+        item->def.tag == HEALTH_MEGA) {
         return true;
       }
 
       return cl->entity->health < cl->entity->max_health;
     case ITEM_ARMOR:
-      if (item->tag == ARMOR_SHARD ||
-        inventory[item->index] < item->max) {
+      if (item->def.tag == ARMOR_SHARD ||
+        inventory[item->def.tag] < item->def.max) {
         return true;
       }
 
       return false;
     case ITEM_AMMO:
-      return inventory[item->index] < item->max;
+      return inventory[item->def.tag] < item->def.max;
     case ITEM_WEAPON:
-      if (inventory[item->index]) {
+      if (inventory[item->def.tag]) {
         if (item->ammo_item) {
-          return inventory[item->ammo_item->index] < item->ammo_item->max;
+          return inventory[item->ammo_item->def.tag] < item->ammo_item->def.max;
         }
 
         return false;
@@ -64,18 +62,17 @@ bool G_Ai_CanPickup(const g_client_t *cl, const g_entity_t *other) {
 
       return true;
     case ITEM_TECH:
-      for (size_t i = 0; i < g_num_items; i++) {
-        if (G_ItemByIndex(i)->type == ITEM_TECH) {
-          if (inventory[i]) {
-            return false;
-          }
+      for (g_item_tag_t tag = TECH_FIRST; tag < TECH_LAST; tag++) {
+        if (inventory[tag]) {
+          return false;
         }
       }
 
       return true;
     case ITEM_FLAG: {
       const g_team_id_t team = cl->persistent.team->id;
-      if ((g_team_id_t) item->tag == team && other->owner == NULL) {
+      const g_team_id_t flag_team = (item->def.tag - FLAG_FIRST);
+      if (flag_team == team && other->owner == NULL) {
         return false;
       }
 
@@ -87,16 +84,4 @@ bool G_Ai_CanPickup(const g_client_t *cl, const g_entity_t *other) {
   }
 }
 
-/**
- * @brief Counts and caches the number of weapons available for AI weapon selection.
- */
-void G_Ai_InitItems(void) {
 
-  ai_num_weapons = 0;
-
-  for (uint16_t i = 0; i < g_num_items; i++) {
-    if (G_ItemByIndex(i)->type == ITEM_WEAPON) {
-      ai_num_weapons++;
-    }
-  }
-}

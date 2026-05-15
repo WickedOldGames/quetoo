@@ -147,17 +147,10 @@ static void G_SpawnEntity(cm_entity_t *def) {
   ent->mass = gi.EntityValue(ent->def, "mass")->value;
 
   // check item spawn functions
-  for (size_t i = 0; i < g_num_items; i++) {
-
-    const g_item_t *item = G_ItemByIndex(i);
-    if (!item->classname) {
-      continue;
-    }
-
-    if (!g_strcmp0(item->classname, ent->classname)) {
-      G_SpawnItem(ent, item);
-      return;
-    }
+  const g_item_t *it = G_FindItemByClassName(ent->classname);
+  if (it) {
+    G_SpawnItem(ent, it);
+    return;
   }
 
   // check normal spawn functions
@@ -263,7 +256,7 @@ static void G_InitMedia(void) {
 
   g_media.models.grenade = gi.ModelIndex("models/projectiles/grenade/tris");
   g_media.models.quake_grenade = gi.ModelIndex("models/projectiles/quake_grenade/tris");
-  g_media.models.nail = gi.ModelIndex("models/projectiles/quake_nail/tris");
+  g_media.models.quake_nail = gi.ModelIndex("models/projectiles/quake_nail/tris");
   g_media.models.rocket = gi.ModelIndex("models/projectiles/rocket/tris");
   g_media.models.quake_rocket = gi.ModelIndex("models/projectiles/quake_rocket/tris");
   g_media.models.hook = gi.ModelIndex("models/grapplehook/tris");
@@ -295,7 +288,7 @@ static void G_InitMedia(void) {
 
   g_media.sounds.teleport = gi.SoundIndex("misc/teleport");
 
-  for (i = 0; i < 5; i++) {
+  for (i = 0; i < lengthof(g_media.sounds.quake_teleport); i++) {
     g_media.sounds.quake_teleport[i] = gi.SoundIndex(va("misc/quake_teleport%d", i + 1));
   }
 
@@ -321,11 +314,11 @@ static void G_InitMedia(void) {
 
   g_media.sounds.roar = gi.SoundIndex("misc/ominous_bwah");
 
-  g_media.sounds.techs[TECH_HASTE] = gi.SoundIndex("techs/haste/haste");
-  g_media.sounds.techs[TECH_REGEN] = gi.SoundIndex("techs/regen/regen");
-  g_media.sounds.techs[TECH_RESIST] = gi.SoundIndex("techs/resist/resist");
-  g_media.sounds.techs[TECH_STRENGTH] = gi.SoundIndex("techs/strength/strength");
-  g_media.sounds.techs[TECH_VAMPIRE] = gi.SoundIndex("techs/vampire/vampire");
+  g_media.sounds.techs[TECH_HASTE - TECH_FIRST]    = gi.SoundIndex("techs/haste/haste");
+  g_media.sounds.techs[TECH_REGEN - TECH_FIRST]    = gi.SoundIndex("techs/regen/regen");
+  g_media.sounds.techs[TECH_RESIST - TECH_FIRST]   = gi.SoundIndex("techs/resist/resist");
+  g_media.sounds.techs[TECH_STRENGTH - TECH_FIRST] = gi.SoundIndex("techs/strength/strength");
+  g_media.sounds.techs[TECH_VAMPIRE - TECH_FIRST]  = gi.SoundIndex("techs/vampire/vampire");
 
   g_media.images.health = gi.ImageIndex("pics/i_health");
 }
@@ -412,8 +405,8 @@ static void G_CreateTeamSpawnPoints(GSList **dm_spawns, GSList **team_red_spawns
     red_flag->s.origin = reused_spawns[r]->s.origin;
     blue_flag->s.origin = reused_spawns[r ^ 1]->s.origin;
     
-    G_SpawnItem(red_flag, g_media.items.flags[TEAM_RED]);
-    G_SpawnItem(blue_flag, g_media.items.flags[TEAM_BLUE]);
+    G_SpawnItem(red_flag, &g_items[FLAG_RED]);
+    G_SpawnItem(blue_flag, &g_items[FLAG_BLUE]);
     
     g_team_red->flag_entity = red_flag;
     g_team_blue->flag_entity = blue_flag;
@@ -593,7 +586,7 @@ void G_SpawnTech(const g_item_t *item) {
 
   g_entity_t *spawn = G_SelectTechSpawnPoint();
 
-  g_entity_t *ent = G_AllocEntity(item->classname);
+  g_entity_t *ent = G_AllocEntity(item->def.classname);
   ent->s.origin = spawn->s.origin;
 
   G_SpawnItem(ent, item);
@@ -610,8 +603,8 @@ void G_SpawnTechs(void) {
     return;
   }
 
-  for (g_tech_t i = 0; i < TECH_TOTAL; i++) {
-    G_SpawnTech(g_media.items.techs[i]);
+  for (g_item_tag_t i = TECH_FIRST; i < TECH_LAST; i++) {
+    G_SpawnTech(&g_items[i]);
   }
 }
 
@@ -646,13 +639,11 @@ void G_SpawnEntities(const char *name, cm_entity_t *const *entities, size_t num_
 
   g_strlcpy(g_level.name, name, sizeof(g_level.name));
 
-  G_Ai_Load();
-  
+  G_InitMedia();
+
   for (size_t i = 0; i < num_entities; i++) {
     G_SpawnEntity(entities[i]);
   }
-
-  G_InitMedia();
 
   G_InitEntityTeams();
 
@@ -671,6 +662,8 @@ void G_SpawnEntities(const char *name, cm_entity_t *const *entities, size_t num_
   G_ResetSpawnPoints();
 
   G_ResetItems();
+
+  G_Ai_Load();
 }
 
 /**

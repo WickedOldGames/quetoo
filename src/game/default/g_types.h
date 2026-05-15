@@ -23,6 +23,7 @@
 
 #include "shared/shared.h"
 #include "collision/cm_types.h"
+#include "bg_item.h"
 
 /**
  * @brief Game protocol version (protocol minor version). To be incremented
@@ -462,50 +463,7 @@ typedef enum {
   HOOK_SWING_AUTO
 } g_hook_style_t;
 
-/**
- * @brief Item types.
- */
-typedef enum {
-  ITEM_AMMO,
-  ITEM_ARMOR,
-  ITEM_FLAG,
-  ITEM_HEALTH,
-  ITEM_POWERUP,
-  ITEM_WEAPON,
-  ITEM_TECH,
-
-  ITEM_TOTAL
-} g_item_type_t;
-
-/**
- * @brief Weapon tags to inform the client game which weapon the player wields and
- * the order of the weapon switcher.
- */
-typedef enum {
-  WEAPON_NONE,
-
-  WEAPON_BLASTER,
-  WEAPON_SHOTGUN,
-  WEAPON_SUPER_SHOTGUN,
-  WEAPON_MACHINEGUN,
-  WEAPON_HAND_GRENADE,
-  WEAPON_GRENADE_LAUNCHER,
-  WEAPON_ROCKET_LAUNCHER,
-  WEAPON_HYPERBLASTER,
-  WEAPON_LIGHTNING,
-  WEAPON_RAILGUN,
-  WEAPON_BFG10K,
-
-  WEAPON_QUAKE_SHOTGUN,
-  WEAPON_QUAKE_SUPER_SHOTGUN,
-  WEAPON_QUAKE_NAILGUN,
-  WEAPON_QUAKE_SUPER_NAILGUN,
-  WEAPON_QUAKE_GRENADE_LAUNCHER,
-  WEAPON_QUAKE_ROCKET_LAUNCHER,
-  WEAPON_QUAKE_THUNDERBOLT,
-
-  WEAPON_TOTAL
-} g_weapon_tag_t;
+// g_item_type_t and g_item_tag_t are defined in bg_item.h
 
 /**
  * @brief Weapon flags provide hints to indicate weapon use.
@@ -521,42 +479,6 @@ typedef enum {
 } g_weapon_flags_t;
 
 /**
- * @brief Ammunition types.
- */
-typedef enum {
-  AMMO_SHELLS,
-  AMMO_BULLETS,
-  AMMO_GRENADES,
-  AMMO_ROCKETS,
-  AMMO_CELLS,
-  AMMO_BOLTS,
-  AMMO_SLUGS,
-  AMMO_NUKES,
-
-  AMMO_QUAKE_SHELLS,
-  AMMO_QUAKE_NAILS,
-  AMMO_QUAKE_ROCKETS,
-  AMMO_QUAKE_BOLTS,
-
-  AMMO_TOTAL
-} g_ammo_t;
-
-/**
- * @brief Armor types.
- */
-typedef enum {
-  ARMOR_SHARD,
-  ARMOR_JACKET,
-  ARMOR_COMBAT,
-  ARMOR_BODY,
-  ARMOR_QUAKE_JACKET,
-  ARMOR_QUAKE_COMBAT,
-  ARMOR_QUAKE_BODY,
-
-  ARMOR_TOTAL
-} g_armor_t;
-
-/**
  * @brief Armor attributes.
  */
 typedef struct {
@@ -564,7 +486,7 @@ typedef struct {
   /**
    * @brief Armor type tag.
    */
-  g_armor_t tag;
+  g_item_tag_t tag;
 
   /**
    * @brief Protection fraction against normal damage.
@@ -576,46 +498,6 @@ typedef struct {
    */
   float energy_protection;
 } g_armor_info_t;
-
-/**
- * @brief Health types.
- */
-typedef enum {
-  HEALTH_SMALL,
-  HEALTH_MEDIUM,
-  HEALTH_LARGE,
-  HEALTH_MEGA,
-  HEALTH_QUAKE_MEDIUM,
-  HEALTH_QUAKE_LARGE,
-  HEALTH_QUAKE_MEGA,
-
-  HEALTH_TOTAL
-} g_health_t;
-
-/**
- * @brief Powerup types.
- */
-typedef enum {
-  POWERUP_QUAD,
-  POWERUP_ADRENALINE,
-  POWERUP_INVULNERABILITY,
-  POWERUP_INVISIBILITY,
-
-  POWERUP_TOTAL
-} g_powerup_t;
-
-/**
- * @brief Tech types.
- */
-typedef enum {
-  TECH_HASTE,
-  TECH_REGEN,
-  TECH_RESIST,
-  TECH_STRENGTH,
-  TECH_VAMPIRE,
-
-  TECH_TOTAL
-} g_tech_t;
 
 #if defined(__GAME_LOCAL_H__)
 
@@ -676,9 +558,9 @@ typedef enum {
 typedef struct g_item_s {
 
   /**
-   * @brief Entity classname used for map spawning.
+   * @brief Static definition shared with cgame (classname, model, icon, etc.).
    */
-  const char *classname;
+  g_item_def_t def;
 
   /**
    * @brief Called when a player touches the item; return false to prevent pickup.
@@ -699,86 +581,6 @@ typedef struct g_item_s {
    * @brief Called every frame for a player holding this weapon.
    */
   void (*Think)(g_client_t *cl);
-
-  /**
-   * @brief Name of the ammo item this weapon consumes.
-   */
-  const char *ammo;
-
-  /**
-   * @brief Sound to play on pickup.
-   */
-  const char *pickup_sound;
-
-  /**
-   * @brief World model path.
-   */
-  const char *model;
-
-  /**
-   * @brief Entity effect flags on the pickup entity.
-   */
-  uint32_t effects;
-
-  /**
-   * @brief Icon image path, used on HUD and in pickup messages.
-   */
-  const char *icon;
-
-  /**
-   * @brief Display name.
-   */
-  const char *name;
-
-  /**
-   * @brief Amount provided or consumed, depending on type.
-   */
-  uint16_t quantity;
-
-  /**
-   * @brief Maximum amount the player can carry (ammo/armor).
-   */
-  uint16_t max;
-
-  /**
-   * @brief Type-specific tag (e.g. g_weapon_tag_t, g_ammo_t).
-   */
-  uint16_t tag;
-
-  /**
-   * @brief Type-specific flags (e.g. g_weapon_flags_t).
-   */
-  uint16_t flags;
-
-  /**
-   * @brief Item type category.
-   */
-  g_item_type_t type;
-
-  /**
-   * @brief Relative priority used by AI for item selection.
-   */
-  float priority;
-
-  /**
-   * @brief Space-separated list of assets to precache.
-   */
-  const char *precaches;
-
-  /**
-   * @brief RGB color for EF_LIGHT emission. Ignored if light_radius is 0.
-   */
-  vec3_t light_color;
-
-  /**
-   * @brief Base radius for EF_LIGHT emission. 0 means no light.
-   */
-  float light_radius;
-
-  /**
-   * @brief Index in the global item list; calculated at init.
-   */
-  uint16_t index;
 
   /**
    * @brief Pointer to the ammo item; calculated at init.
@@ -926,22 +728,12 @@ typedef struct {
  * @brief This structure holds references to frequently accessed media.
  */
 typedef struct {
-  struct g_media_items_t {
-    const g_item_t *ammo[AMMO_TOTAL];
-    const g_item_t *armor[ARMOR_TOTAL];
-    const g_item_t *flags[MAX_TEAMS];
-    const g_item_t *health[HEALTH_TOTAL];
-    const g_item_t *powerups[POWERUP_TOTAL];
-    const g_item_t *weapons[WEAPON_TOTAL];
-    const g_item_t *techs[TECH_TOTAL];
-  } items;
-
   struct g_media_models_t {
     uint16_t gibs[NUM_GIB_MODELS];
 
     uint16_t grenade;
     uint16_t quake_grenade;
-    uint16_t nail;
+    uint16_t quake_nail;
     uint16_t rocket;
     uint16_t quake_rocket;
     uint16_t hook;

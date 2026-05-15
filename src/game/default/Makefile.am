@@ -1,4 +1,5 @@
 noinst_HEADERS = \
+	bg_item.h \
 	bg_pmove.h \
 	g_ai_goal.h \
 	g_ai_info.h \
@@ -30,7 +31,18 @@ noinst_HEADERS = \
 	g_weapon.h
 
 noinst_LTLIBRARIES = \
+	libitem.la \
 	libpmove.la
+
+libitem_la_SOURCES = \
+	bg_item.c
+libitem_la_CFLAGS = \
+	-I$(top_srcdir)/src \
+	@BASE_CFLAGS@ \
+	@GLIB_CFLAGS@
+libitem_la_LDFLAGS = \
+	-shared
+libitem_la_LIBADD =
 
 libpmove_la_SOURCES = \
 	bg_pmove.c
@@ -89,5 +101,6 @@ game_la_LDFLAGS = \
 	-shared
 
 game_la_LIBADD = \
+	libitem.la \
 	libpmove.la \
 	@GLIB_LIBS@

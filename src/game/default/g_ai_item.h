@@ -22,8 +22,6 @@
 #pragma once
 
 #if defined(__GAME_LOCAL_H__)
-extern size_t ai_num_weapons;
 
 bool G_Ai_CanPickup(const g_client_t *cl, const g_entity_t *other);
-void G_Ai_InitItems(void);
 #endif /* __GAME_LOCAL_H__ */
