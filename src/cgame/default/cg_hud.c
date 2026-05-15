@@ -207,7 +207,7 @@ static void Cg_DrawPowerup(GLint y, const int16_t value, const r_image_t *icon) 
  * @brief Draws health, ammo and armor numerics and icons.
  */
 static void Cg_DrawPowerups(const player_state_t *ps) {
-  GLint y, ch;
+  GLint x, y, ch;
 
   if (!cg_draw_powerups->integer) {
     return;
@@ -215,6 +215,7 @@ static void Cg_DrawPowerups(const player_state_t *ps) {
 
   cgi.BindFont("large", &ch, NULL);
 
+  x = HUD_PIC_HEIGHT / 2;
   y = cgi.context->h / 2;
 
   if (ps->stats[STAT_QUAD_TIME] > 0) {
@@ -229,6 +230,15 @@ static void Cg_DrawPowerups(const player_state_t *ps) {
 
   if (ps->stats[STAT_INVISIBILITY_TIME] > 0) {
     Cg_DrawPowerup(y, ps->stats[STAT_INVISIBILITY_TIME], cgi.LoadImage("pics/i_invisibility", IMG_PIC));
+    y += ch;
+  }
+
+  const int16_t tech = ps->stats[STAT_TECH];
+  if (tech) {
+    color_t pulse = color_white;
+    pulse.a = Clampf(sinf(cgi.client->unclamped_time / 150.0), 0.75f, 1.f);
+    const r_image_t *icon = cgi.LoadImage(bg_item_defs[tech].icon, IMG_PIC);
+    cgi.Draw2DImage(x, y, icon->width, icon->height, icon, pulse);
   }
 
   cgi.BindFont(NULL, NULL, NULL);
@@ -267,30 +277,6 @@ static void Cg_DrawHeldFlag(const player_state_t *ps) {
   if (icon) {
     cgi.Draw2DImage(x, y, icon->width, icon->height, icon, pulse);
   }
-}
-
-/**
- * @brief Draws the flag you are currently holding
- */
-static void Cg_DrawHeldTech(const player_state_t *ps) {
-  GLint x, y;
-
-  if (!cg_draw_held_tech->integer) {
-    return;
-  }
-
-  const int16_t tech = ps->stats[STAT_TECH];
-  if (!tech) {
-    return;
-  }
-
-  color_t pulse = color_white;
-  pulse.a = Clampf(sinf(cgi.client->unclamped_time / 150.0), 0.75f, 1.f);
-
-  x = 4;
-  y = cgi.context->h / 2 - HUD_PIC_HEIGHT * 4;
-
-  Cg_DrawIcon(x, y, cgi.LoadImage(bg_item_defs[tech].icon, IMG_PIC), pulse);
 }
 
 /**
@@ -1256,8 +1242,6 @@ void Cg_DrawHud(const player_state_t *ps) {
   Cg_DrawPowerups(ps);
 
   Cg_DrawHeldFlag(ps);
-
-  Cg_DrawHeldTech(ps);
 
   Cg_DrawPickup(ps);
 

@@ -44,7 +44,6 @@ cvar_t *cg_draw_crosshair_health;
 cvar_t *cg_draw_crosshair_pulse;
 cvar_t *cg_draw_crosshair_scale;
 cvar_t *cg_draw_held_flag;
-cvar_t *cg_draw_held_tech;
 cvar_t *cg_draw_frags;
 cvar_t *cg_draw_deaths;
 cvar_t *cg_draw_hud;
@@ -129,7 +128,6 @@ static void Cg_Init(void) {
   cg_draw_crosshair_pulse = cgi.AddCvar("cg_draw_crosshair_pulse", "1", CVAR_ARCHIVE, "Pulse the crosshair when picking up items");
   cg_draw_crosshair_scale = cgi.AddCvar("cg_draw_crosshair_scale", "1", CVAR_ARCHIVE, "Controls the crosshair scale (size)");
   cg_draw_held_flag = cgi.AddCvar("cg_draw_held_flag", "1", CVAR_ARCHIVE, "Draw the currently held team flag");
-  cg_draw_held_tech = cgi.AddCvar("cg_draw_held_tech", "1", CVAR_ARCHIVE, "Draw the currently held tech");
   cg_draw_frags = cgi.AddCvar("cg_draw_frags", "1", CVAR_ARCHIVE, "Draw the number of frags");
   cg_draw_deaths = cgi.AddCvar("cg_draw_deaths", "1", CVAR_ARCHIVE, "Draw the number of deaths");
   cg_draw_hud = cgi.AddCvar("cg_draw_hud", "1", CVAR_ARCHIVE, "Render the Heads-Up-Display");

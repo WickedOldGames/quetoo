@@ -47,7 +47,6 @@ extern cvar_t *cg_draw_crosshair_health;
 extern cvar_t *cg_draw_crosshair_pulse;
 extern cvar_t *cg_draw_crosshair_scale;
 extern cvar_t *cg_draw_held_flag;
-extern cvar_t *cg_draw_held_tech;
 extern cvar_t *cg_draw_frags;
 extern cvar_t *cg_draw_deaths;
 extern cvar_t *cg_draw_hud;
