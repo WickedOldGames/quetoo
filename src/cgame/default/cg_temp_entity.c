@@ -393,15 +393,16 @@ static void Cg_BulletEffect(const vec3_t org, const vec3_t dir) {
       .color = ColorHSV(color_hue_orange, 0.8f, 1.f).vec3,
     });
 
-    Cg_AddDecal(&(r_decal_t) {
-      .image = cg_decal_bullet[Randomi() % lengthof(cg_decal_bullet)],
-      .origin = org,
-      .radius = RandomRangef(1.f, 3.f),
-      .color = color_black,
-      .lifetime = 12000 + Randomf() * 10000,
-      .rotation = RandomRadian()
-    });
   }
+
+  Cg_AddDecal(&(r_decal_t) {
+    .image = cg_decal_bullet[Randomi() % lengthof(cg_decal_bullet)],
+    .origin = org,
+    .radius = RandomRangef(1.f, 3.f),
+    .color = color_black,
+    .lifetime = 12000 + Randomf() * 10000,
+    .rotation = RandomRadian()
+  });
 
   if (cgi.client->unclamped_time < last_ric_time) {
     last_ric_time = 0;

@@ -1026,6 +1026,10 @@ static void Cg_NailTrail(cl_entity_t *ent, const vec3_t start, const vec3_t end)
     return;
   }
 
+  if (Cg_TrailContents(start, end) & CONTENTS_MASK_LIQUID) {
+    Cg_BubbleTrail(ent, start, end, 2.f);
+  }
+
   cgi.AddBeam(cgi.view, &(r_beam_t) {
     .start = Vec3_Fmaf(end, -Minf(len, 40.f), dir),
     .end = end,

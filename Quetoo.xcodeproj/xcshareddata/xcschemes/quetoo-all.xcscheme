@@ -121,7 +121,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "+debug sound"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "+set developer 1"
@@ -149,7 +149,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "+map tokays"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "+give all"
