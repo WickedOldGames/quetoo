@@ -1538,7 +1538,6 @@ static void G_InitItem(g_item_t *it, const g_item_def_t *def) {
       break;
   }
 
-  it->icon_index = gi.ImageIndex(it->def.icon);
   it->model_index = gi.ModelIndex(it->def.model);
   it->pickup_sound_index = gi.SoundIndex(it->def.pickup_sound);
 }

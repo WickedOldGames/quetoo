@@ -279,8 +279,8 @@ static void Cg_DrawHeldTech(const player_state_t *ps) {
     return;
   }
 
-  const int16_t tech = ps->stats[STAT_TECH_ICON];
-  if (tech == -1) {
+  const int16_t tech = ps->stats[STAT_TECH];
+  if (!tech) {
     return;
   }
 
@@ -290,7 +290,7 @@ static void Cg_DrawHeldTech(const player_state_t *ps) {
   x = 4;
   y = cgi.context->h / 2 - HUD_PIC_HEIGHT * 4;
 
-  Cg_DrawIcon(x, y, cgi.client->images[tech], pulse);
+  Cg_DrawIcon(x, y, cgi.LoadImage(bg_item_defs[tech].icon, IMG_PIC), pulse);
 }
 
 /**

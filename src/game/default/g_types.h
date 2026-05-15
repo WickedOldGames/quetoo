@@ -29,7 +29,7 @@
  * @brief Game protocol version (protocol minor version). To be incremented
  * whenever the game protocol changes.
  */
-#define PROTOCOL_MINOR 1032
+#define PROTOCOL_MINOR 1033
 
 /**
  * @brief Game-specific server protocol commands. These are parsed directly by
@@ -170,7 +170,7 @@ typedef enum {
   STAT_TEAM,
   STAT_TIME,
   STAT_WEAPON,
-  STAT_TECH_ICON
+  STAT_TECH
 } g_stat_t;
 
 /**
@@ -568,11 +568,6 @@ typedef struct g_item_s {
    * @brief Called every frame for a player holding this weapon.
    */
   void (*Think)(g_client_t *cl);
-
-  /**
-   * @brief Precached icon image index; calculated at init.
-   */
-  uint16_t icon_index;
 
   /**
    * @brief Precached model index; calculated at init.

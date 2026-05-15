@@ -186,11 +186,7 @@ void G_ClientStats(g_client_t *cl) {
 
   // tech
   const g_item_t *tech = G_GetTech(cl);
-  if (tech) {
-    cl->ps.stats[STAT_TECH_ICON] = tech->icon_index;
-  } else {
-    cl->ps.stats[STAT_TECH_ICON] = -1;
-  }
+  cl->ps.stats[STAT_TECH] = tech ? tech->def.tag : 0;
 
   // captures
   cl->ps.stats[STAT_CAPTURES] = cl->persistent.captures;
