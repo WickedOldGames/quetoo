@@ -80,7 +80,6 @@
 #define MAX_SOUNDS   256 // so they cannot be blindly increased
 #define MAX_MUSICS   8 // per level
 #define MAX_IMAGES   256 // that the server knows about
-#define MAX_ITEMS    64 // pickup items
 
 /**
  * @brief The max length of any given output message (stdio).

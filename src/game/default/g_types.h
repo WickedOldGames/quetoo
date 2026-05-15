@@ -29,7 +29,7 @@
  * @brief Game protocol version (protocol minor version). To be incremented
  * whenever the game protocol changes.
  */
-#define PROTOCOL_MINOR 1028
+#define PROTOCOL_MINOR 1029
 
 /**
  * @brief Game-specific server protocol commands. These are parsed directly by
@@ -1286,7 +1286,7 @@ struct g_client_s {
   /**
    * @brief Item inventory counts indexed by item index.
    */
-  int16_t inventory[MAX_ITEMS];
+  int16_t inventory[ITEM_TOTAL];
 
   /**
    * @brief Currently active weapon.

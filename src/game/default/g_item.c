@@ -1443,9 +1443,12 @@ bool G_ItemAvailable(const g_item_t *item) {
  * is a `uint16_t`).
  */
 static void G_InitWeapons(void) {
-  char weapon_info[MAX_STRING_CHARS] = { '\0' };
+  char weapon_info[MAX_STRING_CHARS];
+  char *p = weapon_info;
+  char * const end = weapon_info + sizeof(weapon_info);
   int32_t bit = 0;
 
+  *p = '\0';
   memset(g_level.weapons, -1, sizeof(g_level.weapons));
 
   // First pass: include all weapons in the active item set.
@@ -1465,11 +1468,7 @@ static void G_InitWeapons(void) {
       continue;
     }
 
-    if (bit > 0) {
-      strcat(weapon_info, "\\");
-    }
-
-    strcat(weapon_info, va("%i\\%i", weapon->icon_index, weapon->def.tag));
+    p += g_snprintf(p, end - p, p > weapon_info ? "\\%i" : "%i", weapon->def.tag);
     g_level.weapons[t - WEAPON_FIRST] = bit++;
   }
 
@@ -1500,11 +1499,7 @@ static void G_InitWeapons(void) {
       continue;
     }
 
-    if (bit > 0) {
-      strcat(weapon_info, "\\");
-    }
-
-    strcat(weapon_info, va("%i\\%i", weapon->icon_index, weapon->def.tag));
+    p += g_snprintf(p, end - p, p > weapon_info ? "\\%i" : "%i", weapon->def.tag);
     g_level.weapons[t - WEAPON_FIRST] = bit++;
   }
 

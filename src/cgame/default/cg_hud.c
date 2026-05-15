@@ -20,6 +20,7 @@
  */
 
 #include "cg_local.h"
+#include "game/default/bg_item.h"
 
 #define HUD_COLOR_STAT      color_white
 #define HUD_COLOR_STAT_MED    color_yellow
@@ -50,8 +51,8 @@ static struct {
  * @brief The client's weapon cache, parsed from player state stat bits.
  */
 typedef struct {
-  int16_t icon_index;
-  int16_t item_index;
+  const r_image_t *icon;
+  g_item_tag_t tag;
 } cg_hud_weapon_t;
 
 static cg_hud_weapon_t cg_hud_weapons[MAX_STAT_BITS];
@@ -971,16 +972,16 @@ void Cg_ParseWeaponInfo(const char *s) {
   gchar **info = g_strsplit(s, "\\", 0);
   const size_t num_info = g_strv_length(info);
 
-  if ((num_info / 2) > MAX_STAT_BITS || num_info & 1) {
+  if (num_info > MAX_STAT_BITS) {
     g_strfreev(info);
     Cg_Error("Invalid weapon info");
   }
 
   cg_hud_weapon_t *weapon = cg_hud_weapons;
 
-  for (size_t i = 0; i < num_info; i += 2, weapon++) {
-    weapon->icon_index = atoi(info[i]);
-    weapon->item_index = atoi(info[i + 1]);
+  for (size_t i = 0; i < num_info; i++, weapon++) {
+    weapon->tag = (g_item_tag_t) atoi(info[i]);
+    weapon->icon = cgi.LoadImage(bg_item_defs[weapon->tag].icon, IMG_PIC);
   }
 
   g_strfreev(info);
@@ -1090,7 +1091,7 @@ bool Cg_AttemptSelectWeapon(const player_state_t *ps) {
     cg_hud_state.weapon.bit != -1) {
 
     if (cg_hud_state.weapon.bit != Cg_ActiveWeapon(ps)) {
-      const char *name = cgi.client->config_strings[CS_ITEMS + cg_hud_weapons[cg_hud_state.weapon.bit].item_index];
+      const char *name = bg_item_defs[cg_hud_weapons[cg_hud_state.weapon.bit].tag].name;
       cgi.Cbuf(va("use %s\n", name));
 
       cg_hud_state.weapon.time = cgi.client->unclamped_time + cg_select_weapon_interval->integer;
@@ -1197,10 +1198,13 @@ static void Cg_DrawSelectWeapon(const player_state_t *ps) {
 
     const color_t c = (i == cg_hud_state.weapon.bit) ? color_selection : color;
 
-    Cg_DrawIcon(x, y, cg_hud_weapons[i].icon_index, c);
+    const r_image_t *icon = cg_hud_weapons[i].icon;
+    if (icon) {
+      cgi.Draw2DImage(x, y, icon->width, icon->height, icon, c);
+    }
 
     if (i == cg_hud_state.weapon.bit) {
-      const char *name = cgi.client->config_strings[CS_ITEMS + cg_hud_weapons[i].item_index];
+      const char *name = bg_item_defs[cg_hud_weapons[i].tag].name;
       cgi.Draw2DString(((cgi.context->w / 2) - (cgi.StringWidth(name) / 2)), y - ch, name, HUD_COLOR_STAT);
       cgi.Draw2DImage(x,
               y,
