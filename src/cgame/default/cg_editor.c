@@ -188,7 +188,7 @@ void Cg_PopulateEditorScene(const cl_frame_t *frame) {
       }
 
     } else {
-      cgi.AddEntity(cgi.view, &(const r_entity_t) {
+      const r_entity_t *e = cgi.AddEntity(cgi.view, &(const r_entity_t) {
         .id = edit,
         .origin = ent->origin,
         .angles = ent->angles,
@@ -202,6 +202,19 @@ void Cg_PopulateEditorScene(const cl_frame_t *frame) {
 
       if (is_selected) {
         cgi.Draw3DBox(Box3_Expand(ent->abs_bounds, 2.f), color_red, true);
+
+        if (edit->model && IS_MESH_MODEL(edit->model)) {
+          const r_mesh_config_t *view = &edit->model->mesh->config.view;
+          if (!Vec3_Equal(Vec3_Zero(), view->muzzle)) {
+            const vec3_t muzzle = Mat4_Transform(e->matrix, view->muzzle);
+            Cg_AddSprite(&(cg_sprite_t) {
+              .animation = cg_sprite_impact_spark_01,
+              .origin = muzzle,
+              .size = 30.f,
+              .color = Vec3(1.f, .9f, .7f),
+            });
+          }
+        }
       } else {
         cgi.Draw3DBox(Box3_Expand(ent->abs_bounds, 2.f), Color4fv(color), true);
       }

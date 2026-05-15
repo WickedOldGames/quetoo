@@ -28,6 +28,8 @@ static void R_LoadMeshConfig(r_mesh_config_t *config, const char *path) {
   void *buf;
   char token[MAX_STRING_CHARS];
 
+  memset(config, 0, sizeof(*config));
+
   config->transform = Mat4_Identity();
 
   if (Fs_Load(path, &buf) == -1) {
@@ -91,7 +93,7 @@ static void R_LoadMeshConfig(r_mesh_config_t *config, const char *path) {
 }
 
 /**
- * @brief Loads all r_mesh_config_t for the specified r_model_t. These allow
+ * @brief Loads all `r_mesh_config_t` for the specified `r_model_t`. These allow
  * models to be positioned and scaled relative to their own origins, which is
  * useful because artists contribute models in almost arbitrary dimensions at
  * times.

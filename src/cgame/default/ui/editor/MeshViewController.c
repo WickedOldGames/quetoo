@@ -28,6 +28,16 @@
 #pragma mark - Internal helpers
 
 /**
+ * @brief Like vtos, but without parens.
+ */
+static char *vs(const vec3_t v) {
+  static char buf[MAX_TOKEN_CHARS];
+
+  g_snprintf(buf, sizeof(buf), "%g %g %g", v.x, v.y, v.z);
+  return buf;
+}
+
+/**
  * @brief Parses a mesh config file into transform components.
  */
 static void ParseMeshConfig(const char *path, MeshConfig *cfg) {
@@ -209,27 +219,29 @@ static void setModel(MeshViewController *self, r_model_t *model) {
   char path[MAX_QPATH];
 
   self->model = model;
-
   if (self->model) {
     Dirname(self->model->media.name, path);
+    ParseMeshConfig(self->model ? va("%s/world.cfg", path) : "", &self->world);
+    ParseMeshConfig(self->model ? va("%s/link.cfg",  path) : "", &self->link);
+    ParseMeshConfig(self->model ? va("%s/view.cfg",  path) : "", &self->view);
+  } else {
+    self->world = (MeshConfig) { .scale = 1.f };
+    self->link = (MeshConfig) { .scale = 1.f };
+    self->view = (MeshConfig) { .scale = 1.f };
   }
 
-  ParseMeshConfig(self->model ? va("%s/world.cfg", path) : "", &self->world);
-  ParseMeshConfig(self->model ? va("%s/link.cfg",  path) : "", &self->link);
-  ParseMeshConfig(self->model ? va("%s/view.cfg",  path) : "", &self->view);
+  $(self->worldTranslate, setAttributedText, vs(self->world.translate));
+  $(self->worldRotate, setAttributedText, vs(self->world.rotate));
+  $(self->worldScale, setAttributedText, va("%g", self->world.scale));
 
-  $(self->worldTranslate, setAttributedText, va("%g %g %g", self->world.translate.x, self->world.translate.y, self->world.translate.z));
-  $(self->worldRotate,    setAttributedText, va("%g %g %g", self->world.rotate.x,    self->world.rotate.y,    self->world.rotate.z));
-  $(self->worldScale,     setAttributedText, va("%g",       self->world.scale));
+  $(self->linkTranslate, setAttributedText, vs(self->link.translate));
+  $(self->linkRotate, setAttributedText, vs(self->link.rotate));
+  $(self->linkScale, setAttributedText, va("%g", self->link.scale));
 
-  $(self->linkTranslate,  setAttributedText, va("%g %g %g", self->link.translate.x,  self->link.translate.y,  self->link.translate.z));
-  $(self->linkRotate,     setAttributedText, va("%g %g %g", self->link.rotate.x,     self->link.rotate.y,     self->link.rotate.z));
-  $(self->linkScale,      setAttributedText, va("%g",       self->link.scale));
-
-  $(self->viewTranslate,  setAttributedText, va("%g %g %g", self->view.translate.x,  self->view.translate.y,  self->view.translate.z));
-  $(self->viewRotate,     setAttributedText, va("%g %g %g", self->view.rotate.x,     self->view.rotate.y,     self->view.rotate.z));
-  $(self->viewScale,      setAttributedText, va("%g",       self->view.scale));
-  $(self->viewMuzzle,     setAttributedText, va("%g %g %g", self->view.muzzle.x,     self->view.muzzle.y,     self->view.muzzle.z));
+  $(self->viewTranslate, setAttributedText, vs(self->view.translate));
+  $(self->viewRotate, setAttributedText, vs(self->view.rotate));
+  $(self->viewScale, setAttributedText, va("%g", self->view.scale));
+  $(self->viewMuzzle, setAttributedText, vs(self->view.muzzle));
 }
 
 /**
@@ -270,14 +282,12 @@ static void save(MeshViewController *self) {
     size_t len;
 
     if (!Vec3_Equal(f->cfg->translate, Vec3_Zero())) {
-      len = (size_t) g_snprintf(line, sizeof(line), "translate %g %g %g\n",
-          f->cfg->translate.x, f->cfg->translate.y, f->cfg->translate.z);
+      len = (size_t) g_snprintf(line, sizeof(line), "translate %s\n", vs(f->cfg->translate));
       cgi.WriteFile(file, line, 1, len);
     }
 
     if (!Vec3_Equal(f->cfg->rotate, Vec3_Zero())) {
-      len = (size_t) g_snprintf(line, sizeof(line), "rotate %g %g %g\n",
-          f->cfg->rotate.x, f->cfg->rotate.y, f->cfg->rotate.z);
+      len = (size_t) g_snprintf(line, sizeof(line), "rotate %s\n", vs(f->cfg->rotate));
       cgi.WriteFile(file, line, 1, len);
     }
 
@@ -287,8 +297,7 @@ static void save(MeshViewController *self) {
     }
 
     if (!Vec3_Equal(f->cfg->muzzle, Vec3_Zero())) {
-      len = (size_t) g_snprintf(line, sizeof(line), "muzzle %g %g %g\n",
-          f->cfg->muzzle.x, f->cfg->muzzle.y, f->cfg->muzzle.z);
+      len = (size_t) g_snprintf(line, sizeof(line), "muzzle %s\n", vs(f->cfg->muzzle));
       cgi.WriteFile(file, line, 1, len);
     }
 
