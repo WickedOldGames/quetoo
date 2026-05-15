@@ -49,6 +49,11 @@ typedef struct {
    */
   const r_image_t *icon;
 
+  /**
+   * @brief The weapon model, or NULL if not found.
+   */
+  const r_model_t *model;
+
 } cg_weapon_t;
 
 /**
@@ -74,6 +79,16 @@ bool Cg_HasWeapon(const player_state_t *ps);
 int16_t Cg_ActiveWeapon(const player_state_t *ps);
 
 /**
- * @brief Returns the ammo count for the active weapon, or 0 if none.
+ * @brief Returns the active ammo quantity, or 0 if the active weapon has no ammo.
  */
 int16_t Cg_ActiveAmmo(const player_state_t *ps);
+
+/**
+ * @brief Returns the icon for the player's current armor based on inventory.
+ */
+const r_image_t *Cg_ArmorIcon(const player_state_t *ps);
+
+/**
+ * @brief Returns the health icon appropriate for the given health value.
+ */
+const r_image_t *Cg_HealthIcon(int16_t health);

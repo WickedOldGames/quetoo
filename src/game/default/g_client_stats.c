@@ -176,20 +176,11 @@ void G_ClientScores(g_client_t *cl) {
  */
 void G_ClientStats(g_client_t *cl) {
 
-  // ammo icon (count is in ps->inventory, derived client-side from weapon tag)
-  if (cl->weapon && cl->ammo_index) {
-    cl->ps.stats[STAT_AMMO_ICON] = cl->weapon->icon_index;
-  } else {
-    cl->ps.stats[STAT_AMMO_ICON] = 0;
-  }
-
   // armor
   const g_item_t *armor = G_ClientArmor(cl);
   if (armor) {
-    cl->ps.stats[STAT_ARMOR_ICON] = armor->icon_index;
     cl->ps.stats[STAT_ARMOR] = cl->inventory[armor->def.tag];
   } else {
-    cl->ps.stats[STAT_ARMOR_ICON] = 0;
     cl->ps.stats[STAT_ARMOR] = 0;
   }
 
@@ -215,25 +206,14 @@ void G_ClientStats(g_client_t *cl) {
 
   // health
   if (cl->persistent.spectator || cl->entity->dead) {
-    cl->ps.stats[STAT_HEALTH_ICON] = 0;
     cl->ps.stats[STAT_HEALTH] = 0;
   } else {
-    if (cl->entity->health > 100) {
-      cl->ps.stats[STAT_HEALTH_ICON] = g_items[HEALTH_MEGA].icon_index;
-    } else if (cl->entity->health > 75) {
-      cl->ps.stats[STAT_HEALTH_ICON] = g_media.images.health;
-    } else if (cl->entity->health > 25) {
-      cl->ps.stats[STAT_HEALTH_ICON] = g_items[HEALTH_MEDIUM].icon_index;
-    } else {
-      cl->ps.stats[STAT_HEALTH_ICON] = g_items[HEALTH_LARGE].icon_index;
-    }
     cl->ps.stats[STAT_HEALTH] = cl->entity->health;
   }
 
   // pickup message
   if (g_level.time > cl->pickup_msg_time) {
-    cl->ps.stats[STAT_PICKUP_ICON] = -1;
-    cl->ps.stats[STAT_PICKUP_STRING] = 0;
+    cl->ps.stats[STAT_PICKUP] = 0;
   }
 
   // scores
@@ -255,19 +235,17 @@ void G_ClientStats(g_client_t *cl) {
     cl->ps.stats[STAT_TIME] = CS_TIME;
   }
 
-  // weapon
+  // weapon: lower byte = current tag, upper byte = switching-to tag
   const g_item_t *weapon = cl->weapon;
 
   if (weapon) {
-    cl->ps.stats[STAT_WEAPON] = cl->weapon->model_index;
-    cl->ps.stats[STAT_WEAPON_TAG] = weapon->def.tag;
+    cl->ps.stats[STAT_WEAPON] = weapon->def.tag;
   } else {
     cl->ps.stats[STAT_WEAPON] = 0;
-    cl->ps.stats[STAT_WEAPON_TAG] = 0;
   }
 
   if (cl->next_weapon) {
-    cl->ps.stats[STAT_WEAPON_TAG] |= (cl->next_weapon->def.tag << 8);
+    cl->ps.stats[STAT_WEAPON] |= (cl->next_weapon->def.tag << 8);
   }
 
   if (g_level.time <= cl->quad_damage_time) {

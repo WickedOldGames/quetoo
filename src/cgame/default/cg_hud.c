@@ -93,11 +93,9 @@ static cvar_t *cg_select_weapon_interval;
 /**
  * @brief Draws the icon at the specified ConfigString index, relative to CS_IMAGES.
  */
-static void Cg_DrawIcon(const GLint x, const GLint y, const int16_t icon, const color_t color) {
+static void Cg_DrawIcon(const GLint x, const GLint y, const r_image_t *image, const color_t color) {
 
-  const r_image_t *image = cgi.client->images[icon];
   if (!image) {
-    Cg_Warn("Invalid icon: %d\n", icon);
     return;
   }
 
@@ -107,7 +105,7 @@ static void Cg_DrawIcon(const GLint x, const GLint y, const int16_t icon, const 
 /**
  * @brief Draws the vital numeric and icon, flashing on low quantities.
  */
-static void Cg_DrawVital(GLint x, GLint ch, const int16_t value, const int16_t icon, int16_t med, int16_t low) {
+static void Cg_DrawVital(GLint x, GLint ch, const int16_t value, const r_image_t *icon, int16_t med, int16_t low) {
   GLint y = cgi.context->h - HUD_PIC_HEIGHT + (HUD_PIC_HEIGHT - ch) / 2;
 
   color_t color = HUD_COLOR_STAT;
@@ -148,11 +146,10 @@ static void Cg_DrawVitals(const player_state_t *ps) {
 
   if (ps->stats[STAT_HEALTH] > 0) {
     const int16_t health = ps->stats[STAT_HEALTH];
-    const int16_t health_icon = ps->stats[STAT_HEALTH_ICON];
 
     x = cgi.context->w * 0.5 - x_offset;
 
-    Cg_DrawVital(x, ch, health, health_icon, HUD_HEALTH_MED, HUD_HEALTH_LOW);
+    Cg_DrawVital(x, ch, health, Cg_HealthIcon(health), HUD_HEALTH_MED, HUD_HEALTH_LOW);
   }
 
   if (cg_state.gameplay != GAME_INSTAGIB) {
@@ -164,7 +161,7 @@ static void Cg_DrawVitals(const player_state_t *ps) {
       const int16_t ammo_low = active != WEAPON_SELECT_OFF
                                  ? (int16_t) bg_item_defs[cg_weapons[active].ammo_tag].quantity
                                  : 0;
-      const int16_t ammo_icon = ps->stats[STAT_AMMO_ICON];
+      const r_image_t *ammo_icon = active != WEAPON_SELECT_OFF ? cg_weapons[active].icon : NULL;
 
       x = cgi.context->w * 0.25 - x_offset;
 
@@ -173,11 +170,10 @@ static void Cg_DrawVitals(const player_state_t *ps) {
 
     if (ps->stats[STAT_ARMOR] > 0) {
       const int16_t armor = ps->stats[STAT_ARMOR];
-      const int16_t armor_icon = ps->stats[STAT_ARMOR_ICON];
 
       x = cgi.context->w * 0.75 - x_offset;
 
-      Cg_DrawVital(x, ch, armor, armor_icon, HUD_ARMOR_MED, HUD_ARMOR_LOW);
+      Cg_DrawVital(x, ch, armor, Cg_ArmorIcon(ps), HUD_ARMOR_MED, HUD_ARMOR_LOW);
     }
   }
 
@@ -294,7 +290,7 @@ static void Cg_DrawHeldTech(const player_state_t *ps) {
   x = 4;
   y = cgi.context->h / 2 - HUD_PIC_HEIGHT * 4;
 
-  Cg_DrawIcon(x, y, tech, pulse);
+  Cg_DrawIcon(x, y, cgi.client->images[tech], pulse);
 }
 
 /**
@@ -309,11 +305,14 @@ static void Cg_DrawPickup(const player_state_t *ps) {
 
   cgi.BindFont(NULL, &cw, &ch);
 
-  if (ps->stats[STAT_PICKUP_ICON] != -1) {
-    const int16_t icon = ps->stats[STAT_PICKUP_ICON] & ~STAT_TOGGLE_BIT;
-    const int16_t pickup = ps->stats[STAT_PICKUP_STRING];
+  const int16_t p = ps->stats[STAT_PICKUP];
+  if (p) {
+    const int16_t pickup = p & ~STAT_TOGGLE_BIT;
 
     const char *string = pickup > ITEM_NONE && pickup < ITEM_TOTAL ? bg_item_defs[pickup].name : "";
+    const r_image_t *icon = pickup > ITEM_NONE && pickup < ITEM_TOTAL
+                              ? cgi.LoadImage(bg_item_defs[pickup].icon, IMG_PIC)
+                              : NULL;
 
     x = cgi.context->w - HUD_PIC_HEIGHT - cgi.StringWidth(string);
     y = 0;
@@ -693,8 +692,8 @@ static void Cg_DrawCrosshair(const player_state_t *ps) {
   // pulse the crosshair size and alpha based on pickups
   if (cg_draw_crosshair_pulse->value) {
 
-    const int16_t p = ps->stats[STAT_PICKUP_ICON];
-    if (p != -1 && (p != cg_hud_state.pulse.pickup)) {
+    const int16_t p = ps->stats[STAT_PICKUP];
+    if (p && (p != cg_hud_state.pulse.pickup)) {
       cg_hud_state.pulse.time = cgi.client->unclamped_time;
     }
 
@@ -882,9 +881,9 @@ static void Cg_DrawBlend(const player_state_t *ps) {
 
   // pickups
 
-  const int16_t p = ps->stats[STAT_PICKUP_ICON] & ~STAT_TOGGLE_BIT;
+  const int16_t p = ps->stats[STAT_PICKUP] & ~STAT_TOGGLE_BIT;
 
-  if (p > -1 && (p != cg_hud_state.blend.pickup)) { // don't flash on same item
+  if (p && (p != cg_hud_state.blend.pickup)) { // don't flash on same item
     cg_hud_state.blend.pickup_time = cgi.client->unclamped_time;
   }
 
@@ -1098,7 +1097,7 @@ static void Cg_DrawSelectWeapon(const player_state_t *ps) {
     return;
   }
 
-  const int16_t switching = ((ps->stats[STAT_WEAPON_TAG] >> 8) & 0xFF);
+  const int16_t switching = ((ps->stats[STAT_WEAPON] >> 8) & 0xFF);
 
   if (cg_hud_state.weapon.used_bit != switching) {
     cg_hud_state.weapon.used_bit = switching;

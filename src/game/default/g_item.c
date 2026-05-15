@@ -889,14 +889,13 @@ void G_TouchItem(g_entity_t *ent, g_entity_t *other, const cm_trace_t *trace) {
   const bool pickup = ent->item->Pickup(cl, ent);
   if (pickup) {
     // show icon and name on status bar
-    uint16_t icon = ent->item->icon_index;
+    uint16_t tag = ent->item->def.tag;
 
-    if (cl->ps.stats[STAT_PICKUP_ICON] == icon) {
-      icon |= STAT_TOGGLE_BIT;
+    if ((cl->ps.stats[STAT_PICKUP] & ~STAT_TOGGLE_BIT) == tag) {
+      tag |= STAT_TOGGLE_BIT;
     }
 
-    cl->ps.stats[STAT_PICKUP_ICON] = icon;
-    cl->ps.stats[STAT_PICKUP_STRING] = ent->item->def.tag;
+    cl->ps.stats[STAT_PICKUP] = tag;
     
     if (ent->item->Use) {
       cl->last_pickup = ent->item;

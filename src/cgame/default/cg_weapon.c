@@ -132,7 +132,8 @@ void Cg_AddWeapon(cl_entity_t *ent, r_entity_t *self) {
     return; // spectating
   }
 
-  if (!ps->stats[STAT_WEAPON]) {
+  const int16_t active = Cg_ActiveWeapon(ps);
+  if (active == WEAPON_SELECT_OFF) {
     return; // no weapon, e.g. level intermission
   }
 
@@ -146,7 +147,7 @@ void Cg_AddWeapon(cl_entity_t *ent, r_entity_t *self) {
 
   w.origin = Vec3_Add(w.origin, velocity);
 
-  w.model = cgi.client->models[ps->stats[STAT_WEAPON]];
+  w.model = cg_weapons[active].model;
 
   if (w.model == NULL || g_str_has_prefix(w.model->media.name, "models/weapons/quake_") == FALSE) {
     switch (cg_hand->integer) {

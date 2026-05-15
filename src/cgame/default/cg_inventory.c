@@ -24,8 +24,11 @@
 
 cg_weapon_t cg_weapons[WEAPON_TOTAL];
 
+static const r_image_t *cg_armor_icons[ARMOR_TOTAL];
+static const r_image_t *cg_health_icons[4]; // indexed by health threshold
+
 /**
- * @brief Initializes the inventory cache (weapon icons, ammo tags).
+ * @brief Initializes the inventory cache (weapon icons, ammo tags, models, armor/health icons).
  * Called once per map load from Cg_LoadHudMedia.
  */
 void Cg_InitInventory(void) {
@@ -38,7 +41,18 @@ void Cg_InitInventory(void) {
     w->tag = t;
     w->icon = cgi.LoadImage(bg_item_defs[t].icon, IMG_PIC);
     w->ammo_tag = bg_item_defs[t].ammo;
+    w->model = cgi.LoadModel(bg_item_defs[t].model);
   }
+
+  for (g_item_tag_t t = ARMOR_FIRST; t < ARMOR_LAST; t++) {
+    cg_armor_icons[t - ARMOR_FIRST] = cgi.LoadImage(bg_item_defs[t].icon, IMG_PIC);
+  }
+
+  // health icons ordered by ascending threshold: <=25, <=75, <=100, >100
+  cg_health_icons[0] = cgi.LoadImage("pics/i_health_large", IMG_PIC);
+  cg_health_icons[1] = cgi.LoadImage("pics/i_health_medium", IMG_PIC);
+  cg_health_icons[2] = cgi.LoadImage("pics/i_health", IMG_PIC);
+  cg_health_icons[3] = cgi.LoadImage("pics/i_health_mega", IMG_PIC);
 }
 
 /**
@@ -60,12 +74,12 @@ bool Cg_HasWeapon(const player_state_t *ps) {
  */
 int16_t Cg_ActiveWeapon(const player_state_t *ps) {
 
-  const int16_t switching = (ps->stats[STAT_WEAPON_TAG] >> 8) & 0xFF;
+  const int16_t switching = (ps->stats[STAT_WEAPON] >> 8) & 0xFF;
   if (switching) {
     return switching - WEAPON_FIRST;
   }
 
-  const int16_t tag = ps->stats[STAT_WEAPON_TAG] & 0xFF;
+  const int16_t tag = ps->stats[STAT_WEAPON] & 0xFF;
   return tag > 0 ? tag - WEAPON_FIRST : WEAPON_SELECT_OFF;
 }
 
@@ -85,4 +99,35 @@ int16_t Cg_ActiveAmmo(const player_state_t *ps) {
   }
 
   return ps->inventory[ammo_tag];
+}
+
+/**
+ * @brief Returns the icon for the player's current armor based on inventory.
+ * Mirrors G_ClientArmor: returns the highest-priority armor in inventory.
+ */
+const r_image_t *Cg_ArmorIcon(const player_state_t *ps) {
+
+  for (g_item_tag_t t = ARMOR_QUAKE_BODY; t > ARMOR_SHARD; t--) {
+    if (ps->inventory[t]) {
+      return cg_armor_icons[t - ARMOR_FIRST];
+    }
+  }
+  return NULL;
+}
+
+/**
+ * @brief Returns the health icon appropriate for the given health value,
+ * mirroring the server-side G_ClientStats health icon selection.
+ */
+const r_image_t *Cg_HealthIcon(int16_t health) {
+
+  if (health > 100) {
+    return cg_health_icons[3]; // pics/i_health_mega
+  } else if (health > 75) {
+    return cg_health_icons[2]; // pics/i_health
+  } else if (health > 25) {
+    return cg_health_icons[1]; // pics/i_health_medium
+  } else {
+    return cg_health_icons[0]; // pics/i_health_large
+  }
 }
