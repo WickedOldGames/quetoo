@@ -896,7 +896,7 @@ void G_TouchItem(g_entity_t *ent, g_entity_t *other, const cm_trace_t *trace) {
     }
 
     cl->ps.stats[STAT_PICKUP_ICON] = icon;
-    cl->ps.stats[STAT_PICKUP_STRING] = CS_ITEMS + ent->item->def.tag;
+    cl->ps.stats[STAT_PICKUP_STRING] = ent->item->def.tag;
     
     if (ent->item->Use) {
       cl->last_pickup = ent->item;
@@ -1444,59 +1444,28 @@ bool G_ItemAvailable(const g_item_t *item) {
  */
 static void G_InitWeapons(void) {
   char weapon_info[MAX_STRING_CHARS];
-  char *p = weapon_info;
-  char * const end = weapon_info + sizeof(weapon_info);
-  int32_t bit = 0;
+  const char *end = weapon_info + sizeof(weapon_info);
 
-  *p = '\0';
   memset(g_level.weapons, -1, sizeof(g_level.weapons));
 
-  // First pass: include all weapons in the active item set.
+  char *p = weapon_info;
+  *p = '\0';
+
+  int32_t bit = 0;
+
   for (g_item_tag_t t = WEAPON_FIRST; t < WEAPON_LAST; t++) {
 
     g_item_t *weapon = &g_items[t];
-
-    if (weapon->def.ammo) {
-      weapon->ammo_item = G_FindItem(weapon->def.ammo);
-
-      if (!weapon->ammo_item) {
-        gi.Error("Invalid ammo specified for %s\n", weapon->def.name);
-      }
-    }
 
     if (!G_ItemAvailable(weapon)) {
       continue;
     }
 
-    p += g_snprintf(p, end - p, p > weapon_info ? "\\%i" : "%i", weapon->def.tag);
-    g_level.weapons[t - WEAPON_FIRST] = bit++;
-  }
-
-  // Second pass: entity-promoted weapons placed by the mapper outside the
-  // active item set (e.g. item_quake_nailgun in a default-items map).
-  for (g_item_tag_t t = WEAPON_FIRST; t < WEAPON_LAST; t++) {
-
-    if (g_level.weapons[t - WEAPON_FIRST] >= 0) {
-      continue;
-    }
-
-    const g_item_t *weapon = &g_items[t];
-
-    bool found = false;
-    G_ForEachEntity(ent, {
-      if (!g_strcmp0(ent->classname, weapon->def.classname)) {
-        found = true;
-        break;
+    if (weapon->def.ammo) {
+      weapon->ammo_item = G_FindItem(weapon->def.ammo);
+      if (!weapon->ammo_item) {
+        gi.Error("Invalid ammo specified for %s\n", weapon->def.name);
       }
-    });
-
-    if (!found) {
-      continue;
-    }
-
-    if (bit >= 16) {
-      gi.Warn("Map exceeds 16 weapons; %s will not be selectable\n", weapon->def.name);
-      continue;
     }
 
     p += g_snprintf(p, end - p, p > weapon_info ? "\\%i" : "%i", weapon->def.tag);
@@ -1612,8 +1581,6 @@ static void G_InitItem(g_item_t *it, const g_item_def_t *def) {
   it->icon_index = gi.ImageIndex(it->def.icon);
   it->model_index = gi.ModelIndex(it->def.model);
   it->pickup_sound_index = gi.SoundIndex(it->def.pickup_sound);
-
-  gi.SetConfigString(CS_ITEMS + it->def.tag, it->def.name);
 }
 
 /**

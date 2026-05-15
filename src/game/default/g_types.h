@@ -148,7 +148,6 @@ typedef struct {
 #define CS_WEAPONS         (CS_GAME + 8)  // weapon list, for the change weapon UI
 #define CS_NAV_EDIT        (CS_GAME + 9)  // nav edit mode
 #define CS_ITEM_SET        (CS_GAME + 10) // active item set (g_items_t)
-#define CS_ITEMS           (CS_GAME + 11) // item names (MAX_ITEMS entries)
 
 /**
  * @brief Player state statistics (inventory, score, etc).
@@ -179,7 +178,6 @@ typedef enum {
   STAT_TEAM,
   STAT_TIME,
   STAT_WEAPON,
-  STAT_WEAPON_ICON,
   STAT_WEAPON_BIT,
   STAT_WEAPONS,
   STAT_WEAPONS_2,

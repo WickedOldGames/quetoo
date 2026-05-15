@@ -315,7 +315,7 @@ static void Cg_DrawPickup(const player_state_t *ps) {
     const int16_t icon = ps->stats[STAT_PICKUP_ICON] & ~STAT_TOGGLE_BIT;
     const int16_t pickup = ps->stats[STAT_PICKUP_STRING];
 
-    const char *string = cgi.ConfigString(pickup);
+    const char *string = pickup > ITEM_NONE && pickup < ITEM_TOTAL ? bg_item_defs[pickup].name : "";
 
     x = cgi.context->w - HUD_PIC_HEIGHT - cgi.StringWidth(string);
     y = 0;
