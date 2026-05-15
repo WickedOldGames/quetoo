@@ -764,6 +764,12 @@ static bool G_WouldTelefrag(const vec3_t spot) {
  * @brief Selects a random unoccupied spawn point from the given set.
  */
 static g_entity_t *G_SelectRandomSpawnPoint(const g_spawn_points_t *spawn_points) {
+
+  if (!spawn_points->count) {
+    assert(spawn_points != &g_level.spawn_points);
+    return G_SelectRandomSpawnPoint(&g_level.spawn_points);
+  }
+
   uint32_t empty_spawns[spawn_points->count];
   uint32_t num_empty_spawns = 0;
 
@@ -774,17 +780,11 @@ static g_entity_t *G_SelectRandomSpawnPoint(const g_spawn_points_t *spawn_points
     }
   }
 
-  // none empty, pick randomly
-  if (!num_empty_spawns) {
-
-    if (!spawn_points->count) {
-      return G_SelectRandomSpawnPoint(&g_level.spawn_points);
-    }
-
-    return spawn_points->spots[RandomRangeu(0, spawn_points->count)];
+  if (num_empty_spawns) {
+    return spawn_points->spots[empty_spawns[RandomRangeu(0, num_empty_spawns)]];
   }
 
-  return spawn_points->spots[empty_spawns[RandomRangeu(0, num_empty_spawns)]];
+  return spawn_points->spots[RandomRangeu(0, spawn_points->count)];
 }
 
 /**
