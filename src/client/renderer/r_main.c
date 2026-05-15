@@ -293,10 +293,6 @@ void R_DrawPlayerModelView(r_view_t *view) {
 
   R_UpdateUniforms(view);
 
-  glBindBuffer(GL_UNIFORM_BUFFER, r_uniforms.buffer);
-  glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(r_uniforms.block), &r_uniforms.block);
-  glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
   R_UpdateEntities(view);
 
   glBindFramebuffer(GL_FRAMEBUFFER, view->framebuffer->name);
