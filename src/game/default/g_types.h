@@ -575,11 +575,6 @@ typedef struct g_item_s {
   void (*Think)(g_client_t *cl);
 
   /**
-   * @brief Pointer to the ammo item; calculated at init.
-   */
-  const struct g_item_s *ammo_item;
-
-  /**
    * @brief Precached icon image index; calculated at init.
    */
   uint16_t icon_index;

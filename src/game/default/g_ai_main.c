@@ -399,8 +399,8 @@ static void G_Ai_PickWeapon(g_client_t *cl) {
       continue;
     }
 
-    if (it->ammo_item) {
-      const int32_t ammo_have = inventory[it->ammo_item->def.tag];
+    if (it->def.ammo) {
+      const int32_t ammo_have = inventory[it->def.ammo];
       const int32_t ammo_need = it->def.quantity;
       if (ammo_have < ammo_need) {
         continue;

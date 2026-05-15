@@ -193,9 +193,9 @@ typedef struct {
   uint16_t max;
 
   /**
-   * @brief Name of the ammo item this weapon consumes.
+   * @brief Tag of the ammo item this weapon consumes, or ITEM_NONE.
    */
-  const char *ammo;
+  g_item_tag_t ammo;
 
   /**
    * @brief Global item tag; equals the item's index in g_items[].

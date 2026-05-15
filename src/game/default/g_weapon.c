@@ -34,7 +34,7 @@ static void G_ChangeWeapon(g_client_t *cl, const g_item_t *item) {
       cl->entity->s.model2 = item->model_index;
 
       if (item->def.ammo) {
-        cl->ammo_index = item->ammo_item->def.tag;
+        cl->ammo_index = item->def.ammo;
       } else {
         cl->ammo_index = 0;
       }
@@ -87,7 +87,7 @@ bool G_PickupWeapon(g_client_t *cl, g_entity_t *ent) {
   // add the weapon to inventory
   cl->inventory[ent->item->def.tag]++;
 
-  const g_item_t *ammo = ent->item->ammo_item;
+  const g_item_t *ammo = ent->item->def.ammo ? &g_items[ent->item->def.ammo] : NULL;
   if (ammo) {
     const int16_t *stock = &cl->inventory[ammo->def.tag];
 
@@ -138,7 +138,7 @@ static bool G_HasWeapon(const g_client_t *cl, const g_item_t *weapon) {
     return false;
   }
 
-  if (weapon->def.ammo &&cl->inventory[weapon->ammo_item->def.tag] < weapon->def.quantity) {
+  if (weapon->def.ammo && cl->inventory[weapon->def.ammo] < weapon->def.quantity) {
     return false;
   }
 
@@ -185,7 +185,7 @@ void G_UseWeapon(g_client_t *cl, const g_item_t *item) {
 
   if (item->def.ammo) { // ensure we have ammo
 
-    if (!cl->inventory[item->ammo_item->def.tag]) {
+    if (!cl->inventory[item->def.ammo]) {
       gi.ClientPrint(cl, PRINT_HIGH, "Not enough ammo for %s\n", item->def.name);
       return;
     }
@@ -201,8 +201,12 @@ void G_UseWeapon(g_client_t *cl, const g_item_t *item) {
  */
 g_entity_t *G_DropWeapon(g_client_t *cl, const g_item_t *item) {
 
-  const g_item_t *ammo = item->ammo_item;
-  const uint16_t ammo_index = ammo->def.tag;
+  if (!item->def.ammo) {
+    return NULL;
+  }
+
+  const g_item_t *ammo = &g_items[item->def.ammo];
+  const uint16_t ammo_index = item->def.ammo;
 
   g_entity_t *dropped = G_DropItem(cl, item);
 
@@ -388,7 +392,7 @@ void G_ClientWeaponThink(g_client_t *cl) {
           cl->entity->s.model2 = item->model_index;
 
           if (item->def.ammo) {
-            cl->ammo_index = item->ammo_item->def.tag;
+            cl->ammo_index = item->def.ammo;
           } else {
             cl->ammo_index = 0;
           }

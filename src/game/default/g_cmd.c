@@ -107,7 +107,7 @@ static void G_Give_f(g_client_t *cl) {
       if (!available) {
         for (g_item_tag_t w = WEAPON_FIRST; w < WEAPON_LAST; w++) {
           if (G_ItemAvailable(&g_items[w]) &&
-              g_items[w].ammo_item == it) {
+              g_items[w].def.ammo == it->def.tag) {
             available = true;
             break;
           }

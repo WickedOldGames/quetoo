@@ -53,8 +53,8 @@ bool G_Ai_CanPickup(const g_client_t *cl, const g_entity_t *other) {
       return inventory[item->def.tag] < item->def.max;
     case ITEM_WEAPON:
       if (inventory[item->def.tag]) {
-        if (item->ammo_item) {
-          return inventory[item->ammo_item->def.tag] < item->ammo_item->def.max;
+        if (item->def.ammo) {
+          return inventory[item->def.ammo] < g_items[item->def.ammo].def.max;
         }
 
         return false;

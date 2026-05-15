@@ -984,7 +984,7 @@ g_entity_t *G_DropItem(g_client_t *cl, const g_item_t *item) {
   it->s.model1 = item->model_index;
 
   if (item->def.type == ITEM_WEAPON) {
-    const g_item_t *ammo = item->ammo_item;
+    const g_item_t *ammo = item->def.ammo ? &g_items[item->def.ammo] : NULL;
     if (ammo) {
       it->health = ammo->def.quantity;
     }
@@ -1298,7 +1298,7 @@ void G_PrecacheItem(const g_item_t *it) {
 
   // parse everything for its ammo
   if (it->def.ammo) {
-    const g_item_t *ammo = it->ammo_item;
+    const g_item_t *ammo = &g_items[it->def.ammo];
 
     if (ammo != it) {
       G_PrecacheItem(ammo);
@@ -1372,7 +1372,7 @@ void G_SpawnItem(g_entity_t *ent, const g_item_t *item) {
 
   // weapons override the health field to store their ammo count
   if (ent->item->def.type == ITEM_WEAPON) {
-    const g_item_t *ammo = ent->item->ammo_item;
+    const g_item_t *ammo = ent->item->def.ammo ? &g_items[ent->item->def.ammo] : NULL;
     if (ammo) {
       ent->health = ammo->def.quantity;
     } else {
@@ -1434,26 +1434,6 @@ bool G_ItemAvailable(const g_item_t *item) {
   }
 
   return true;
-}
-
-/**
- * @brief Called to set up weapons usable by the player.
- * Filters to the active item set, then scans for out-of-set weapons placed by
- * the mapper.
- */
-static void G_InitWeapons(void) {
-
-  for (g_item_tag_t t = WEAPON_FIRST; t < WEAPON_LAST; t++) {
-
-    g_item_t *weapon = &g_items[t];
-
-    if (weapon->def.ammo) {
-      weapon->ammo_item = G_FindItem(weapon->def.ammo);
-      if (!weapon->ammo_item) {
-        gi.Error("Invalid ammo specified for %s\n", weapon->def.name);
-      }
-    }
-  }
 }
 
 /**
@@ -1574,6 +1554,4 @@ void G_InitItems(void) {
   for (size_t i = 0; i < bg_num_items; i++) {
     G_InitItem(&g_items[bg_item_defs[i].tag], &bg_item_defs[i]);
   }
-
-  G_InitWeapons();
 }

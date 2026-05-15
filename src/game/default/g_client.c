@@ -589,15 +589,13 @@ static void G_Give(g_client_t *cl, char *it, int16_t quantity) {
     cl->inventory[index]++;
 
     if (item->def.ammo) {
-      const g_item_t *ammo = item->ammo_item;
-      if (ammo) {
-        const g_item_tag_t ammo_index = ammo->def.tag;
+      const g_item_t *ammo = &g_items[item->def.ammo];
+      const g_item_tag_t ammo_index = ammo->def.tag;
 
-        if (quantity > -1) {
-          cl->inventory[ammo_index] = quantity;
-        } else {
-          cl->inventory[ammo_index] = ammo->def.quantity;
-        }
+      if (quantity > -1) {
+        cl->inventory[ammo_index] = quantity;
+      } else {
+        cl->inventory[ammo_index] = ammo->def.quantity;
       }
     }
   } else { // while other items receive quantity directly
