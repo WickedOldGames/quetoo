@@ -120,8 +120,8 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "+debug cgame"
-            isEnabled = "NO">
+            argument = "+debug sound"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "+set developer 1"

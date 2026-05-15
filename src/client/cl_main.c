@@ -250,7 +250,7 @@ void Cl_ClearState(void) {
 
   S_ClearPlaylist();
 
-  S_StopMusic();
+  S_NextTrack_f();
 
   memset(&cl, 0, sizeof(cl));
 

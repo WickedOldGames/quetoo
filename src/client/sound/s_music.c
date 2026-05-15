@@ -172,6 +172,8 @@ s_music_t *S_LoadMusic(const char *name) {
  */
 void S_StopMusic(void) {
 
+  Com_Debug(DEBUG_SOUND, "Stopping\n");
+
   alSourceStop(s_music_state.source);
   S_GetError(NULL);
 
@@ -243,15 +245,15 @@ static void S_BufferMusic(s_music_t *music, bool setup_buffers) {
     alSourceQueueBuffers(s_music_state.source, 1, &buffer);
     S_GetError(NULL);
   }
-
-  Com_Debug(DEBUG_SOUND, "%i music chunks processed\n", i);
 }
 
 /**
  * @brief Begins playback of the specified s_music_t.
  */
 static void S_PlayMusic(s_music_t *music) {
-  
+
+  Com_Debug(DEBUG_SOUND, "Playing %s\n", music->media.name);
+
   SDL_LockMutex(s_music_state.mutex);
 
   S_StopMusic();
@@ -395,9 +397,10 @@ void S_RenderMusic(const s_stage_t *stage) {
 void S_NextTrack_f(void) {
 
   if (s_music_volume->value) {
+    s_music_t *current = S_CurrentMusic();
     s_music_t *music = S_NextMusic();
 
-    if (music) {
+    if (music && music != current) {
       S_PlayMusic(music);
     } else {
       Com_Debug(DEBUG_SOUND, "No music available\n");
