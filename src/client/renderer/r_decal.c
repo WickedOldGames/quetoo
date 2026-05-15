@@ -138,8 +138,16 @@ static void R_ClipDecalToFace(const r_view_t *view,
   const vec2_t atlas_size = Vec2_Subtract(atlas_max, atlas_min);
 
   const int32_t num_triangles = w->num_points - 2;
+  const int32_t overflow = decals->triangles->len + num_triangles - MAX_BSP_BLOCK_DECALS;
+  if (overflow > 0) {
+    g_array_remove_range(decals->triangles, 0, Mini(overflow, (int32_t) decals->triangles->len));
+  }
   
   for (int32_t i = 0; i < num_triangles; i++) {
+    if (decals->triangles->len == MAX_BSP_BLOCK_DECALS) {
+      break;
+    }
+
     r_decal_triangle_t triangle;
     
     const int32_t indices[3] = { 0, i + 1, i + 2 };
@@ -389,9 +397,11 @@ void R_DrawDecals(const r_view_t *view) {
       }
 
       if (d->dirty) {
-        const GLsizei size = d->triangles->len * sizeof(r_decal_triangle_t);
+        const GLsizeiptr capacity = MAX_BSP_BLOCK_DECALS * sizeof(r_decal_triangle_t);
+        const GLsizeiptr size = d->triangles->len * sizeof(r_decal_triangle_t);
         glBindBuffer(GL_ARRAY_BUFFER, d->vertex_buffer);
-        glBufferData(GL_ARRAY_BUFFER, size, d->triangles->data, GL_DYNAMIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, capacity, NULL, GL_DYNAMIC_DRAW);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, size, d->triangles->data);
         glBindBuffer(GL_ARRAY_BUFFER, 0);
         d->dirty = false;
       }

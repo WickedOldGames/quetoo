@@ -294,7 +294,7 @@ void Cg_LoadClient(cg_client_info_t *ci, const char *s) {
 }
 
 /**
- * @brief Fs_Enumerator for preloading player models with their default skin.
+ * @brief `Fs_Enumerator` for preloading player models with their default skin.
  */
 static void Cg_PreloadClientModel(const char *path, void *data) {
 

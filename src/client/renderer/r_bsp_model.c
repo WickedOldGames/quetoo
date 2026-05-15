@@ -300,13 +300,14 @@ static void R_LoadBspBlocks(r_bsp_model_t *bsp) {
 
     r_bsp_block_decals_t *decals = &out->decals;
 
-    decals->triangles = g_array_new(true, true, sizeof(r_decal_triangle_t));
+    decals->triangles = g_array_sized_new(true, true, sizeof(r_decal_triangle_t), MAX_BSP_BLOCK_DECALS);
 
     glGenVertexArrays(1, &decals->vertex_array);
     glBindVertexArray(decals->vertex_array);
 
     glGenBuffers(1, &decals->vertex_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, decals->vertex_buffer);
+    glBufferData(GL_ARRAY_BUFFER, MAX_BSP_BLOCK_DECALS * sizeof(r_decal_triangle_t), NULL, GL_DYNAMIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(r_decal_vertex_t), (void *) offsetof(r_decal_vertex_t, position));
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(r_decal_vertex_t), (void *) offsetof(r_decal_vertex_t, texcoord));
