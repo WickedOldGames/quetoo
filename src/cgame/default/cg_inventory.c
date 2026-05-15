@@ -41,9 +41,14 @@ void Cg_InitInventory(void) {
 
     if (bg_item_defs[t].ammo) {
       for (g_item_tag_t a = AMMO_FIRST; a < AMMO_LAST; a++) {
-        if (bg_item_defs[a].name && !strcmp(bg_item_defs[a].name, bg_item_defs[t].ammo)) {
+        if (!bg_item_defs[a].name || strcmp(bg_item_defs[a].name, bg_item_defs[t].ammo)) {
+          continue;
+        }
+        // Prefer the ammo from the active item set; keep searching for a better match.
+        const bool is_quake_ammo = (a >= AMMO_QUAKE_SHELLS);
+        const bool want_quake = (cg_state.items == ITEMS_QUAKE);
+        if (w->ammo_tag == ITEM_NONE || (is_quake_ammo == want_quake)) {
           w->ammo_tag = a;
-          break;
         }
       }
     }
