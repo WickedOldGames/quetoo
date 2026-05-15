@@ -42,6 +42,16 @@ sudo ln -s quetoo-data/target /usr/local/share/quetoo
 - **Platform detection**: Handled in `configure.ac` with per-platform CFLAGS/LDFLAGS
 - **Git revision**: Automatically embedded in builds via `AC_DEFINE_UNQUOTED(REVISION, ...)`
 
+### Adding or Removing Source Files
+
+All **three** build systems must be updated whenever `.c` or `.h` files are added or removed:
+
+1. **Autotools**: `Makefile.am` in the relevant `src/` subdirectory
+2. **Xcode**: `Quetoo.xcodeproj/project.pbxproj`
+   - UUIDs in `.pbxproj` must be exactly **24 uppercase hex characters** (e.g. `A1B2C3D4E5F6A7B8C9D0E1F2`). Use existing entries as reference. Non-standard UUIDs corrupt the project file.
+   - Validate with: `plutil -lint Quetoo.xcodeproj/project.pbxproj`
+3. **Windows MSVS**: Both `Quetoo.vs15/quetoo.sln` and `Quetoo.vs15/quetoo_all.sln`, plus the relevant `.vcxproj`. See the Windows section for the new library checklist.
+
 ## Testing
 
 ### Running Tests
@@ -250,8 +260,16 @@ See `doc/copilot/FRUSTUM_BUG_FIX.md`.
 
 ### Windows
 
-- **MinGW cross-compile**: From Linux/macOS (see `mingw-cross/`)
-- **Visual Studio**: Projects in `Quetoo.vs15/` (may be out of date)
+- **Compiler**: MSVS + clang-cl (`clang-cl.exe` + `lld-link`). **Not MinGW.** The `mingw-cross/` directory is vestigial.
+- **POSIX functions unavailable**: Functions like `strndup` do not exist under MSVS/Clang. Use portable alternatives or add a compat shim.
+- **Projects**: `Quetoo.vs15/` — solution files and per-module vcxproj files.
+- **CI solution**: GitHub Actions builds `quetoo_all.sln` (x64 only), **not** `quetoo.sln`. New projects must be added to **both** solution files.
+- **New library checklist**: When adding a new static lib (e.g. `libs/libfoo.vcxproj`):
+  1. Create `libs/libfoo.vcxproj` (and `.filters`)
+  2. Add project declaration + `ProjectConfigurationPlatforms` entries to `quetoo.sln`
+  3. Add project declaration + `ProjectConfigurationPlatforms` entries to `quetoo_all.sln`
+  4. Add `ProjectReference` + `ProjectDependencies` to any vcxproj that links it
+  5. `ProjectConfigurationPlatforms` entries must exist or MSBuild silently skips building the project
 
 ## Documentation
 

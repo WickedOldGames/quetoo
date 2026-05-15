@@ -7,6 +7,4 @@
 .vs
 bin
 ipch
-libs/*
-!libs/glib/*
 tmp
