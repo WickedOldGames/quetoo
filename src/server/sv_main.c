@@ -47,18 +47,12 @@ cvar_t *sv_timeout;
  */
 void Sv_DropClient(sv_client_t *client) {
 
-  Mem_ClearBuffer(&client->net_chan.message);
-  Mem_ClearBuffer(&client->datagram.buffer);
-
-  if (client->datagram.messages) {
-    g_list_free_full(client->datagram.messages, g_free);
-  }
-
   if (client->state > SV_CLIENT_FREE) { // send the disconnect
 
     g_client_t *cl = client->gclient;
 
     if (!cl->ai) { // bots have no network connection
+      Mem_ClearBuffer(&client->net_chan.message);
       Net_WriteByte(&client->net_chan.message, SV_CMD_DROP);
       Netchan_Transmit(&client->net_chan, client->net_chan.message.data, client->net_chan.message.size);
     }
@@ -69,6 +63,13 @@ void Sv_DropClient(sv_client_t *client) {
   }
 
   Sv_HttpClientDisconnect(&client->http);
+
+  Mem_ClearBuffer(&client->net_chan.message);
+  Mem_ClearBuffer(&client->datagram.buffer);
+
+  if (client->datagram.messages) {
+    g_list_free_full(client->datagram.messages, g_free);
+  }
 
   g_client_t *gclient = client->gclient;
   memset(client, 0, sizeof(*client));
