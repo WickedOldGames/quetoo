@@ -136,10 +136,6 @@ static void Cg_DrawVital(GLint x, GLint ch, const int16_t value, const r_image_t
 static void Cg_DrawVitals(const player_state_t *ps) {
   GLint x, cw, ch, x_offset;
 
-  if (!cg_draw_vitals->integer) {
-    return;
-  }
-
   cgi.BindFont("large", &cw, &ch);
 
   x_offset = 3 * cw;
@@ -209,10 +205,6 @@ static void Cg_DrawPowerup(GLint y, const int16_t value, const r_image_t *icon) 
 static void Cg_DrawPowerups(const player_state_t *ps) {
   GLint x, y, ch;
 
-  if (!cg_draw_powerups->integer) {
-    return;
-  }
-
   cgi.BindFont("large", &ch, NULL);
 
   x = HUD_PIC_HEIGHT / 2;
@@ -250,10 +242,6 @@ static void Cg_DrawPowerups(const player_state_t *ps) {
 static void Cg_DrawHeldFlag(const player_state_t *ps) {
   GLint x, y;
 
-  if (!cg_draw_held_flag->integer) {
-    return;
-  }
-
   int16_t flag = 0;
 
   for (g_item_tag_t i = FLAG_FIRST; i < FLAG_LAST; i++) {
@@ -284,10 +272,6 @@ static void Cg_DrawHeldFlag(const player_state_t *ps) {
  */
 static void Cg_DrawPickup(const player_state_t *ps) {
   GLint x, y, cw, ch;
-
-  if (!cg_draw_pickup->integer) {
-    return;
-  }
 
   cgi.BindFont(NULL, &cw, &ch);
 
@@ -323,10 +307,6 @@ static void Cg_DrawFrags(const player_state_t *ps) {
     return;
   }
 
-  if (!cg_draw_frags->integer) {
-    return;
-  }
-
   cgi.BindFont("small", NULL, &ch);
 
   x = cgi.context->w - cgi.StringWidth("Frags");
@@ -355,10 +335,6 @@ static void Cg_DrawDeaths(const player_state_t *ps) {
     return;
   }
 
-  if (!cg_draw_deaths->integer) {
-    return;
-  }
-
   cgi.BindFont("small", NULL, &ch);
 
   x = cgi.context->w - cgi.StringWidth("Deaths");
@@ -383,10 +359,6 @@ static void Cg_DrawDeaths(const player_state_t *ps) {
 static void Cg_DrawCaptures(const player_state_t *ps) {
   const int16_t captures = ps->stats[STAT_CAPTURES];
   GLint x, y, cw, ch;
-
-  if (!cg_draw_captures->integer) {
-    return;
-  }
 
   if (!cg_state.ctf) {
     return;
@@ -488,10 +460,6 @@ static void Cg_DrawTime(const player_state_t *ps) {
     return;
   }
 
-  if (!cg_draw_time->integer) {
-    return;
-  }
-
   cgi.BindFont("small", NULL, &ch);
 
   x = cgi.context->w - cgi.StringWidth(string);
@@ -514,10 +482,6 @@ static void Cg_DrawTeamBanner(const player_state_t *ps) {
   GLint x, y;
 
   if (team == -1) {
-    return;
-  }
-
-  if (!cg_draw_team_banner->integer) {
     return;
   }
 
