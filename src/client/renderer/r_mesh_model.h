@@ -23,6 +23,8 @@
 
 #include "r_types.h"
 
+void R_SaveMeshConfigs(const r_model_t *mod);
+
 #if defined(__R_LOCAL_H__)
 void R_LoadMeshConfigs(r_model_t *mod);
 void R_LoadMeshVertexArray(r_model_t *mod);

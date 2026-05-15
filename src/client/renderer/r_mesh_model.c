@@ -31,6 +31,7 @@ static void R_LoadMeshConfig(r_mesh_config_t *config, const char *path) {
   memset(config, 0, sizeof(*config));
 
   config->transform = Mat4_Identity();
+  config->scale = 1.f;
 
   if (Fs_Load(path, &buf) == -1) {
     return;
@@ -51,6 +52,7 @@ static void R_LoadMeshConfig(r_mesh_config_t *config, const char *path) {
         break;
       }
 
+      config->translate = v;
       config->transform = Mat4_ConcatTranslation(config->transform, v);
       continue;
     }
@@ -62,6 +64,7 @@ static void R_LoadMeshConfig(r_mesh_config_t *config, const char *path) {
         break;
       }
 
+      config->rotate = v;
       config->transform = Mat4_ConcatRotation3(config->transform, v);
       continue;
     }
@@ -73,6 +76,7 @@ static void R_LoadMeshConfig(r_mesh_config_t *config, const char *path) {
         break;
       }
 
+      config->scale = v;
       config->transform = Mat4_ConcatScale(config->transform, v);
       continue;
     }
@@ -104,8 +108,65 @@ void R_LoadMeshConfigs(r_model_t *mod) {
   Dirname(mod->media.name, path);
 
   R_LoadMeshConfig(&mod->mesh->config.world, va("%s/world.cfg", path));
-  R_LoadMeshConfig(&mod->mesh->config.view, va("%s/view.cfg", path));
-  R_LoadMeshConfig(&mod->mesh->config.link, va("%s/link.cfg", path));
+
+  if (g_str_has_prefix(mod->media.name, "models/weapons/")) {
+    R_LoadMeshConfig(&mod->mesh->config.link, va("%s/link.cfg", path));
+    R_LoadMeshConfig(&mod->mesh->config.view, va("%s/view.cfg", path));
+  }
+}
+
+/**
+ * @brief Saves the specified `r_mesh_config_t` to the file at path.
+ */
+static void R_SaveMeshConfig(const r_mesh_config_t *cfg, const char *path) {
+
+  file_t *file = Fs_OpenWrite(path);
+  if (!file) {
+    Com_Warn("Failed to write %s\n", path);
+    return;
+  }
+
+  char line[MAX_STRING_CHARS];
+  size_t len;
+
+  if (!Vec3_Equal(cfg->translate, Vec3_Zero())) {
+    len = (size_t) g_snprintf(line, sizeof(line), "translate %g %g %g\n", cfg->translate.x, cfg->translate.y, cfg->translate.z);
+    Fs_Write(file, line, 1, len);
+  }
+
+  if (!Vec3_Equal(cfg->rotate, Vec3_Zero())) {
+    len = (size_t) g_snprintf(line, sizeof(line), "rotate %g %g %g\n", cfg->rotate.x, cfg->rotate.y, cfg->rotate.z);
+    Fs_Write(file, line, 1, len);
+  }
+
+  if (cfg->scale != 1.f) {
+    len = (size_t) g_snprintf(line, sizeof(line), "scale %g\n", cfg->scale);
+    Fs_Write(file, line, 1, len);
+  }
+
+  if (!Vec3_Equal(cfg->muzzle, Vec3_Zero())) {
+    len = (size_t) g_snprintf(line, sizeof(line), "muzzle %g %g %g\n", cfg->muzzle.x, cfg->muzzle.y, cfg->muzzle.z);
+    Fs_Write(file, line, 1, len);
+  }
+
+  Fs_Close(file);
+  Com_Debug(DEBUG_RENDERER, "Wrote %s\n", path);
+}
+
+/**
+ * @brief Saves all `r_mesh_config_t` for the specified `r_model_t`.
+ */
+void R_SaveMeshConfigs(const r_model_t *mod) {
+  char path[MAX_QPATH];
+
+  Dirname(mod->media.name, path);
+
+  R_SaveMeshConfig(&mod->mesh->config.world, va("%s/world.cfg", path));
+
+  if (g_str_has_prefix(mod->media.name, "models/weapons/")) {
+    R_SaveMeshConfig(&mod->mesh->config.link, va("%s/link.cfg", path));
+    R_SaveMeshConfig(&mod->mesh->config.view, va("%s/view.cfg", path));
+  }
 }
 
 /**

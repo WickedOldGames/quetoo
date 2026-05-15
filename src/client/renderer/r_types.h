@@ -1269,16 +1269,31 @@ typedef struct {
  * @brief Provides load-time normalization of mesh models.
  */
 typedef struct {
+  /**
+   * @brief The translation component.
+   */
+  vec3_t translate;
+
+  /**
+   * @brief The rotation component (Euler angles).
+   */
+  vec3_t rotate;
+
+  /**
+   * @brief The scale component.
+   */
+  float scale;
+
+  /**
+   * @brief The muzzle position in model space (Quetoo coordinate system).
+   * @remarks This field is only ever accessed via the `view` config.
+   */
+  vec3_t muzzle;
 
   /**
    * @brief The normalization transform matrix.
    */
   mat4_t transform;
-
-  /**
-   * @brief The muzzle position in model space (Quetoo coordinate system).
-   */
-  vec3_t muzzle;
 } r_mesh_config_t;
 
 /**

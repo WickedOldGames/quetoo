@@ -35,16 +35,6 @@ typedef struct MeshViewController MeshViewController;
 typedef struct MeshViewControllerInterface MeshViewControllerInterface;
 
 /**
- * @brief Transform components parsed from a mesh config file.
- */
-typedef struct {
-  vec3_t translate;
-  vec3_t rotate;
-  float scale;
-  vec3_t muzzle;
-} MeshConfig;
-
-/**
  * @brief The MeshViewController type.
  * @extends ViewController
  * @ingroup ViewControllers
@@ -65,21 +55,6 @@ struct MeshViewController {
    * @brief The model being edited.
    */
   r_model_t *model;
-
-  /**
-   * @brief Raw world.cfg components.
-   */
-  MeshConfig world;
-
-  /**
-   * @brief Raw link.cfg components.
-   */
-  MeshConfig link;
-
-  /**
-   * @brief Raw view.cfg components.
-   */
-  MeshConfig view;
 
   /**
    * @brief World.cfg translate text view ("x y z").

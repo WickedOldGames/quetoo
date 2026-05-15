@@ -38,55 +38,14 @@ static char *vs(const vec3_t v) {
 }
 
 /**
- * @brief Parses a mesh config file into transform components.
+ * @brief Rebuilds the transform matrix from the raw fields of a config.
  */
-static void ParseMeshConfig(const char *path, MeshConfig *cfg) {
+static void RebuildMeshConfigTransform(r_mesh_config_t *cfg) {
 
-  cfg->translate = Vec3_Zero();
-  cfg->rotate = Vec3_Zero();
-  cfg->scale = 1.f;
-  cfg->muzzle = Vec3_Zero();
-
-  void *buf;
-  if (cgi.LoadFile(path, &buf) == -1) {
-    return;
-  }
-
-  parser_t parser = Parse_Init((const char *) buf, PARSER_DEFAULT);
-  char token[MAX_STRING_CHARS];
-
-  while (true) {
-
-    if (!Parse_Token(&parser, PARSE_DEFAULT, token, sizeof(token))) {
-      break;
-    }
-
-    const parse_flags_t flags = PARSE_DEFAULT | PARSE_WITHIN_QUOTES | PARSE_NO_WRAP;
-
-    if (!g_strcmp0(token, "translate")) {
-      Parse_Primitive(&parser, flags, PARSE_FLOAT, cfg->translate.xyz, 3);
-    } else if (!g_strcmp0(token, "rotate")) {
-      Parse_Primitive(&parser, flags, PARSE_FLOAT, cfg->rotate.xyz, 3);
-    } else if (!g_strcmp0(token, "scale")) {
-      Parse_Primitive(&parser, flags, PARSE_FLOAT, &cfg->scale, 1);
-    } else if (!g_strcmp0(token, "muzzle")) {
-      Parse_Primitive(&parser, flags, PARSE_FLOAT, cfg->muzzle.xyz, 3);
-    }
-  }
-
-  cgi.FreeFile(buf);
-}
-
-/**
- * @brief Builds a mat4_t transform from raw config components.
- */
-static mat4_t MeshConfigTransform(const MeshConfig *cfg) {
-
-  mat4_t m = Mat4_Identity();
-  m = Mat4_ConcatTranslation(m, cfg->translate);
-  m = Mat4_ConcatRotation3(m, cfg->rotate);
-  m = Mat4_ConcatScale(m, cfg->scale);
-  return m;
+  cfg->transform = Mat4_Identity();
+  cfg->transform = Mat4_ConcatTranslation(cfg->transform, cfg->translate);
+  cfg->transform = Mat4_ConcatRotation3(cfg->transform, cfg->rotate);
+  cfg->transform = Mat4_ConcatScale(cfg->transform, cfg->scale);
 }
 
 #pragma mark - Delegates
@@ -104,36 +63,39 @@ static void didEndEditing(TextView *textView) {
 
   const char *text = textView->attributedText->string.chars ?: "";
 
+  r_mesh_config_t *world = &this->model->mesh->config.world;
+  r_mesh_config_t *link  = &this->model->mesh->config.link;
+  r_mesh_config_t *view  = &this->model->mesh->config.view;
+
   if (textView == this->worldTranslate) {
-    sscanf(text, "%f %f %f", &this->world.translate.x, &this->world.translate.y, &this->world.translate.z);
-    this->model->mesh->config.world.transform = MeshConfigTransform(&this->world);
+    sscanf(text, "%f %f %f", &world->translate.x, &world->translate.y, &world->translate.z);
+    RebuildMeshConfigTransform(world);
   } else if (textView == this->worldRotate) {
-    sscanf(text, "%f %f %f", &this->world.rotate.x, &this->world.rotate.y, &this->world.rotate.z);
-    this->model->mesh->config.world.transform = MeshConfigTransform(&this->world);
+    sscanf(text, "%f %f %f", &world->rotate.x, &world->rotate.y, &world->rotate.z);
+    RebuildMeshConfigTransform(world);
   } else if (textView == this->worldScale) {
-    sscanf(text, "%f", &this->world.scale);
-    this->model->mesh->config.world.transform = MeshConfigTransform(&this->world);
+    sscanf(text, "%f", &world->scale);
+    RebuildMeshConfigTransform(world);
   } else if (textView == this->linkTranslate) {
-    sscanf(text, "%f %f %f", &this->link.translate.x, &this->link.translate.y, &this->link.translate.z);
-    this->model->mesh->config.link.transform = MeshConfigTransform(&this->link);
+    sscanf(text, "%f %f %f", &link->translate.x, &link->translate.y, &link->translate.z);
+    RebuildMeshConfigTransform(link);
   } else if (textView == this->linkRotate) {
-    sscanf(text, "%f %f %f", &this->link.rotate.x, &this->link.rotate.y, &this->link.rotate.z);
-    this->model->mesh->config.link.transform = MeshConfigTransform(&this->link);
+    sscanf(text, "%f %f %f", &link->rotate.x, &link->rotate.y, &link->rotate.z);
+    RebuildMeshConfigTransform(link);
   } else if (textView == this->linkScale) {
-    sscanf(text, "%f", &this->link.scale);
-    this->model->mesh->config.link.transform = MeshConfigTransform(&this->link);
+    sscanf(text, "%f", &link->scale);
+    RebuildMeshConfigTransform(link);
   } else if (textView == this->viewTranslate) {
-    sscanf(text, "%f %f %f", &this->view.translate.x, &this->view.translate.y, &this->view.translate.z);
-    this->model->mesh->config.view.transform = MeshConfigTransform(&this->view);
+    sscanf(text, "%f %f %f", &view->translate.x, &view->translate.y, &view->translate.z);
+    RebuildMeshConfigTransform(view);
   } else if (textView == this->viewRotate) {
-    sscanf(text, "%f %f %f", &this->view.rotate.x, &this->view.rotate.y, &this->view.rotate.z);
-    this->model->mesh->config.view.transform = MeshConfigTransform(&this->view);
+    sscanf(text, "%f %f %f", &view->rotate.x, &view->rotate.y, &view->rotate.z);
+    RebuildMeshConfigTransform(view);
   } else if (textView == this->viewScale) {
-    sscanf(text, "%f", &this->view.scale);
-    this->model->mesh->config.view.transform = MeshConfigTransform(&this->view);
+    sscanf(text, "%f", &view->scale);
+    RebuildMeshConfigTransform(view);
   } else if (textView == this->viewMuzzle) {
-    sscanf(text, "%f %f %f", &this->view.muzzle.x, &this->view.muzzle.y, &this->view.muzzle.z);
-    this->model->mesh->config.view.muzzle = this->view.muzzle;
+    sscanf(text, "%f %f %f", &view->muzzle.x, &view->muzzle.y, &view->muzzle.z);
   } else {
     Cg_Debug("Unknown text view %p\n", (void *) textView);
   }
@@ -216,32 +178,44 @@ static MeshViewController *init(MeshViewController *self) {
  * @memberof MeshViewController
  */
 static void setModel(MeshViewController *self, r_model_t *model) {
-  char path[MAX_QPATH];
 
   self->model = model;
-  if (self->model) {
-    Dirname(self->model->media.name, path);
-    ParseMeshConfig(self->model ? va("%s/world.cfg", path) : "", &self->world);
-    ParseMeshConfig(self->model ? va("%s/link.cfg",  path) : "", &self->link);
-    ParseMeshConfig(self->model ? va("%s/view.cfg",  path) : "", &self->view);
-  } else {
-    self->world = (MeshConfig) { .scale = 1.f };
-    self->link = (MeshConfig) { .scale = 1.f };
-    self->view = (MeshConfig) { .scale = 1.f };
+
+  const bool is_weapon = self->model && g_str_has_prefix(self->model->media.name, "models/weapons/");
+
+  const r_mesh_config_t *world = self->model ? &self->model->mesh->config.world : &(r_mesh_config_t) { .scale = 1.f };
+  const r_mesh_config_t *link  = self->model ? &self->model->mesh->config.link  : &(r_mesh_config_t) { .scale = 1.f };
+  const r_mesh_config_t *view  = self->model ? &self->model->mesh->config.view  : &(r_mesh_config_t) { .scale = 1.f };
+
+  $(self->worldTranslate, setAttributedText, vs(world->translate));
+  $(self->worldRotate,    setAttributedText, vs(world->rotate));
+  $(self->worldScale,     setAttributedText, va("%g", world->scale));
+
+  $(self->linkTranslate,  setAttributedText, vs(link->translate));
+  $(self->linkRotate,     setAttributedText, vs(link->rotate));
+  $(self->linkScale,      setAttributedText, va("%g", link->scale));
+
+  $(self->viewTranslate,  setAttributedText, vs(view->translate));
+  $(self->viewRotate,     setAttributedText, vs(view->rotate));
+  $(self->viewScale,      setAttributedText, va("%g", view->scale));
+  $(self->viewMuzzle,     setAttributedText, vs(view->muzzle));
+
+  TextView *link_views[] = { self->linkTranslate, self->linkRotate, self->linkScale };
+  TextView *view_views[] = { self->viewTranslate, self->viewRotate, self->viewScale, self->viewMuzzle };
+
+  for (size_t i = 0; i < lengthof(link_views); i++) {
+    link_views[i]->control.state &= ~ControlStateDisabled;
+    if (!is_weapon) {
+      link_views[i]->control.state |= ControlStateDisabled;
+    }
   }
 
-  $(self->worldTranslate, setAttributedText, vs(self->world.translate));
-  $(self->worldRotate, setAttributedText, vs(self->world.rotate));
-  $(self->worldScale, setAttributedText, va("%g", self->world.scale));
-
-  $(self->linkTranslate, setAttributedText, vs(self->link.translate));
-  $(self->linkRotate, setAttributedText, vs(self->link.rotate));
-  $(self->linkScale, setAttributedText, va("%g", self->link.scale));
-
-  $(self->viewTranslate, setAttributedText, vs(self->view.translate));
-  $(self->viewRotate, setAttributedText, vs(self->view.rotate));
-  $(self->viewScale, setAttributedText, va("%g", self->view.scale));
-  $(self->viewMuzzle, setAttributedText, vs(self->view.muzzle));
+  for (size_t i = 0; i < lengthof(view_views); i++) {
+    view_views[i]->control.state &= ~ControlStateDisabled;
+    if (!is_weapon) {
+      view_views[i]->control.state |= ControlStateDisabled;
+    }
+  }
 }
 
 /**
@@ -254,56 +228,7 @@ static void save(MeshViewController *self) {
     return;
   }
 
-  char dir[MAX_QPATH];
-  Dirname(self->model->media.name, dir);
-
-  typedef struct {
-    const char *name;
-    const MeshConfig *cfg;
-  } MeshConfigFile;
-
-  const MeshConfigFile files[] = {
-    { "world.cfg", &self->world },
-    { "link.cfg",  &self->link },
-    { "view.cfg",  &self->view },
-  };
-
-  for (size_t c = 0; c < lengthof(files); c++) {
-
-    const MeshConfigFile *f = &files[c];
-    const char *path = va("%s/%s", dir, f->name);
-    file_t *file = cgi.OpenFileWrite(path);
-    if (!file) {
-      Cg_Warn("Failed to write %s\n", path);
-      continue;
-    }
-
-    char line[MAX_STRING_CHARS];
-    size_t len;
-
-    if (!Vec3_Equal(f->cfg->translate, Vec3_Zero())) {
-      len = (size_t) g_snprintf(line, sizeof(line), "translate %s\n", vs(f->cfg->translate));
-      cgi.WriteFile(file, line, 1, len);
-    }
-
-    if (!Vec3_Equal(f->cfg->rotate, Vec3_Zero())) {
-      len = (size_t) g_snprintf(line, sizeof(line), "rotate %s\n", vs(f->cfg->rotate));
-      cgi.WriteFile(file, line, 1, len);
-    }
-
-    if (f->cfg->scale != 1.f) {
-      len = (size_t) g_snprintf(line, sizeof(line), "scale %g\n", f->cfg->scale);
-      cgi.WriteFile(file, line, 1, len);
-    }
-
-    if (!Vec3_Equal(f->cfg->muzzle, Vec3_Zero())) {
-      len = (size_t) g_snprintf(line, sizeof(line), "muzzle %s\n", vs(f->cfg->muzzle));
-      cgi.WriteFile(file, line, 1, len);
-    }
-
-    cgi.CloseFile(file);
-    Cg_Debug("Wrote %s\n", path);
-  }
+  cgi.SaveMeshConfigs(self->model);
 }
 
 #pragma mark - Class lifecycle

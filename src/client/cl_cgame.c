@@ -282,6 +282,7 @@ void Cl_InitCgame(void) {
   import.CreateAnimation = R_CreateAnimation;
   import.LoadMaterial = R_LoadMaterial;
   import.LoadModel = R_LoadModel;
+  import.SaveMeshConfigs = R_SaveMeshConfigs;
   import.WorldModel = R_WorldModel;
 
   import.InitView = R_InitView;
