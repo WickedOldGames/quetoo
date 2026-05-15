@@ -320,7 +320,7 @@ void G_PlayTechSound(g_client_t *cl) {
       .entity = cl->entity,
       .atten = SOUND_ATTEN_LINEAR
     }, MULTICAST_PHS);
-    cl->tech_sound_time = g_level.time + 1000;
+    cl->tech_sound_time = g_level.time + 500;
   }
 }
 
@@ -334,6 +334,8 @@ static void G_WeaponFired(g_client_t *cl, uint32_t interval, uint32_t ammo_neede
 
   if (G_HasTech(cl, TECH_HASTE)) {
     interval *= TECH_HASTE_FACTOR;
+    G_PlayTechSound(cl);
+  } else if (G_HasTech(cl, TECH_STRENGTH)) {
     G_PlayTechSound(cl);
   }
 

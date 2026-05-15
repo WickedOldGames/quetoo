@@ -58,8 +58,8 @@
   /**
    * @brief Regen constants
    */
-  #define TECH_REGEN_TICK_TIME 750
-  #define TECH_REGEN_HEALTH 2
+  #define TECH_REGEN_TICK_TIME 500
+  #define TECH_REGEN_HEALTH 1
   
   /**
    * @brief Vampire scaling factor
