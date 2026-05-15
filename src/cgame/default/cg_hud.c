@@ -509,12 +509,20 @@ static void Cg_DrawCrosshair(const player_state_t *ps) {
       return;
     }
 
+    if (ps->stats[STAT_SCORES]) {
+      return; // scoreboard
+    }
+
     if (cgi.client->third_person) {
       return;
     }
 
     if (ps->stats[STAT_SPECTATOR] && !ps->stats[STAT_CHASE]) {
       return; // spectating
+    }
+
+    if (ps->pm_state.type == PM_DEAD) {
+      return; // dead
     }
 
     if (!Cg_HasWeapon(ps)) {
