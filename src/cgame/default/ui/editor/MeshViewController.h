@@ -35,14 +35,14 @@ typedef struct MeshViewController MeshViewController;
 typedef struct MeshViewControllerInterface MeshViewControllerInterface;
 
 /**
- * @brief Raw (unapplied) transform components parsed from a mesh config file.
+ * @brief Transform components parsed from a mesh config file.
  */
 typedef struct {
   vec3_t translate;
   vec3_t rotate;
   float scale;
   vec3_t muzzle;
-} cg_mesh_config_raw_t;
+} MeshConfig;
 
 /**
  * @brief The MeshViewController type.
@@ -69,42 +69,67 @@ struct MeshViewController {
   /**
    * @brief Raw world.cfg components.
    */
-  cg_mesh_config_raw_t world;
+  MeshConfig world;
 
   /**
-   * @brief World.cfg translate X slider.
+   * @brief Raw link.cfg components.
    */
-  Slider *worldTranslateX;
+  MeshConfig link;
 
   /**
-   * @brief World.cfg translate Y slider.
+   * @brief Raw view.cfg components.
    */
-  Slider *worldTranslateY;
+  MeshConfig view;
 
   /**
-   * @brief World.cfg translate Z slider.
+   * @brief World.cfg translate text view ("x y z").
    */
-  Slider *worldTranslateZ;
+  TextView *worldTranslate;
 
   /**
-   * @brief World.cfg rotate X slider.
+   * @brief World.cfg rotate text view ("x y z").
    */
-  Slider *worldRotateX;
+  TextView *worldRotate;
 
   /**
-   * @brief World.cfg rotate Y slider.
+   * @brief World.cfg scale text view ("f").
    */
-  Slider *worldRotateY;
+  TextView *worldScale;
 
   /**
-   * @brief World.cfg rotate Z slider.
+   * @brief Link.cfg translate text view ("x y z").
    */
-  Slider *worldRotateZ;
+  TextView *linkTranslate;
 
   /**
-   * @brief World.cfg scale slider.
+   * @brief Link.cfg rotate text view ("x y z").
    */
-  Slider *worldScale;
+  TextView *linkRotate;
+
+  /**
+   * @brief Link.cfg scale text view ("f").
+   */
+  TextView *linkScale;
+
+  /**
+   * @brief View.cfg translate text view ("x y z").
+   */
+  TextView *viewTranslate;
+
+  /**
+   * @brief View.cfg rotate text view ("x y z").
+   */
+  TextView *viewRotate;
+
+  /**
+   * @brief View.cfg scale text view ("f").
+   */
+  TextView *viewScale;
+
+  /**
+   * @brief View.cfg muzzle text view ("x y z").
+   */
+  TextView *viewMuzzle;
 };
 
 /**
