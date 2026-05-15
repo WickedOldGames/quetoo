@@ -27,8 +27,6 @@
 
 #pragma mark - Internal helpers
 
-static MeshConfig identity = { .scale = 1.f };
-
 /**
  * @brief Parses a mesh config file into transform components.
  */
@@ -261,11 +259,6 @@ static void save(MeshViewController *self) {
   for (size_t c = 0; c < lengthof(files); c++) {
 
     const MeshConfigFile *f = &files[c];
-
-    if (!memcmp(&identity, f->cfg, sizeof(identity))) {
-      continue;
-    }
-
     const char *path = va("%s/%s", dir, f->name);
     file_t *file = cgi.OpenFileWrite(path);
     if (!file) {
