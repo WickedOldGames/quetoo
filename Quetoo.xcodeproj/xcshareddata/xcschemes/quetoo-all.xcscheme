@@ -145,7 +145,7 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "+map claustrophobopolis"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "+map tokays"

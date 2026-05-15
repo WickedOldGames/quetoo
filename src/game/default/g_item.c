@@ -1439,8 +1439,8 @@ bool G_ItemAvailable(const g_item_t *item) {
 /**
  * @brief Called to set up the special string for weapons usable by the player.
  * Filters to the active item set, then scans for out-of-set weapons placed by
- * the mapper. Populates g_level.weapon_bits[] and caps at 16 (STAT_WEAPONS
- * is a uint16_t).
+ * the mapper. Populates `g_level.weapon_bits[]` and caps at 16 (`STAT_WEAPONS`
+ * is a `uint16_t`).
  */
 static void G_InitWeapons(void) {
   char weapon_info[MAX_STRING_CHARS] = { '\0' };
@@ -1451,7 +1451,15 @@ static void G_InitWeapons(void) {
   // First pass: include all weapons in the active item set.
   for (g_item_tag_t t = WEAPON_FIRST; t < WEAPON_LAST; t++) {
 
-    const g_item_t *weapon = &g_items[t];
+    g_item_t *weapon = &g_items[t];
+
+    if (weapon->def.ammo) {
+      weapon->ammo_item = G_FindItem(weapon->def.ammo);
+
+      if (!weapon->ammo_item) {
+        gi.Error("Invalid ammo specified for %s\n", weapon->def.name);
+      }
+    }
 
     if (!G_ItemAvailable(weapon)) {
       continue;
@@ -1622,19 +1630,6 @@ void G_InitItems(void) {
 
   for (size_t i = 0; i < bg_num_items; i++) {
     G_InitItem(&g_items[bg_item_defs[i].tag], &bg_item_defs[i]);
-  }
-
-  // second pass: resolve ammo_item pointers (requires all defs to be populated first)
-  for (g_item_tag_t t = WEAPON_FIRST; t < ITEM_TOTAL; t++) {
-    g_item_t *it = &g_items[t];
-
-    if (it->def.ammo) {
-      it->ammo_item = G_FindItem(it->def.ammo);
-
-      if (!it->ammo_item) {
-        gi.Error("Invalid ammo specified for %s\n", it->def.name);
-      }
-    }
   }
 
   G_InitWeapons();
