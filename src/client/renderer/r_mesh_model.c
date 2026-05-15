@@ -108,11 +108,8 @@ void R_LoadMeshConfigs(r_model_t *mod) {
   Dirname(mod->media.name, path);
 
   R_LoadMeshConfig(&mod->mesh->config.world, va("%s/world.cfg", path));
-
-  if (g_str_has_prefix(mod->media.name, "models/weapons/")) {
-    R_LoadMeshConfig(&mod->mesh->config.link, va("%s/link.cfg", path));
-    R_LoadMeshConfig(&mod->mesh->config.view, va("%s/view.cfg", path));
-  }
+  R_LoadMeshConfig(&mod->mesh->config.link, va("%s/link.cfg", path));
+  R_LoadMeshConfig(&mod->mesh->config.view, va("%s/view.cfg", path));
 }
 
 /**
