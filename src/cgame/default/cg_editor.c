@@ -21,6 +21,7 @@
 
 #include "cg_local.h"
 
+#include "game/default/bg_item.h"
 #include "ui/editor/EditorViewController.h"
 
 /**
@@ -240,7 +241,17 @@ static void Cg_InitEditorEntity(int16_t number) {
   edit->def = cgi.EntityFromInfoString(info);
 
   const char *mod = cgi.EntityValue(edit->def, "model")->string;
-  edit->model = strlen(mod) ? cgi.LoadModel(mod) : NULL;
+  if (strlen(mod)) {
+    edit->model = cgi.LoadModel(mod);
+  } else {
+    const char *classname = cgi.EntityValue(edit->def, "classname")->string;
+    for (size_t i = 0; i < bg_num_items; i++) {
+      if (!g_strcmp0(bg_item_defs[i].classname, classname)) {
+        edit->model = cgi.LoadModel(bg_item_defs[i].model);
+        break;
+      }
+    }
+  }
 
   if (number < cgi.Bsp()->num_entities) {
     edit->brushes = cgi.EntityBrushes(cgi.Bsp()->entities[number]);
