@@ -590,8 +590,25 @@ void G_SpawnTech(const g_item_t *item) {
   ent->s.origin = spawn->s.origin;
 
   G_SpawnItem(ent, item);
+  ent->next_think = 0;
+  ent->Think = NULL;
 
-  ent->velocity = Vec3(RandomRangef(-250.f, 250.f), RandomRangef(-250.f, 250.f), RandomRangef(200.f, 400.f));
+  // Treat spawned techs like dropped items so they can land near spawn points
+  // instead of forcing immediate pickup on spawn.
+  ent->spawn_flags |= SF_ITEM_DROPPED;
+  ent->move_type = MOVE_TYPE_BOUNCE;
+  ent->touch_time = g_level.time + 1000;
+
+  vec3_t angles = spawn->s.angles;
+  angles.y += RandomRangef(-45.f, 45.f);
+
+  vec3_t forward;
+  Vec3_Vectors(angles, &forward, NULL, NULL);
+
+  ent->velocity = Vec3_Scale(forward, 100.f);
+  ent->velocity.z = 300.f + (Randomf() * 50.f);
+
+  G_ResetItem(ent);
 }
 
 /**
@@ -928,4 +945,3 @@ static void G_worldspawn(g_entity_t *ent) {
 
   G_worldspawn_Music();
 }
-
