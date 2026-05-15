@@ -1443,23 +1443,10 @@ bool G_ItemAvailable(const g_item_t *item) {
  * is a `uint16_t`).
  */
 static void G_InitWeapons(void) {
-  char weapon_info[MAX_STRING_CHARS];
-  const char *end = weapon_info + sizeof(weapon_info);
-
-  memset(g_level.weapons, -1, sizeof(g_level.weapons));
-
-  char *p = weapon_info;
-  *p = '\0';
-
-  int32_t bit = 0;
 
   for (g_item_tag_t t = WEAPON_FIRST; t < WEAPON_LAST; t++) {
 
     g_item_t *weapon = &g_items[t];
-
-    if (!G_ItemAvailable(weapon)) {
-      continue;
-    }
 
     if (weapon->def.ammo) {
       weapon->ammo_item = G_FindItem(weapon->def.ammo);
@@ -1467,12 +1454,7 @@ static void G_InitWeapons(void) {
         gi.Error("Invalid ammo specified for %s\n", weapon->def.name);
       }
     }
-
-    p += g_snprintf(p, end - p, p > weapon_info ? "\\%i" : "%i", weapon->def.tag);
-    g_level.weapons[t - WEAPON_FIRST] = bit++;
   }
-
-  gi.SetConfigString(CS_WEAPONS, weapon_info);
 }
 
 /**

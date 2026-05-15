@@ -276,16 +276,14 @@ void G_ClientStats(g_client_t *cl) {
 
   if (weapon) {
     cl->ps.stats[STAT_WEAPON] = cl->weapon->model_index;
-    const int32_t wb = g_level.weapons[weapon->def.tag - WEAPON_FIRST];
-    cl->ps.stats[STAT_WEAPON_BIT] = wb >= 0 ? wb + 1 : 0;
+    cl->ps.stats[STAT_WEAPON_TAG] = weapon->def.tag;
   } else {
     cl->ps.stats[STAT_WEAPON] = 0;
-    cl->ps.stats[STAT_WEAPON_BIT] = 0;
+    cl->ps.stats[STAT_WEAPON_TAG] = 0;
   }
 
   if (cl->next_weapon) {
-    const int32_t wb = g_level.weapons[cl->next_weapon->def.tag - WEAPON_FIRST];
-    cl->ps.stats[STAT_WEAPON_BIT] |= ((wb >= 0 ? wb + 1 : 0) << 8);
+    cl->ps.stats[STAT_WEAPON_TAG] |= (cl->next_weapon->def.tag << 8);
   }
 
   if (g_level.time <= cl->quad_damage_time) {
@@ -313,10 +311,7 @@ void G_ClientStats(g_client_t *cl) {
   if (!cl->persistent.spectator && !cl->entity->dead) {
     for (g_item_tag_t i = WEAPON_FIRST; i < WEAPON_LAST; i++) {
 
-      const int32_t bit = g_level.weapons[i - WEAPON_FIRST];
-      if (bit < 0) {
-        continue;
-      }
+      const int32_t bit = i - WEAPON_FIRST;
 
       const g_item_t *weapon = &g_items[i];
       const g_item_t *ammo = weapon->ammo_item;

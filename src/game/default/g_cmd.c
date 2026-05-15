@@ -86,7 +86,7 @@ static void G_Give_f(g_client_t *cl) {
       if (!it->Pickup) {
         continue;
       }
-      if (g_level.weapons[t - WEAPON_FIRST] < 0) {
+      if (!G_ItemAvailable(it)) {
         continue;
       }
       cl->inventory[t] += 1;
@@ -106,7 +106,7 @@ static void G_Give_f(g_client_t *cl) {
       bool available = G_ItemAvailable(it);
       if (!available) {
         for (g_item_tag_t w = WEAPON_FIRST; w < WEAPON_LAST; w++) {
-          if (g_level.weapons[w - WEAPON_FIRST] >= 0 &&
+          if (G_ItemAvailable(&g_items[w]) &&
               g_items[w].ammo_item == it) {
             available = true;
             break;

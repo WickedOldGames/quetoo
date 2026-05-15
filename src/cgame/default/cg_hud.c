@@ -55,7 +55,7 @@ typedef struct {
   g_item_tag_t tag;
 } cg_hud_weapon_t;
 
-static cg_hud_weapon_t cg_hud_weapons[MAX_STAT_BITS];
+static cg_hud_weapon_t cg_hud_weapons[WEAPON_TOTAL];
 
 #define WEAPON_SELECT_OFF        -1
 
@@ -84,7 +84,7 @@ static struct {
     uint32_t time, bar_time;
     int32_t bits;
     int16_t num;
-    bool has[MAX_STAT_BITS];
+    bool has[WEAPON_TOTAL];
   } weapon;
 
   int16_t chase_target;
@@ -963,43 +963,32 @@ static void Cg_DrawDamageInflicted(const player_state_t *ps) {
 }
 
 /**
- * @brief Parses weapon info config string from the server and populates the HUD weapon array.
+ * @brief Pre-populates the HUD weapon cache from bg_item_defs at load time.
+ * Tags and icons are fixed for a given build; no server-side parsing required.
  */
-void Cg_ParseWeaponInfo(const char *s) {
+static void Cg_LoadHudWeapons(void) {
 
-  Cg_Debug("Received weapon info from server: %s\n", s);
-
-  gchar **info = g_strsplit(s, "\\", 0);
-  const size_t num_info = g_strv_length(info);
-
-  if (num_info > MAX_STAT_BITS) {
-    g_strfreev(info);
-    Cg_Error("Invalid weapon info");
+  for (g_item_tag_t t = WEAPON_FIRST; t < WEAPON_LAST; t++) {
+    cg_hud_weapon_t *w = &cg_hud_weapons[t - WEAPON_FIRST];
+    w->tag = t;
+    w->icon = cgi.LoadImage(bg_item_defs[t].icon, IMG_PIC);
   }
-
-  cg_hud_weapon_t *weapon = cg_hud_weapons;
-
-  for (size_t i = 0; i < num_info; i++, weapon++) {
-    weapon->tag = (g_item_tag_t) atoi(info[i]);
-    weapon->icon = cgi.LoadImage(bg_item_defs[weapon->tag].icon, IMG_PIC);
-  }
-
-  g_strfreev(info);
 }
 
 /**
- * @brief Return active weapon tag. This might be the weapon we're changing to, not the
- * one we have equipped.
+ * @brief Return active weapon index (into cg_hud_weapons). This might be the weapon we're
+ * changing to, not the one we have equipped.
  */
 static int16_t Cg_ActiveWeapon(const player_state_t *ps) {
 
-  int16_t switching = ((ps->stats[STAT_WEAPON_BIT] >> 8) & 0xFF);
+  const int16_t switching = ((ps->stats[STAT_WEAPON_TAG] >> 8) & 0xFF);
 
   if (switching) {
-    return switching - 1;
+    return switching - WEAPON_FIRST;
   }
 
-  return (ps->stats[STAT_WEAPON_BIT] & 0xFF) - 1;
+  const int16_t tag = ps->stats[STAT_WEAPON_TAG] & 0xFF;
+  return tag > 0 ? tag - WEAPON_FIRST : WEAPON_SELECT_OFF;
 }
 
 /**
@@ -1019,11 +1008,11 @@ static void Cg_ValidateSelectedWeapon(const player_state_t *ps) {
   }
 
   // nope, so pick the closest one we have
-  for (int32_t i = 2; i < MAX_STAT_BITS * 2; i++) {
+  for (int32_t i = 2; i < WEAPON_TOTAL * 2; i++) {
     int32_t offset = (int32_t) (((i & 1) ? -i : i) / 2);
     int32_t id = cg_hud_state.weapon.bit + offset;
 
-    if (id < 0 || id >= MAX_STAT_BITS) {
+    if (id < 0 || id >= WEAPON_TOTAL) {
       continue;
     }
 
@@ -1059,13 +1048,13 @@ static void Cg_SelectWeapon(const int8_t dir) {
 
   Cg_ValidateSelectedWeapon(ps);
 
-  for (int32_t i = 0; i < MAX_STAT_BITS; i++) {
+  for (int32_t i = 0; i < WEAPON_TOTAL; i++) {
 
     cg_hud_state.weapon.bit += dir;
 
     if (cg_hud_state.weapon.bit < 0) {
-      cg_hud_state.weapon.bit = MAX_STAT_BITS - 1;
-    } else if (cg_hud_state.weapon.bit >= MAX_STAT_BITS) {
+      cg_hud_state.weapon.bit = WEAPON_TOTAL - 1;
+    } else if (cg_hud_state.weapon.bit >= WEAPON_TOTAL) {
       cg_hud_state.weapon.bit = 0;
     }
 
@@ -1129,7 +1118,7 @@ static void Cg_DrawSelectWeapon(const player_state_t *ps) {
     cg_hud_state.weapon.bits = new_bits;
     cg_hud_state.weapon.num = 0;
 
-    for (int32_t i = 0; i < MAX_STAT_BITS; i++) {
+    for (int32_t i = 0; i < WEAPON_TOTAL; i++) {
       cg_hud_state.weapon.has[i] = !!(cg_hud_state.weapon.bits & (1 << i));
 
       if (cg_hud_state.weapon.has[i])
@@ -1145,7 +1134,7 @@ static void Cg_DrawSelectWeapon(const player_state_t *ps) {
     return;
   }
 
-  const int16_t switching = ((ps->stats[STAT_WEAPON_BIT] >> 8) & 0xFF);
+  const int16_t switching = ((ps->stats[STAT_WEAPON_TAG] >> 8) & 0xFF);
 
   if (cg_hud_state.weapon.used_bit != switching) {
     cg_hud_state.weapon.used_bit = switching;
@@ -1190,7 +1179,7 @@ static void Cg_DrawSelectWeapon(const player_state_t *ps) {
   const color_t color_selection = Color4f(1.f, 1.f, 1.f, alpha);
   const color_t color = Color4f(1.f, 1.f, 1.f, alpha * cg_select_weapon_alpha->value);
 
-  for (int32_t i = 0; i < MAX_STAT_BITS; i++) {
+  for (int32_t i = 0; i < WEAPON_TOTAL; i++) {
 
     if (!cg_hud_state.weapon.has[i]) {
       continue;
@@ -1347,6 +1336,8 @@ void Cg_ClearHud(void) {
  * @brief Loads HUD image assets including the weapon select bar and blend overlay images.
  */
 void Cg_LoadHudMedia(void) {
+  Cg_LoadHudWeapons();
+
   cg_select_weapon_image = cgi.LoadImage("pics/w_select", IMG_PIC);
   cg_pickup_blend_image = cgi.LoadImage("pics/bf_pickup", IMG_PIC);
   cg_quad_blend_image = cgi.LoadImage("pics/bf_powerup_quad", IMG_PIC);

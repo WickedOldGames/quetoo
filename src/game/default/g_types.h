@@ -29,7 +29,7 @@
  * @brief Game protocol version (protocol minor version). To be incremented
  * whenever the game protocol changes.
  */
-#define PROTOCOL_MINOR 1029
+#define PROTOCOL_MINOR 1030
 
 /**
  * @brief Game-specific server protocol commands. These are parsed directly by
@@ -145,7 +145,6 @@ typedef struct {
 #define CS_MAX_CLIENTS     (CS_GAME + 5)  // max clients of server
 #define CS_NUM_CLIENTS     (CS_GAME + 6)  // number of players in server
 #define CS_NUM_TEAMS       (CS_GAME + 7)  // number of teams (0 - MAX_TEAMS)
-#define CS_WEAPONS         (CS_GAME + 8)  // weapon list, for the change weapon UI
 #define CS_NAV_EDIT        (CS_GAME + 9)  // nav edit mode
 #define CS_ITEM_SET        (CS_GAME + 10) // active item set (g_items_t)
 
@@ -178,7 +177,7 @@ typedef enum {
   STAT_TEAM,
   STAT_TIME,
   STAT_WEAPON,
-  STAT_WEAPON_BIT,
+  STAT_WEAPON_TAG,
   STAT_WEAPONS,
   STAT_WEAPONS_2,
   STAT_TECH_ICON
@@ -845,11 +844,6 @@ typedef struct {
    * @brief Active item set.
    */
   g_items_t items;
-
-  /**
-   * @brief Bitmask indexes in `STAT_WEAPONS` for each weapon tag (-1 = not in active set).
-   */
-  int32_t weapons[WEAPON_TOTAL];
 
   /**
    * @brief True if team play is active.
