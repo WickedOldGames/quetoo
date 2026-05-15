@@ -43,7 +43,7 @@ jobs:
     - name: Install dependencies
       run: |
         brew update
-        brew install \
+        brew install --quiet \
           autoconf automake libtool pkg-config \
           glib ncurses check \
           sdl3 sdl3_image sdl3_ttf \
