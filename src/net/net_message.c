@@ -376,6 +376,23 @@ void Net_WriteDeltaPlayerState(mem_buf_t *msg, const player_state_t *from, const
       Net_WriteShort(msg, to->stats[i]);
     }
   }
+
+  uint64_t inv_bits = 0;
+
+  for (int32_t i = 0; i < MAX_INVENTORY; i++) {
+    if (to->inventory[i] != from->inventory[i]) {
+      inv_bits |= (uint64_t) 1 << i;
+    }
+  }
+
+  Net_WriteLong(msg, (int32_t) (inv_bits & 0xFFFFFFFF));
+  Net_WriteLong(msg, (int32_t) (inv_bits >> 32));
+
+  for (int32_t i = 0; i < MAX_INVENTORY; i++) {
+    if (inv_bits & ((uint64_t) 1 << i)) {
+      Net_WriteShort(msg, to->inventory[i]);
+    }
+  }
 }
 
 /**
@@ -840,6 +857,15 @@ void Net_ReadDeltaPlayerState(mem_buf_t *msg, const player_state_t *from, player
   for (int32_t i = 0; i < MAX_STATS; i++) {
     if (stat_bits & (1U << i)) {
       to->stats[i] = Net_ReadShort(msg);
+    }
+  }
+
+  const uint64_t inv_bits = (uint64_t) (uint32_t) Net_ReadLong(msg) |
+                            ((uint64_t) (uint32_t) Net_ReadLong(msg) << 32);
+
+  for (int32_t i = 0; i < MAX_INVENTORY; i++) {
+    if (inv_bits & ((uint64_t) 1 << i)) {
+      to->inventory[i] = Net_ReadShort(msg);
     }
   }
 }

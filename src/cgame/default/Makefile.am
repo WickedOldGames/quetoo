@@ -13,6 +13,7 @@ noinst_HEADERS = \
 	cg_flare.h \
 	cg_hud.h \
 	cg_input.h \
+	cg_inventory.h \
 	cg_light.h \
 	cg_local.h \
 	cg_main.h \
@@ -47,6 +48,7 @@ cgame_la_SOURCES = \
 	cg_flare.c \
 	cg_hud.c \
 	cg_input.c \
+	cg_inventory.c \
 	cg_light.c \
 	cg_main.c \
 	cg_media.c \

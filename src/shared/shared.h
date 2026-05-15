@@ -313,6 +313,11 @@ typedef struct {
 #define MAX_STAT_BITS 32
 
 /**
+ * @brief The number of inventory slots in player_state_t. Must match ITEM_TOTAL in bg_item.h.
+ */
+#define MAX_INVENTORY 64
+
+/**
  * @brief Player state structures contain authoritative snapshots of the
  * player's movement, as well as the player's statistics (inventory, health,
  * etc.). The game module is free to define what the stats array actually
@@ -339,6 +344,12 @@ typedef struct player_state_s {
    * @brief Game-defined statistics array (health, ammo, scores, etc.).
    */
   int16_t stats[MAX_STATS];
+
+  /**
+   * @brief Tag-indexed inventory counts. Index by g_item_tag_t; 0 = not carried.
+   * Health items are not stored here (they modify entity health directly).
+   */
+  int16_t inventory[MAX_INVENTORY];
 } player_state_t;
 
 /*

@@ -29,7 +29,7 @@
  * @brief Game protocol version (protocol minor version). To be incremented
  * whenever the game protocol changes.
  */
-#define PROTOCOL_MINOR 1030
+#define PROTOCOL_MINOR 1031
 
 /**
  * @brief Game-specific server protocol commands. These are parsed directly by
@@ -152,9 +152,7 @@ typedef struct {
  * @brief Player state statistics (inventory, score, etc).
  */
 typedef enum {
-  STAT_AMMO,
   STAT_AMMO_ICON,
-  STAT_AMMO_LOW,
   STAT_ARMOR,
   STAT_ARMOR_ICON,
   STAT_CAPTURES,
@@ -166,7 +164,6 @@ typedef enum {
   STAT_DEATHS,
   STAT_HEALTH,
   STAT_HEALTH_ICON,
-  STAT_CARRYING_FLAG,
   STAT_PICKUP_ICON,
   STAT_PICKUP_STRING,
   STAT_QUAD_TIME,
@@ -178,8 +175,6 @@ typedef enum {
   STAT_TIME,
   STAT_WEAPON,
   STAT_WEAPON_TAG,
-  STAT_WEAPONS,
-  STAT_WEAPONS_2,
   STAT_TECH_ICON
 } g_stat_t;
 

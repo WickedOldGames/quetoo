@@ -39,6 +39,7 @@
     <ClInclude Include="..\src\cgame\default\cg_flare.h" />
     <ClInclude Include="..\src\cgame\default\cg_hud.h" />
     <ClInclude Include="..\src\cgame\default\cg_input.h" />
+    <ClInclude Include="..\src\cgame\default\cg_inventory.h" />
     <ClInclude Include="..\src\cgame\default\cg_light.h" />
     <ClInclude Include="..\src\cgame\default\cg_local.h" />
     <ClInclude Include="..\src\cgame\default\cg_main.h" />
@@ -105,6 +106,7 @@
     <ClCompile Include="..\src\cgame\default\cg_flare.c" />
     <ClCompile Include="..\src\cgame\default\cg_hud.c" />
     <ClCompile Include="..\src\cgame\default\cg_input.c" />
+    <ClCompile Include="..\src\cgame\default\cg_inventory.c" />
     <ClCompile Include="..\src\cgame\default\cg_light.c" />
     <ClCompile Include="..\src\cgame\default\cg_main.c" />
     <ClCompile Include="..\src\cgame\default\cg_media.c" />

@@ -20,7 +20,6 @@
  */
 
 #include "cg_local.h"
-#include "game/default/bg_item.h"
 
 #define HUD_COLOR_STAT      color_white
 #define HUD_COLOR_STAT_MED    color_yellow
@@ -48,18 +47,6 @@ static struct {
 } cg_center_print;
 
 /**
- * @brief The client's weapon cache, parsed from player state stat bits.
- */
-typedef struct {
-  const r_image_t *icon;
-  g_item_tag_t tag;
-} cg_hud_weapon_t;
-
-static cg_hud_weapon_t cg_hud_weapons[WEAPON_TOTAL];
-
-#define WEAPON_SELECT_OFF        -1
-
-/**
  * @brief The HUD state, cleared when respawning or changing chase targets.
  */
 static struct {
@@ -82,7 +69,6 @@ static struct {
   struct {
     int16_t bit, used_bit;
     uint32_t time, bar_time;
-    int32_t bits;
     int16_t num;
     bool has[WEAPON_TOTAL];
   } weapon;
@@ -171,9 +157,13 @@ static void Cg_DrawVitals(const player_state_t *ps) {
 
   if (cg_state.gameplay != GAME_INSTAGIB) {
 
-    if (ps->stats[STAT_AMMO] > 0) {
-      const int16_t ammo = ps->stats[STAT_AMMO];
-      const int16_t ammo_low = ps->stats[STAT_AMMO_LOW];
+    const int16_t ammo = Cg_ActiveAmmo(ps);
+
+    if (ammo > 0) {
+      const int16_t active = Cg_ActiveWeapon(ps);
+      const int16_t ammo_low = active != WEAPON_SELECT_OFF
+                                 ? (int16_t) bg_item_defs[cg_weapons[active].ammo_tag].quantity
+                                 : 0;
       const int16_t ammo_icon = ps->stats[STAT_AMMO_ICON];
 
       x = cgi.context->w * 0.25 - x_offset;
@@ -258,7 +248,15 @@ static void Cg_DrawHeldFlag(const player_state_t *ps) {
     return;
   }
 
-  const int16_t flag = ps->stats[STAT_CARRYING_FLAG];
+  int16_t flag = 0;
+
+  for (g_item_tag_t i = FLAG_FIRST; i < FLAG_LAST; i++) {
+    if (ps->inventory[i]) {
+      flag = (int16_t) (i - FLAG_FIRST + 1);
+      break;
+    }
+  }
+
   if (!flag) {
     return;
   }
@@ -572,7 +570,7 @@ static void Cg_DrawCrosshair(const player_state_t *ps) {
       return; // spectating
     }
 
-    if (!ps->stats[STAT_WEAPONS] && !ps->stats[STAT_WEAPONS_2]) {
+    if (!Cg_HasWeapon(ps)) {
       return; // dead
     }
 
@@ -963,35 +961,6 @@ static void Cg_DrawDamageInflicted(const player_state_t *ps) {
 }
 
 /**
- * @brief Pre-populates the HUD weapon cache from bg_item_defs at load time.
- * Tags and icons are fixed for a given build; no server-side parsing required.
- */
-static void Cg_LoadHudWeapons(void) {
-
-  for (g_item_tag_t t = WEAPON_FIRST; t < WEAPON_LAST; t++) {
-    cg_hud_weapon_t *w = &cg_hud_weapons[t - WEAPON_FIRST];
-    w->tag = t;
-    w->icon = cgi.LoadImage(bg_item_defs[t].icon, IMG_PIC);
-  }
-}
-
-/**
- * @brief Return active weapon index (into cg_hud_weapons). This might be the weapon we're
- * changing to, not the one we have equipped.
- */
-static int16_t Cg_ActiveWeapon(const player_state_t *ps) {
-
-  const int16_t switching = ((ps->stats[STAT_WEAPON_TAG] >> 8) & 0xFF);
-
-  if (switching) {
-    return switching - WEAPON_FIRST;
-  }
-
-  const int16_t tag = ps->stats[STAT_WEAPON_TAG] & 0xFF;
-  return tag > 0 ? tag - WEAPON_FIRST : WEAPON_SELECT_OFF;
-}
-
-/**
  * @brief Ensures the currently selected weapon tag refers to a weapon the player actually carries.
  */
 static void Cg_ValidateSelectedWeapon(const player_state_t *ps) {
@@ -1080,7 +1049,7 @@ bool Cg_AttemptSelectWeapon(const player_state_t *ps) {
     cg_hud_state.weapon.bit != -1) {
 
     if (cg_hud_state.weapon.bit != Cg_ActiveWeapon(ps)) {
-      const char *name = bg_item_defs[cg_hud_weapons[cg_hud_state.weapon.bit].tag].name;
+      const char *name = bg_item_defs[cg_weapons[cg_hud_state.weapon.bit].tag].name;
       cgi.Cbuf(va("use %s\n", name));
 
       cg_hud_state.weapon.time = cgi.client->unclamped_time + cg_select_weapon_interval->integer;
@@ -1102,7 +1071,7 @@ bool Cg_AttemptSelectWeapon(const player_state_t *ps) {
 static void Cg_DrawSelectWeapon(const player_state_t *ps) {
 
   // spectator/dead
-  if (!ps->stats[STAT_WEAPONS] && !ps->stats[STAT_WEAPONS_2]) {
+  if (!Cg_HasWeapon(ps)) {
     cg_hud_state.weapon.bit = -1;
     cg_hud_state.weapon.time = 0;
     cg_hud_state.weapon.bar_time = 0;
@@ -1110,19 +1079,14 @@ static void Cg_DrawSelectWeapon(const player_state_t *ps) {
     return;
   }
 
-  // see if we have any weapons at all
-  const int32_t new_bits = ((int32_t)(uint16_t) ps->stats[STAT_WEAPONS]) |
-                           ((int32_t)(uint16_t) ps->stats[STAT_WEAPONS_2] << 16);
-  if (cg_hud_state.weapon.bits != new_bits)
-  {
-    cg_hud_state.weapon.bits = new_bits;
-    cg_hud_state.weapon.num = 0;
+  // rebuild weapon availability from inventory every frame
+  cg_hud_state.weapon.num = 0;
 
-    for (int32_t i = 0; i < WEAPON_TOTAL; i++) {
-      cg_hud_state.weapon.has[i] = !!(cg_hud_state.weapon.bits & (1 << i));
+  for (int32_t i = 0; i < WEAPON_TOTAL; i++) {
+    cg_hud_state.weapon.has[i] = ps->inventory[WEAPON_FIRST + i] > 0;
 
-      if (cg_hud_state.weapon.has[i])
-        cg_hud_state.weapon.num++;
+    if (cg_hud_state.weapon.has[i]) {
+      cg_hud_state.weapon.num++;
     }
   }
 
@@ -1187,13 +1151,13 @@ static void Cg_DrawSelectWeapon(const player_state_t *ps) {
 
     const color_t c = (i == cg_hud_state.weapon.bit) ? color_selection : color;
 
-    const r_image_t *icon = cg_hud_weapons[i].icon;
+    const r_image_t *icon = cg_weapons[i].icon;
     if (icon) {
       cgi.Draw2DImage(x, y, icon->width, icon->height, icon, c);
     }
 
     if (i == cg_hud_state.weapon.bit) {
-      const char *name = bg_item_defs[cg_hud_weapons[i].tag].name;
+      const char *name = bg_item_defs[cg_weapons[i].tag].name;
       cgi.Draw2DString(((cgi.context->w / 2) - (cgi.StringWidth(name) / 2)), y - ch, name, HUD_COLOR_STAT);
       cgi.Draw2DImage(x,
               y,
@@ -1336,7 +1300,7 @@ void Cg_ClearHud(void) {
  * @brief Loads HUD image assets including the weapon select bar and blend overlay images.
  */
 void Cg_LoadHudMedia(void) {
-  Cg_LoadHudWeapons();
+  Cg_InitInventory();
 
   cg_select_weapon_image = cgi.LoadImage("pics/w_select", IMG_PIC);
   cg_pickup_blend_image = cgi.LoadImage("pics/bf_pickup", IMG_PIC);

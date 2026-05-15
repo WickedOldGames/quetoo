@@ -39,6 +39,7 @@
 #include "cg_flare.h"
 #include "cg_hud.h"
 #include "cg_input.h"
+#include "cg_inventory.h"
 #include "cg_light.h"
 #include "cg_main.h"
 #include "cg_media.h"

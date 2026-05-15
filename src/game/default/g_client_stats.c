@@ -176,16 +176,11 @@ void G_ClientScores(g_client_t *cl) {
  */
 void G_ClientStats(g_client_t *cl) {
 
-  // ammo
+  // ammo icon (count is in ps->inventory, derived client-side from weapon tag)
   if (cl->weapon && cl->ammo_index) {
-    const g_item_t *ammo = &g_items[cl->ammo_index];
-    const g_item_t *weap = cl->weapon;
-    cl->ps.stats[STAT_AMMO_ICON] = weap->icon_index;
-    cl->ps.stats[STAT_AMMO] = cl->inventory[cl->ammo_index];
-    cl->ps.stats[STAT_AMMO_LOW] = ammo->def.quantity;
+    cl->ps.stats[STAT_AMMO_ICON] = cl->weapon->icon_index;
   } else {
     cl->ps.stats[STAT_AMMO_ICON] = 0;
-    cl->ps.stats[STAT_AMMO] = 0;
   }
 
   // armor
@@ -213,17 +208,6 @@ void G_ClientStats(g_client_t *cl) {
   cl->ps.stats[STAT_DAMAGE_ARMOR] = cl->damage_armor;
   cl->ps.stats[STAT_DAMAGE_HEALTH] = cl->damage_health;
   cl->ps.stats[STAT_DAMAGE_INFLICT] = cl->damage_inflicted;
-
-  // held flag
-  cl->ps.stats[STAT_CARRYING_FLAG] = 0;
-
-  for (int32_t i = 0; i < g_level.num_teams; i++) {
-
-    if (cl->inventory[FLAG_FIRST + i]) {
-      cl->ps.stats[STAT_CARRYING_FLAG] = i + 1;
-      break;
-    }
-  }
 
   // frags
   cl->ps.stats[STAT_FRAGS] = cl->persistent.score;
@@ -304,27 +288,8 @@ void G_ClientStats(g_client_t *cl) {
     cl->ps.stats[STAT_INVULNERABILITY_TIME] = 0;
   }
 
-  // change-able weapons (split across two int16_t stats for >16 weapons)
-  cl->ps.stats[STAT_WEAPONS] = 0;
-  cl->ps.stats[STAT_WEAPONS_2] = 0;
-
-  if (!cl->persistent.spectator && !cl->entity->dead) {
-    for (g_item_tag_t i = WEAPON_FIRST; i < WEAPON_LAST; i++) {
-
-      const int32_t bit = i - WEAPON_FIRST;
-
-      const g_item_t *weapon = &g_items[i];
-      const g_item_t *ammo = weapon->ammo_item;
-
-      if (cl->inventory[weapon->def.tag] && (!ammo || cl->inventory[ammo->def.tag] >= weapon->def.quantity)) {
-        if (bit < 16) {
-          cl->ps.stats[STAT_WEAPONS] |= 1 << bit;
-        } else {
-          cl->ps.stats[STAT_WEAPONS_2] |= 1 << (bit - 16);
-        }
-      }
-    }
-  }
+  // copy full inventory to player state for delta-compression over the wire
+  memcpy(cl->ps.inventory, cl->inventory, sizeof(cl->inventory));
 }
 
 /**

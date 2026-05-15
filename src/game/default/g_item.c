@@ -1437,10 +1437,9 @@ bool G_ItemAvailable(const g_item_t *item) {
 }
 
 /**
- * @brief Called to set up the special string for weapons usable by the player.
+ * @brief Called to set up weapons usable by the player.
  * Filters to the active item set, then scans for out-of-set weapons placed by
- * the mapper. Populates `g_level.weapon_bits[]` and caps at 16 (`STAT_WEAPONS`
- * is a `uint16_t`).
+ * the mapper.
  */
 static void G_InitWeapons(void) {
 
