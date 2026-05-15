@@ -184,19 +184,18 @@ static void Cg_DrawPowerup(GLint y, const int16_t value, const r_image_t *icon) 
 
   color_t color = HUD_COLOR_STAT;
 
-  if (value < HUD_POWERUP_LOW) {
+  if (value > 0 && value < HUD_POWERUP_LOW) {
     color = HUD_COLOR_STAT_LOW;
   }
-
-  const char *string = va("%d", value);
 
   x = HUD_PIC_HEIGHT / 2;
 
   cgi.Draw2DImage(x, y, icon->width, icon->height, icon, color_white);
 
-  x += HUD_PIC_HEIGHT;
-
-  cgi.Draw2DString(x, y, string, color);
+  if (value > 0) {
+    x += HUD_PIC_HEIGHT;
+    cgi.Draw2DString(x, y, va("%d", value), color);
+  }
 }
 
 /**
@@ -211,26 +210,23 @@ static void Cg_DrawPowerups(const player_state_t *ps) {
   y = cgi.context->h / 2;
 
   if (ps->stats[STAT_QUAD_TIME] > 0) {
-    Cg_DrawPowerup(y, ps->stats[STAT_QUAD_TIME], cgi.LoadImage("pics/i_quad", IMG_PIC));
+    Cg_DrawPowerup(y, ps->stats[STAT_QUAD_TIME], cg_items[POWERUP_QUAD].icon);
     y += ch;
   }
 
   if (ps->stats[STAT_INVULNERABILITY_TIME] > 0) {
-    Cg_DrawPowerup(y, ps->stats[STAT_INVULNERABILITY_TIME], cgi.LoadImage("pics/i_invulnerability", IMG_PIC));
+    Cg_DrawPowerup(y, ps->stats[STAT_INVULNERABILITY_TIME], cg_items[POWERUP_INVULNERABILITY].icon);
     y += ch;
   }
 
   if (ps->stats[STAT_INVISIBILITY_TIME] > 0) {
-    Cg_DrawPowerup(y, ps->stats[STAT_INVISIBILITY_TIME], cgi.LoadImage("pics/i_invisibility", IMG_PIC));
+    Cg_DrawPowerup(y, ps->stats[STAT_INVISIBILITY_TIME], cg_items[POWERUP_INVISIBILITY].icon);
     y += ch;
   }
 
   const int16_t tech = ps->stats[STAT_TECH];
   if (tech) {
-    color_t pulse = color_white;
-    pulse.a = Clampf(sinf(cgi.client->unclamped_time / 150.0), 0.75f, 1.f);
-    const r_image_t *icon = cgi.LoadImage(bg_item_defs[tech].icon, IMG_PIC);
-    cgi.Draw2DImage(x, y, icon->width, icon->height, icon, pulse);
+    Cg_DrawPowerup(y, 0, cg_items[tech].icon);
   }
 
   cgi.BindFont(NULL, NULL, NULL);
@@ -242,16 +238,21 @@ static void Cg_DrawPowerups(const player_state_t *ps) {
 static void Cg_DrawHeldFlag(const player_state_t *ps) {
   GLint x, y;
 
-  int16_t flag = 0;
+  g_item_tag_t flag_tag = ITEM_NONE;
 
   for (g_item_tag_t i = FLAG_FIRST; i < FLAG_LAST; i++) {
     if (ps->inventory[i]) {
-      flag = (int16_t) (i - FLAG_FIRST + 1);
+      flag_tag = i;
       break;
     }
   }
 
-  if (!flag) {
+  if (flag_tag == ITEM_NONE) {
+    return;
+  }
+
+  const r_image_t *icon = cg_items[flag_tag].icon;
+  if (!icon) {
     return;
   }
 
@@ -261,10 +262,7 @@ static void Cg_DrawHeldFlag(const player_state_t *ps) {
   x = HUD_PIC_HEIGHT / 2;
   y = cgi.context->h / 2 - HUD_PIC_HEIGHT * 2;
 
-  const r_image_t *icon = cgi.LoadImage(va("pics/i_flag%d", flag), IMG_PIC);
-  if (icon) {
-    cgi.Draw2DImage(x, y, icon->width, icon->height, icon, pulse);
-  }
+  cgi.Draw2DImage(x, y, icon->width, icon->height, icon, pulse);
 }
 
 /**
@@ -281,7 +279,7 @@ static void Cg_DrawPickup(const player_state_t *ps) {
 
     const char *string = pickup > ITEM_NONE && pickup < ITEM_TOTAL ? bg_item_defs[pickup].name : "";
     const r_image_t *icon = pickup > ITEM_NONE && pickup < ITEM_TOTAL
-                              ? cgi.LoadImage(bg_item_defs[pickup].icon, IMG_PIC)
+                              ? cg_items[pickup].icon
                               : NULL;
 
     x = cgi.context->w - HUD_PIC_HEIGHT - cgi.StringWidth(string);

@@ -30,6 +30,28 @@
 #define WEAPON_SELECT_OFF (-1)
 
 /**
+ * @brief Cached per-item data derived from bg_item_defs at load time.
+ */
+typedef struct {
+
+  /**
+   * @brief The item icon image, or NULL if not found.
+   */
+  const r_image_t *icon;
+
+  /**
+   * @brief The item model, or NULL if not found.
+   */
+  const r_model_t *model;
+
+} cg_item_t;
+
+/**
+ * @brief Per-item cache, indexed by g_item_tag_t. Populated at load time.
+ */
+extern cg_item_t cg_items[ITEM_TOTAL];
+
+/**
  * @brief Cached per-weapon data derived from bg_item_defs at load time.
  */
 typedef struct {

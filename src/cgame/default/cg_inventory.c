@@ -22,9 +22,9 @@
 #include "cg_local.h"
 #include "game/default/bg_item.h"
 
+cg_item_t cg_items[ITEM_TOTAL];
 cg_weapon_t cg_weapons[WEAPON_TOTAL];
 
-static const r_image_t *cg_armor_icons[ARMOR_TOTAL];
 static const r_image_t *cg_health_icons[4]; // indexed by health threshold
 
 /**
@@ -33,19 +33,24 @@ static const r_image_t *cg_health_icons[4]; // indexed by health threshold
  */
 void Cg_InitInventory(void) {
 
+  memset(cg_items, 0, sizeof(cg_items));
   memset(cg_weapons, 0, sizeof(cg_weapons));
+
+  for (g_item_tag_t t = ITEM_NONE + 1; t < ITEM_TOTAL; t++) {
+    if (bg_item_defs[t].icon) {
+      cg_items[t].icon = cgi.LoadImage(bg_item_defs[t].icon, IMG_PIC);
+    }
+    if (bg_item_defs[t].model) {
+      cg_items[t].model = cgi.LoadModel(bg_item_defs[t].model);
+    }
+  }
 
   for (g_item_tag_t t = WEAPON_FIRST; t < WEAPON_LAST; t++) {
     cg_weapon_t *w = &cg_weapons[t - WEAPON_FIRST];
-
     w->tag = t;
-    w->icon = cgi.LoadImage(bg_item_defs[t].icon, IMG_PIC);
+    w->icon = cg_items[t].icon;
     w->ammo_tag = bg_item_defs[t].ammo;
-    w->model = cgi.LoadModel(bg_item_defs[t].model);
-  }
-
-  for (g_item_tag_t t = ARMOR_FIRST; t < ARMOR_LAST; t++) {
-    cg_armor_icons[t - ARMOR_FIRST] = cgi.LoadImage(bg_item_defs[t].icon, IMG_PIC);
+    w->model = cg_items[t].model;
   }
 
   // health icons ordered by ascending threshold: <=25, <=75, <=100, >100
@@ -109,7 +114,7 @@ const r_image_t *Cg_ArmorIcon(const player_state_t *ps) {
 
   for (g_item_tag_t t = ARMOR_QUAKE_BODY; t > ARMOR_SHARD; t--) {
     if (ps->inventory[t]) {
-      return cg_armor_icons[t - ARMOR_FIRST];
+      return cg_items[t].icon;
     }
   }
   return NULL;
