@@ -524,8 +524,8 @@ static void Cg_BloodEffect(const vec3_t org, const vec3_t dir, int32_t count) {
         .origin = Vec3_Fmaf(Vec3_Add(org, Vec3_RandomRange(-10.f, 10.f)), RandomRangef(0.f, 32.f), dir),
         .velocity = Vec3_RandomRange(-30.f, 30.f),
         .acceleration.z = -SPRITE_GRAVITY / 2.0,
-        .color = Vec3(1.f, 1.f, 1.f),
-        .lighting = .8f,
+        .color = Vec3(.9f, .9f, .9f),
+        .lighting = .55f,
       })) {
       break;
     }
@@ -575,8 +575,8 @@ void Cg_GibEffect(const vec3_t org, int32_t count) {
           .velocity = Vec3_Add(Vec3_Add(Vec3_Scale(v, dist * ((float)j / GIB_STREAM_COUNT)), Vec3_RandomRange(-2.f, 2.f)), Vec3(0.f, 0.f, 100.f)),
           .acceleration.z = -SPRITE_GRAVITY * 2.0,
           .size = RandomRangef(24.f, 56.f),
-          .color = Vec3(1.f, 1.f, 1.f),
-          .lighting = 1.f
+          .color = Vec3(.85f, .85f, .85f),
+          .lighting = .65f
         })) {
         break;
       }
@@ -717,8 +717,8 @@ static void Cg_ExplosionEffect(const vec3_t org, const vec3_t dir) {
           .size = size,
           .size_velocity = -size / MILLIS_TO_SECONDS(lifetime),
           .bounce = .4f,
-          .color = ColorHSV(hue, 1.f, 1.f).vec3,
-          .lighting = .5f,
+          .color = ColorHSV(hue, .9f, .8f).vec3,
+          .lighting = .35f,
         })) {
         break;
       }
@@ -779,8 +779,8 @@ static void Cg_ExplosionEffect(const vec3_t org, const vec3_t dir) {
     .size = 300.f,
     .rotation = RandomRadian(),
     .atlas_image = cg_sprite_explosion_glow,
-    .color = Vec3(.5f, .5f, .5f),
-    .lighting = 1.f
+    .color = Vec3(.4f, .4f, .4f),
+    .lighting = .55f
   });
 
   Cg_AddDecal(&(r_decal_t) {
@@ -795,19 +795,19 @@ static void Cg_ExplosionEffect(const vec3_t org, const vec3_t dir) {
   // secondary blast glow (smaller + long last)
   Cg_AddSprite(&(cg_sprite_t) {
       .origin = org,
-          .lifetime = 1500,
-          .size = 72.f,
-          .rotation = RandomRadian(),
-          .atlas_image = cg_sprite_explosion_glow,
-          .color = Vec3(.9f, .6f, .3f),
-          .lighting = 1.f
+           .lifetime = 1500,
+           .size = 72.f,
+           .rotation = RandomRadian(),
+           .atlas_image = cg_sprite_explosion_glow,
+           .color = Vec3(.7f, .45f, .2f),
+           .lighting = .45f
   });
 
   Cg_AddLight(&(const cg_light_t) {
     .origin = org,
     .radius = 360.0,
     .color = Vec3(.9f, .6f, .3f),
-    .intensity = 8.f,
+    .intensity = 6.f,
     .decay = 1600
   });
 

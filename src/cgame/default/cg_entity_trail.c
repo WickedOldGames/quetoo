@@ -660,7 +660,7 @@ static void Cg_LightningTrail(cl_entity_t *ent, const vec3_t start, const vec3_t
     cgi.AddBeam(cgi.view, &(const r_beam_t) {
       .start = draw_start,
       .end = draw_end,
-      .color = Vec3(1.f, 1.f, 1.f),
+      .color = Vec3(.85f, .85f, 1.f),
       .image = cg_beam_lightning,
       .size = 5.5f,
       .flags = SPRITE_BEAM_REPEAT,
@@ -675,7 +675,7 @@ static void Cg_LightningTrail(cl_entity_t *ent, const vec3_t start, const vec3_t
     .lifetime = 30.f,
     .size = 50.f,
     .rotation = RandomRadian(),
-    .color = Vec3(1.f, 1.f, 1.f),
+    .color = Vec3(.75f, .75f, 1.f),
   });
 
   // lights and flying sparks
@@ -684,8 +684,8 @@ static void Cg_LightningTrail(cl_entity_t *ent, const vec3_t start, const vec3_t
     Cg_AddLight(&(const cg_light_t) {
       .origin = Vec3_Fmaf(start, f + seed, dir),
       .radius = 192.f + RandomRangef(-32.f, 32.f),
-      .color = Vec3(.8f, .4f, .8f),
-      .intensity = 3.f,
+      .color = Vec3(.7f, .35f, .75f),
+      .intensity = 2.2f,
     });
 
     Cg_AddSprite(&(cg_sprite_t) {
@@ -696,7 +696,7 @@ static void Cg_LightningTrail(cl_entity_t *ent, const vec3_t start, const vec3_t
       .lifetime = 200 + Randomf() * 800,
       .bounce = 0.2f,
       .size = 1.f + RandomRangef(1.f, 2.f),
-      .color = Vec3(1.f, .5f, 1.f),
+      .color = Vec3(.7f, .35f, .8f),
     });
   }
 
@@ -731,7 +731,7 @@ static void Cg_LightningTrail(cl_entity_t *ent, const vec3_t start, const vec3_t
           .size_velocity = 400.f,
           .rotation = RandomRadian(),
           .dir = Vec3_RandomRange(-1.f, 1.f),
-          .color = Vec3(1.f, 1.f, 1.f),
+          .color = Vec3(.75f, .75f, 1.f),
         });
       }
 
@@ -744,7 +744,7 @@ static void Cg_LightningTrail(cl_entity_t *ent, const vec3_t start, const vec3_t
         .size_velocity = 400.f,
         .rotation = RandomRadian(),
         .dir = dir,
-        .color = Vec3(1.f, 1.f, 1.f),
+        .color = Vec3(.75f, .75f, 1.f),
       });
 
       // hit sparks
@@ -757,7 +757,7 @@ static void Cg_LightningTrail(cl_entity_t *ent, const vec3_t start, const vec3_t
           .lifetime = 200 + Randomf() * 800,
           .bounce = 0.2f,
           .size = 2.0f + RandomRangef(1.0f, 2.0f),
-          .color = Vec3(1.f, .5f, 1.f),
+          .color = Vec3(.7f, .35f, .8f),
         });
       }
     }
