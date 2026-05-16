@@ -961,6 +961,8 @@ static bool Cm_ResolveStageAssets(cm_material_t *material, cm_stage_t *stage, cm
     } else {
       if (stage->flags & STAGE_FLARE) {
         res = Cm_ResolveAsset(&stage->asset, ASSET_CONTEXT_SPRITES);
+      } else if (stage->flags & STAGE_ENVMAP) {
+        res = Cm_ResolveAsset(&stage->asset, ASSET_CONTEXT_TEXTURES);
       } else {
         res = Cm_ResolveAsset(&stage->asset, context);
       }
