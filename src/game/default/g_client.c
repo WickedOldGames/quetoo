@@ -1426,12 +1426,14 @@ bool G_ClientConnect(g_client_t *cl, char *user_info) {
  */
 void G_ClientDisconnect(g_client_t *cl) {
 
-  G_TossQuadDamage(cl);
-  G_TossInvisibility(cl);
-  G_TossInvulnerability(cl);
-  G_TossFlag(cl);
-  G_TossTech(cl);
-  G_HookDetach(cl);
+  if (cl->entity) {
+    G_TossQuadDamage(cl);
+    G_TossInvisibility(cl);
+    G_TossInvulnerability(cl);
+    G_TossFlag(cl);
+    G_TossTech(cl);
+    G_HookDetach(cl);
+  }
 
   cl->in_use = false;
 
@@ -1459,7 +1461,9 @@ void G_ClientDisconnect(g_client_t *cl) {
     G_Ai_Disconnect(cl);
   }
 
-  G_FreeEntity(cl->entity);
+  if (cl->entity) {
+    G_FreeEntity(cl->entity);
+  }
 
   memset(cl, 0, sizeof(g_client_t));
   cl->ps.client = client;
