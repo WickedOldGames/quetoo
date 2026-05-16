@@ -260,6 +260,7 @@ static void Cg_misc_dust_Init(cg_entity_t *self) {
  */
 static void Cg_misc_dust_Free(cg_entity_t *self) {
   Cg_FreeSpritesByData(self->data);
+  ((cg_dust_t *)self->data)->last_visible = 0;
 }
 
 /**
@@ -1145,8 +1146,13 @@ static cg_sprite_t *Cg_misc_weather_SpawnSprite(cg_entity_t *self, cg_weather_t 
 }
 
 /**
- * @brief Emits rain, snow, or ash sprites to fill the weather volume each frame.
+ * @brief Edit callback that purges all live sprites referencing this entity's data.
  */
+static void Cg_misc_weather_Free(cg_entity_t *self) {
+  Cg_FreeSpritesByData(self->data);
+  ((cg_weather_t *)self->data)->last_visible = 0;
+}
+
 static void Cg_misc_weather_Think(cg_entity_t *self) {
 
   if (!cg_add_weather->value) {
@@ -1199,6 +1205,7 @@ static void Cg_misc_weather_Think(cg_entity_t *self) {
 const cg_entity_class_t cg_misc_weather = {
   .classname = "misc_weather",
   .Init = Cg_misc_weather_Init,
+  .Free = Cg_misc_weather_Free,
   .Think = Cg_misc_weather_Think,
   .data_size = sizeof(cg_weather_t)
 };
