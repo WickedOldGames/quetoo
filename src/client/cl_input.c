@@ -321,6 +321,12 @@ static bool Cl_HandleSystemEvent(const SDL_Event *event) {
       if (event->key.key == SDLK_ESCAPE) {
 
         switch (cls.state) {
+          case CL_DISCONNECTED:
+            if (cls.key_state.dest == KEY_CONSOLE) {
+              Cl_ToggleConsole_f();
+              return true;
+            }
+            break;
           case CL_CONNECTING:
           case CL_CONNECTED:
           case CL_LOADING:
@@ -564,4 +570,3 @@ void Cl_InitInput(void) {
 
   Cl_ClearInput();
 }
-
