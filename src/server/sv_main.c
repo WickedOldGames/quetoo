@@ -57,7 +57,7 @@ void Sv_DropClient(sv_client_t *client) {
       Netchan_Transmit(&client->net_chan, client->net_chan.message.data, client->net_chan.message.size);
     }
 
-    if (client->state == SV_CLIENT_ACTIVE) { // inform the game module
+    if (cl->in_use) { // inform the game module
       svs.game->ClientDisconnect(cl);
     }
   }
