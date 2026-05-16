@@ -679,6 +679,9 @@ void G_HandGrenadeProjectile(g_entity_t *ent, g_entity_t *projectile, vec3_t con
   projectile->sv_flags &= ~SVF_NO_CLIENT;
   projectile->move_type = MOVE_TYPE_BOUNCE;
   projectile->Think = G_GrenadeProjectile_Explode;
+  projectile->Touch = G_GrenadeProjectile_Touch;
+  projectile->hit_sound = g_media.sounds.grenade_hit;
+  projectile->s.sound = 0;
 
   gi.LinkEntity(projectile);
 }
