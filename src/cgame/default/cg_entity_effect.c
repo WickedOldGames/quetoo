@@ -188,9 +188,11 @@ void Cg_EntityEffects(cl_entity_t *ent, r_entity_t *e) {
 
   if (e->effects & EF_LIGHT) {
     const color_t color = Color32_Color(ent->current.color);
-    float radius = e->termination.x;
+    float pulse = 1.f;
+    float radius = ent->current.termination.x;
     if (e->effects & EF_LIGHT_PULSE) {
-      radius *= 1.f + .25f * sinf(cgi.client->unclamped_time * .003f);
+      pulse = 1.f + .25f * sinf(cgi.client->unclamped_time * .003f);
+      radius *= pulse;
     }
     const cg_light_t l = {
       .origin = e->origin,
@@ -201,6 +203,12 @@ void Cg_EntityEffects(cl_entity_t *ent, r_entity_t *e) {
     };
 
     Cg_AddLight(&l);
+
+    // EF_LIGHT originates at the model center, so directionally-lit surfaces can still read dark.
+    // Apply a small emissive tint so lit items visibly "self-light" without full shell treatment.
+    if (!(e->effects & EF_CLIENT)) {
+      e->color = Vec4_Fmaf(e->color, .2f * pulse, Vec3_ToVec4(color.vec3, 0.f));
+    }
   }
 
   if (e->effects & EF_TEAM_TINT) {
