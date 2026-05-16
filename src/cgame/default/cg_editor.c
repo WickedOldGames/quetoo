@@ -299,7 +299,7 @@ static void Cg_InitEditorEntity(int16_t number) {
     misc->data = cgi.Malloc(clazz->data_size, MEM_TAG_CGAME_LEVEL);
   }
   misc->clazz->Init(misc);
-  misc->next_think = 0;
+  misc->next_think = cgi.client->unclamped_time;
 }
 
 /**
