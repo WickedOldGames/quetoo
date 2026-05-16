@@ -46,6 +46,13 @@ static struct {
 } s_music_state;
 
 /**
+ * @brief Returns effective music gain with master volume applied.
+ */
+static float S_MusicGain(void) {
+  return Clampf01(s_volume->value) * Clampf01(s_music_volume->value);
+}
+
+/**
  * @brief Retain event listener for s_music_t.
  */
 static bool S_RetainMusic(s_media_t *self) {
@@ -362,8 +369,8 @@ void S_RenderMusic(const s_stage_t *stage) {
 
   SDL_LockMutex(s_music_state.mutex);
 
-  if (s_music_volume->modified) {
-    const float volume = Clampf01(s_music_volume->value);
+  if (s_music_volume->modified || s_volume->modified) {
+    const float volume = S_MusicGain();
 
     if (volume) {
       alSourcef(s_music_state.source, AL_GAIN, volume);
@@ -382,7 +389,7 @@ void S_RenderMusic(const s_stage_t *stage) {
 
   SDL_UnlockMutex(s_music_state.mutex);
 
-  if (s_music_volume->value && state != AL_PLAYING) {
+  if (S_MusicGain() && state != AL_PLAYING) {
     S_NextTrack_f();
   }
 
@@ -396,7 +403,7 @@ void S_RenderMusic(const s_stage_t *stage) {
  */
 void S_NextTrack_f(void) {
 
-  if (s_music_volume->value) {
+  if (S_MusicGain()) {
     s_music_t *current = S_CurrentMusic();
     s_music_t *music = S_NextMusic();
 
@@ -415,7 +422,7 @@ void S_NextTrack_f(void) {
  */
 void S_PrevTrack_f(void) {
 
-  if (s_music_volume->value) {
+  if (S_MusicGain()) {
     s_music_t *music = S_PrevMusic();
 
     if (music) {
@@ -473,7 +480,7 @@ void S_InitMusic(void) {
     return;
   }
 
-  alSourcef(s_music_state.source, AL_GAIN, s_music_volume->value);
+  alSourcef(s_music_state.source, AL_GAIN, S_MusicGain());
 
   alGenBuffers(MUSIC_BUFFERS, s_music_state.music_buffers);
 

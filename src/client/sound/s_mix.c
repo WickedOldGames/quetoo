@@ -22,6 +22,20 @@
 #include "s_local.h"
 
 /**
+ * @brief Returns effective gain for non-ambient samples.
+ */
+static float S_EffectsGain(void) {
+  return Clampf01(s_volume->value) * Clampf01(s_effects_volume->value);
+}
+
+/**
+ * @brief Returns effective gain for ambient samples.
+ */
+static float S_AmbientGain(void) {
+  return Clampf01(s_volume->value) * Clampf01(s_ambient_volume->value);
+}
+
+/**
  * @brief Returns the index of a free channel, or -1 if all channels are in use.
  */
 int32_t S_AllocChannel(void) {
@@ -190,9 +204,9 @@ void S_MixChannels(const s_stage_t *stage) {
 
     float volume;
     if (ch->play.flags & S_PLAY_AMBIENT) {
-      volume = s_volume->value * s_ambient_volume->value;
+      volume = S_AmbientGain();
     } else {
-      volume = s_volume->value * s_effects_volume->value;
+      volume = S_EffectsGain();
     }
 
     alSourcef(src, AL_GAIN, ch->gain * volume);
@@ -251,7 +265,7 @@ void S_PlaySample(s_sample_t *sample) {
     return;
   }
 
-  if (!s_volume->value || !s_effects_volume->value) {
+  if (!S_EffectsGain()) {
     return;
   }
 
@@ -273,7 +287,7 @@ void S_PlaySample(s_sample_t *sample) {
   s_context.channels[c].start_time = (uint32_t) SDL_GetTicks();
 
   const ALuint src = s_context.sources[c];
-  alSourcef(src, AL_GAIN, s_volume->value * s_effects_volume->value);
+  alSourcef(src, AL_GAIN, S_EffectsGain());
   alSourcef(src, AL_PITCH, 1.f);
   alSourcei(src, AL_SOURCE_RELATIVE, 1);
   alSourcei(src, AL_LOOPING, 0);
@@ -295,10 +309,6 @@ void S_AddSample(s_stage_t *stage, const s_play_sample_t *play) {
     return;
   }
 
-  if (!s_volume->value) {
-    return;
-  }
-
   if (!play) {
     return;
   }
@@ -312,11 +322,11 @@ void S_AddSample(s_stage_t *stage, const s_play_sample_t *play) {
   }
 
   if (play->flags & S_PLAY_AMBIENT) {
-    if (!s_ambient_volume->value) {
+    if (!S_AmbientGain()) {
       return;
     }
   } else {
-    if (!s_effects_volume->value) {
+    if (!S_EffectsGain()) {
       return;
     }
   }
