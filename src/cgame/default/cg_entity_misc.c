@@ -55,6 +55,11 @@ typedef struct {
    * @brief The count of active sprites.
    */
   int32_t num_active;
+
+  /**
+   * @brief The last client time this emitter was visible.
+   */
+  uint32_t last_visible;
 } cg_dust_t;
 
 /**
@@ -253,6 +258,40 @@ static void Cg_misc_dust_SpriteThink(cg_sprite_t *sprite, float life, float delt
 }
 
 /**
+ * @brief Spawns one dust sprite and optionally backdates it for visibility catch-up.
+ */
+static void Cg_misc_dust_SpawnSprite(cg_dust_t *dust, uint32_t age_msec) {
+
+  cg_sprite_t s = dust->sprite;
+
+  s.origin = dust->origins[RandomRangei(0, dust->num_origins)];
+  s.origin = Vec3_Add(s.origin, Vec3_RandomDir());
+  s.size = RandomRangef(s.size * .9f, s.size * 1.1f);
+  s.velocity = Vec3_Add(s.velocity, Vec3_RandomDir());
+  s.acceleration = Vec3_Add(s.acceleration, Vec3_RandomRanges(
+    -dust->acceleration_spread.x, dust->acceleration_spread.x,
+    -dust->acceleration_spread.y, dust->acceleration_spread.y,
+    -dust->acceleration_spread.z, dust->acceleration_spread.z));
+  s.lifetime = RandomRangeu(s.lifetime * .666f, s.lifetime * 1.333f);
+  s.Think = Cg_misc_dust_SpriteThink;
+  s.data = dust;
+  s.flags |= SPRITE_DATA_NOFREE;
+
+  cg_sprite_t *emitted = Cg_AddSprite(&s);
+  if (!emitted) {
+    return;
+  }
+
+  if (age_msec && emitted->lifetime > 1) {
+    age_msec = (uint32_t) Minui64(age_msec, emitted->lifetime - 1);
+    emitted->time -= age_msec;
+    emitted->timestamp -= age_msec;
+  }
+
+  dust->num_active++;
+}
+
+/**
  * @brief Emits dust sprites to maintain the active count up to the number of configured origins.
  */
 static void Cg_misc_dust_Think(cg_entity_t *self) {
@@ -261,33 +300,35 @@ static void Cg_misc_dust_Think(cg_entity_t *self) {
     return;
   }
 
+  cg_dust_t *dust = self->data;
+
+  const uint32_t now = cgi.client->unclamped_time;
   if (cgi.CulludeBox(cgi.view, self->bounds)) {
     return;
   }
 
-  cg_dust_t *dust = self->data;
+  uint32_t hidden_msec = 0;
+  if (dust->last_visible) {
+    const uint32_t elapsed = now - dust->last_visible;
+    const uint32_t gap_threshold = (uint32_t) Maxui64(cgi.client->frame_msec * 2u, 64u);
+    if (elapsed > gap_threshold) {
+      hidden_msec = elapsed;
+    }
+  }
 
   while (dust->num_active < dust->num_origins) {
+    uint32_t age_msec = 0;
+    if (hidden_msec) {
+      const uint32_t max_lifetime_age = (uint32_t) Maxf(dust->sprite.lifetime, 2.f) - 1;
+      const uint32_t max_age = (uint32_t) Minui64(hidden_msec, max_lifetime_age);
+      const uint32_t min_age = (uint32_t) Minui64(max_age, max_age / 10);
+      age_msec = RandomRangeu(min_age, max_age + 1);
+    }
 
-    cg_sprite_t s = dust->sprite;
-
-    s.origin = dust->origins[RandomRangei(0, dust->num_origins)];
-    s.origin = Vec3_Add(s.origin, Vec3_RandomDir());
-    s.size = RandomRangef(s.size * .9f, s.size * 1.1f);
-    s.velocity = Vec3_Add(s.velocity, Vec3_RandomDir());
-    s.acceleration = Vec3_Add(s.acceleration, Vec3_RandomRanges(
-      -dust->acceleration_spread.x, dust->acceleration_spread.x,
-      -dust->acceleration_spread.y, dust->acceleration_spread.y,
-      -dust->acceleration_spread.z, dust->acceleration_spread.z));
-    s.lifetime = RandomRangeu(s.lifetime * .666f, s.lifetime * 1.333f);
-    s.Think = Cg_misc_dust_SpriteThink;
-    s.data = dust;
-    s.flags |= SPRITE_DATA_NOFREE;
-
-    Cg_AddSprite(&s);
-
-    dust->num_active++;
+    Cg_misc_dust_SpawnSprite(dust, age_msec);
   }
+
+  dust->last_visible = now;
 }
 
 /**
@@ -879,6 +920,11 @@ typedef struct {
    * @brief The ambient sound sample.
    */
   s_sample_t *sample;
+
+  /**
+   * @brief The last client time this emitter was visible.
+   */
+  uint32_t last_visible;
 } cg_weather_t;
 
 /**
@@ -983,6 +1029,91 @@ static void Cg_misc_weather_SpriteThink(cg_sprite_t *sprite, float life, float d
 }
 
 /**
+ * @brief Spawns one weather sprite and optionally backdates it for visibility catch-up.
+ */
+static void Cg_misc_weather_SpawnSprite(cg_entity_t *self, cg_weather_t *weather, uint32_t age_msec) {
+
+  const int32_t index = RandomRangei(0, weather->num_origins);
+  vec4_t *origin = &weather->origins[index];
+  vec3_t pos = Vec3(origin->x, origin->y, origin->z);
+
+  if (origin->w == 0.f) {
+    const vec3_t end = Vec3(pos.x, pos.y, pos.z - MAX_WORLD_AXIAL);
+    const cm_trace_t trace = cgi.Trace(pos, end, Box3_Zero(), NULL, CONTENTS_SOLID);
+    origin->w = pos.z - trace.end.z;
+    self->bounds = Box3_Append(self->bounds, trace.end);
+  }
+
+  float height = origin->w;
+
+  // Distribute spawn origins randomly along the vertical axis to avoid "sheet" effect.
+  const float vertical_offset = Randomf() * origin->w;
+  pos.z -= vertical_offset;
+  height = origin->w - vertical_offset;
+
+  cg_sprite_t s = {
+    .origin = pos,
+    .Think = Cg_misc_weather_SpriteThink,
+    .data = weather,
+    .flags = SPRITE_DATA_NOFREE,
+  };
+
+  if (weather->weather & WEATHER_RAIN) {
+    s.atlas_image = cg_sprite_rain;
+    s.color = Vec3(1.f, 1.f, 1.f);
+    s.size = 32.f;
+    s.velocity = Vec3_Subtract(Vec3_RandomRange(-2.f, 2.f), Vec3(0.f, 0.f, 800.f));
+    s.axis = SPRITE_AXIS_X | SPRITE_AXIS_Y;
+    s.lifetime = 1000.f * Maxf(height - s.size, 0.f) / 800.f * RandomRangef(.8f, 1.2f);
+    s.lighting = 1.f;
+
+    // Suppress splash bursts for catch-up sprites; they should appear already in-flight.
+    if (!age_msec && Randomf() > .8f) {
+      Cg_AddSprite(&(cg_sprite_t) {
+        .atlas_image = cg_sprite_water_ring,
+        .lifetime = 300,
+        .origin = Vec3(pos.x, pos.y, pos.z - height + 2.f),
+        .size = 4.f,
+        .size_velocity = 4.f * 6.f,
+        .rotation = RandomRadian(),
+        .dir = Vec3_Up(),
+        .color = Vec3(1.f, 1.f, 1.f),
+        .lighting = 1.f
+      });
+    }
+  } else if (weather->weather & WEATHER_SNOW) {
+    s.atlas_image = cg_sprite_snow;
+    s.color = Vec3(1.f, 1.f, 1.f);
+    s.size = 4.f;
+    s.velocity = Vec3_Subtract(Vec3_RandomRange(-12.f, 12.f), Vec3(0.f, 0.f, 120.f));
+    s.acceleration = Vec3_RandomRange(-12.f, 12.f);
+    s.lifetime = 1000.f * height / 120.f * RandomRangef(.8f, 1.2f);
+  } else if (weather->weather & WEATHER_ASH) {
+    const float color = RandomRangef(0.25f, 0.75f);
+    s.atlas_image = cg_sprite_ash;
+    s.color = Vec3(color, color, color);
+    s.size = RandomRangef(1.f, 3.f);
+    s.velocity = Vec3_Subtract(Vec3_RandomRange(-12.f, 12.f), Vec3(0.f, 0.f, 25.f));
+    s.acceleration = Vec3_RandomRange(-12.f, 12.f);
+    s.rotation = RandomRadian();
+    s.lifetime = 1000.f * height / 25.f * RandomRangef(.8f, 1.2f);
+  }
+
+  cg_sprite_t *emitted = Cg_AddSprite(&s);
+  if (!emitted) {
+    return;
+  }
+
+  if (age_msec && emitted->lifetime > 1) {
+    age_msec = (uint32_t) Minui64(age_msec, emitted->lifetime - 1);
+    emitted->time -= age_msec;
+    emitted->timestamp -= age_msec;
+  }
+
+  weather->num_active++;
+}
+
+/**
  * @brief Emits rain, snow, or ash sprites to fill the weather volume each frame.
  */
 static void Cg_misc_weather_Think(cg_entity_t *self) {
@@ -991,11 +1122,12 @@ static void Cg_misc_weather_Think(cg_entity_t *self) {
     return;
   }
 
+  cg_weather_t *weather = self->data;
+
+  const uint32_t now = cgi.client->unclamped_time;
   if (cgi.CulludeBox(cgi.view, self->bounds)) {
     return;
   }
-
-  cg_weather_t *weather = self->data;
 
   if (weather->sample) {
     Cg_AddSample(cgi.stage, &(const s_play_sample_t) {
@@ -1005,76 +1137,27 @@ static void Cg_misc_weather_Think(cg_entity_t *self) {
     });
   }
 
-  while (weather->num_active < weather->num_origins * cg_add_weather->value) {
-
-    const int32_t index = RandomRangei(0, weather->num_origins);
-    vec4_t *origin = &weather->origins[index];
-    vec3_t pos = Vec3(origin->x, origin->y, origin->z);
-
-    if (origin->w == 0.f) {
-      const vec3_t end = Vec3(pos.x, pos.y, pos.z - MAX_WORLD_AXIAL);
-      const cm_trace_t trace = cgi.Trace(pos, end, Box3_Zero(), NULL, CONTENTS_SOLID);
-      origin->w = pos.z - trace.end.z;
-      self->bounds = Box3_Append(self->bounds, trace.end);
+  uint32_t hidden_msec = 0;
+  if (weather->last_visible) {
+    const uint32_t elapsed = now - weather->last_visible;
+    const uint32_t gap_threshold = (uint32_t) Maxui64(cgi.client->frame_msec * 2u, 64u);
+    if (elapsed > gap_threshold) {
+      hidden_msec = elapsed;
     }
-
-    float height = origin->w;
-
-    // Distribute spawn origins randomly along the vertical axis to avoid "sheet" effect
-    const float vertical_offset = Randomf() * origin->w;
-    pos.z -= vertical_offset;
-    height = origin->w - vertical_offset;
-
-    cg_sprite_t s = {
-      .origin = pos,
-      .Think = Cg_misc_weather_SpriteThink,
-      .data = weather,
-      .flags = SPRITE_DATA_NOFREE,
-    };
-
-    if (weather->weather & WEATHER_RAIN) {
-      s.atlas_image = cg_sprite_rain;
-      s.color = Vec3(1.f, 1.f, 1.f);
-      s.size = 32.f;
-      s.velocity = Vec3_Subtract(Vec3_RandomRange(-2.f, 2.f), Vec3(0.f, 0.f, 800.f));
-      s.axis = SPRITE_AXIS_X | SPRITE_AXIS_Y;
-      s.lifetime = 1000.f * Maxf(height - s.size, 0.f) / 800.f * RandomRangef(.8f, 1.2f);
-      s.lighting = 1.f;
-
-      if (Randomf() > .8f) {
-        Cg_AddSprite(&(cg_sprite_t) {
-          .atlas_image = cg_sprite_water_ring,
-          .lifetime = 300,
-          .origin = Vec3(pos.x, pos.y, pos.z - height + 2.f),
-          .size = 4.f,
-          .size_velocity = 4.f * 6.f,
-          .rotation = RandomRadian(),
-          .dir = Vec3_Up(),
-          .color = Vec3(1.f, 1.f, 1.f),
-          .lighting = 1.f
-        });
-      }
-    } else if (weather->weather & WEATHER_SNOW) {
-      s.atlas_image = cg_sprite_snow;
-      s.color = Vec3(1.f, 1.f, 1.f);
-      s.size = 4.f;
-      s.velocity = Vec3_Subtract(Vec3_RandomRange(-12.f, 12.f), Vec3(0.f, 0.f, 120.f));
-      s.acceleration = Vec3_RandomRange(-12.f, 12.f);
-      s.lifetime = 1000.f * height / 120.f * RandomRangef(.8f, 1.2f);
-    } else if (weather->weather & WEATHER_ASH) {
-      const float color = RandomRangef(0.25f, 0.75f);
-      s.atlas_image = cg_sprite_ash;
-      s.color = Vec3(color, color, color);
-      s.size = RandomRangef(1.f, 3.f);
-      s.velocity = Vec3_Subtract(Vec3_RandomRange(-12.f, 12.f), Vec3(0.f, 0.f, 25.f));
-      s.acceleration = Vec3_RandomRange(-12.f, 12.f);
-      s.rotation = RandomRadian();
-      s.lifetime = 1000.f * height / 25.f * RandomRangef(.8f, 1.2f);
-    }
-
-    Cg_AddSprite(&s);
-    weather->num_active++;
   }
+
+  while (weather->num_active < weather->num_origins * cg_add_weather->value) {
+    uint32_t age_msec = 0;
+    if (hidden_msec) {
+      const uint32_t max_age = (uint32_t) Minui64(hidden_msec, 1500u);
+      const uint32_t min_age = (uint32_t) Minui64(max_age, max_age / 10);
+      age_msec = RandomRangeu(min_age, max_age + 1);
+    }
+
+    Cg_misc_weather_SpawnSprite(self, weather, age_msec);
+  }
+
+  weather->last_visible = now;
 }
 
 /**
