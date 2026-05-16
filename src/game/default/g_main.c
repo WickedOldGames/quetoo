@@ -491,6 +491,16 @@ static void G_BeginIntermission(const char *map) {
   g_level.intermission_origin = ent->s.origin;
   g_level.intermission_angle = ent->s.angles;
 
+  if (ent->target) {
+    const g_entity_t *target = G_PickTarget(ent->target);
+    if (target) {
+      const vec3_t dir = Vec3_Subtract(target->s.origin, ent->s.origin);
+      g_level.intermission_angle = Vec3_Euler(dir);
+    } else {
+      G_Debug("%s has invalid target %s\n", etos(ent), ent->target);
+    }
+  }
+
   // move all clients to the intermission point
   G_ForEachClient(cl, {
     G_ClientToIntermission(cl);
