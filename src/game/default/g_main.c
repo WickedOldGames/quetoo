@@ -998,7 +998,7 @@ void G_Init(void) {
 
   g_admin_password = gi.AddCvar("g_admin_password", "", CVAR_LATCH, "Password to authenticate as an admin.");
   g_ammo_respawn_time = gi.AddCvar("g_ammo_respawn_time", "20.0", CVAR_SERVER_INFO, "Ammo respawn interval in seconds.");
-  g_auto_join = gi.AddCvar("g_auto_join", "0", CVAR_SERVER_INFO, "Automatically assigns players to teams.");
+  g_auto_join = gi.AddCvar("g_auto_join", "1", CVAR_SERVER_INFO, "Automatically assigns players to teams.");
   g_balance_armor_shard_respawn = gi.AddCvar("g_balance_armor_shard_respawn", "15", 0, NULL);
   g_balance_armor_jacket_respawn = gi.AddCvar("g_balance_armor_jacket_respawn", "25", 0, NULL);
   g_balance_armor_combat_respawn = gi.AddCvar("g_balance_armor_combat_respawn", "25", 0, NULL);
@@ -1129,7 +1129,7 @@ void G_Init(void) {
   g_self_damage = gi.AddCvar("g_self_damage", "1", CVAR_SERVER_INFO, "Scales self-inflicted damage (rocket splash, grenade splash, etc)");
   g_self_knockback = gi.AddCvar("g_self_knockback", "1", CVAR_SERVER_INFO, "Scales self-inflicted knockback (rocket jump, plasma climb, etc)");
   g_show_attacker_stats = gi.AddCvar("g_show_attacker_stats", "0", CVAR_SERVER_INFO, "Allows can see their attackers' health and armor when they die.");
-  g_spawn_farthest = gi.AddCvar("g_spawn_farthest", "0", CVAR_SERVER_INFO, NULL);
+  g_spawn_farthest = gi.AddCvar("g_spawn_farthest", "1", CVAR_SERVER_INFO, NULL);
   g_spectator_chat = gi.AddCvar("g_spectator_chat", "1", CVAR_SERVER_INFO, "If enabled, spectators can only talk to other spectators.");
   g_teams = gi.AddCvar("g_teams", "0", CVAR_SERVER_INFO, "Enables teams-based play.");
   g_techs = gi.AddCvar("g_techs", "default", CVAR_SERVER_INFO, "Whether to allow techs or not. \"default\" only allows techs in CTF; 1 is always allow, 0 is never allow.");
