@@ -178,7 +178,7 @@ static inline void G_Ai_RestorePath(const g_client_t *cl, ai_t *ai) {
     // of sync with moving to the item
     const ai_node_id_t src = G_Ai_Node_FindClosest(cl->entity->s.origin, 512.f, true, true);
     const ai_node_id_t dest = g_array_index(ai->backup_move_target.path.path, ai_node_id_t, ai->backup_move_target.path.path->len - 1);
-    GArray *path = G_Ai_Node_FindPath(src, dest, G_Ai_Node_Heuristic, NULL);
+    GArray *path = G_Ai_Node_FindPath(cl, src, dest, G_Ai_Node_Heuristic, NULL);
 
     if (!path) {
       G_Ai_ClearGoal(&ai->move_target);
@@ -313,7 +313,7 @@ static uint32_t G_Ai_FindItems(g_client_t *cl, pm_cmd_t *cmd) {
 
         if (src != AI_NODE_INVALID) {
           float length;
-          GArray *path = G_Ai_Node_FindPath(src, dest, G_Ai_Node_Heuristic, &length);
+          GArray *path = G_Ai_Node_FindPath(cl, src, dest, G_Ai_Node_Heuristic, &length);
 
           // item is too far or not pathable despite dropping a node
           if (!path || length > AI_MAX_ITEM_DISTANCE) {
@@ -624,7 +624,7 @@ static uint32_t G_Ai_Hunt(g_client_t *cl, pm_cmd_t *cmd) {
         
         const ai_node_id_t closest = G_Ai_Node_FindClosest(cl->entity->s.origin, 128.f, true, true);
         const ai_node_id_t closest_to_target = G_Ai_Node_FindClosest(where_to, 128.f, true, true);
-        GArray *path = G_Ai_Node_FindPath(closest, closest_to_target, G_Ai_Node_Heuristic, NULL);
+        GArray *path = G_Ai_Node_FindPath(cl, closest, closest_to_target, G_Ai_Node_Heuristic, NULL);
 
         if (path) {
           G_Ai_SetPathGoal(cl, &cl->ai->move_target, 0.7f, path, cl->ai->combat_target.entity.ent);
@@ -700,7 +700,7 @@ static uint32_t G_Ai_Hunt(g_client_t *cl, pm_cmd_t *cmd) {
     bool pathed = false;
 
     if (my_node != AI_NODE_INVALID && enemy_node != AI_NODE_INVALID && my_node != enemy_node) {
-      GArray *path = G_Ai_Node_FindPath(my_node, enemy_node, G_Ai_Node_Heuristic, NULL);
+      GArray *path = G_Ai_Node_FindPath(cl, my_node, enemy_node, G_Ai_Node_Heuristic, NULL);
       if (path) {
         G_Ai_SetPathGoal(cl, &cl->ai->move_target, 0.7f, path, enemy);
         g_array_unref(path);
@@ -1007,6 +1007,8 @@ static bool G_Ai_FacingTarget(const g_client_t *cl, const vec3_t target) {
  * but far vertically.
  */
 bool G_Ai_ShouldSlowDrop(const ai_node_id_t from_node, const ai_node_id_t to_node) {
+  static const float min_drop = 128.f;
+  static const float max_drop = 512.f;
 
   if (from_node <= 0 || to_node <= 0) {
     return false;
@@ -1018,8 +1020,9 @@ bool G_Ai_ShouldSlowDrop(const ai_node_id_t from_node, const ai_node_id_t to_nod
   
   const vec3_t from = G_Ai_Node_GetPosition(from_node);
   const vec3_t to = G_Ai_Node_GetPosition(to_node);
+  const float drop = from.z - to.z;
 
-  return (to.z - from.z) <= -PM_STEP_HEIGHT &&
+  return drop >= min_drop && drop <= max_drop &&
     Vec2_Distance(Vec3_XY(to), Vec3_XY(from)) < PM_STEP_HEIGHT * 8.f;
 }
 
@@ -1134,7 +1137,10 @@ static uint32_t G_Ai_Move(g_client_t *cl, pm_cmd_t *cmd) {
       G_Ai_Debug("Trying to land on target\n");
     // we're navigating on land, and our next target is below us & a drop node (one-way connection); rather than full-blast
     // running off the edge, transition to walking so we don't overshoot targets beneath us
-    } else if (!swimming && G_Ai_ShouldSlowDrop(cl->ai->move_target.path.path_index, cl->ai->move_target.path.path_index - 1)) {
+    } else if (!swimming && cl->ai->move_target.path.path_index > 0 &&
+               G_Ai_ShouldSlowDrop(
+                 g_array_index(cl->ai->move_target.path.path, ai_node_id_t, cl->ai->move_target.path.path_index - 1),
+                 g_array_index(cl->ai->move_target.path.path, ai_node_id_t, cl->ai->move_target.path.path_index))) {
       dir = Vec3_Scale(dir, PM_SPEED_RUN * 0.5f);
     // run full speed towards the target
     } else {
@@ -1585,7 +1591,7 @@ static uint32_t G_Ai_LongRange(g_client_t *cl, pm_cmd_t *cmd) {
     const ai_item_pick_t *pick = &g_array_index(goal_possibilities, ai_item_pick_t, i);
     const ai_node_id_t closest_to_item = G_Ai_Node_FindClosest(pick->entity->s.origin, 256.f, true, true);
 
-    GArray *path = G_Ai_Node_FindPath(closest, closest_to_item, G_Ai_Node_Heuristic, NULL);
+    GArray *path = G_Ai_Node_FindPath(cl, closest, closest_to_item, G_Ai_Node_Heuristic, NULL);
     if (path) {
       G_Ai_SetPathGoal(cl, &cl->ai->move_target, pick->weight, path, pick->entity);
       g_array_unref(path);
@@ -1841,7 +1847,7 @@ static void G_Ai_TestPath_f(void) {
         continue;
       }
 
-      GArray *path_to_start = G_Ai_Node_FindPath(closest_to_player, g_array_index(path, ai_node_id_t, 0), G_Ai_Node_Heuristic, NULL);
+      GArray *path_to_start = G_Ai_Node_FindPath(cl, closest_to_player, g_array_index(path, ai_node_id_t, 0), G_Ai_Node_Heuristic, NULL);
 
       if (path_to_start == NULL) {
         G_Ai_Debug("Can't find a path to the test path\n");

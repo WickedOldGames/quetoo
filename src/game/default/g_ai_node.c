@@ -62,7 +62,7 @@ GArray *G_Ai_Node_TestPath(void) {
     return NULL;
   }
 
-  return g_ai_player_roam.test_path = G_Ai_Node_FindPath(g_ai_player_roam.last_nodes[1], g_ai_player_roam.last_nodes[0], G_Ai_Node_Heuristic, NULL);
+  return g_ai_player_roam.test_path = G_Ai_Node_FindPath(NULL, g_ai_player_roam.last_nodes[1], g_ai_player_roam.last_nodes[0], G_Ai_Node_Heuristic, NULL);
 }
 
 /**
@@ -426,23 +426,27 @@ bool G_Ai_Node_CanPathTo(const vec3_t position) {
       && (((g_entity_t *) tr.ent)->s.number != 0
       && !(tr.contents & CONTENTS_MASK_LIQUID));
 
-  if (tr.fraction == 1.0 || stuck_in_mover) {
+  if (tr.fraction == 1.0f) {
+    // Legitimate drop links may have no immediate floor under the node position.
+    // Treat those as pathable and let normal movement/distress logic handle the descent.
+    return true;
+  }
+
+  if (stuck_in_mover) {
 
     // check with a thinner box; it might be a button press or rotating thing
-    if (stuck_in_mover) {
-      tr = gi.Trace(position,
-                 Vec3_Subtract(position, Vec3(0, 0, PM_GROUND_DIST * 3.f)),
-                 Box3(Vec3(-4.f, -4.f, PM_BOUNDS.mins.z), Vec3(4.f, 4.f, PM_BOUNDS.maxs.z)),
-                 NULL,
-                 CONTENTS_MASK_CLIP_CORPSE | CONTENTS_MASK_LIQUID);
-      stuck_in_mover = tr.ent
-          && (tr.start_solid || tr.all_solid)
-          && (((g_entity_t *) tr.ent)->s.number != 0
-          && !(tr.contents & CONTENTS_MASK_LIQUID));
+    tr = gi.Trace(position,
+               Vec3_Subtract(position, Vec3(0, 0, PM_GROUND_DIST * 3.f)),
+               Box3(Vec3(-4.f, -4.f, PM_BOUNDS.mins.z), Vec3(4.f, 4.f, PM_BOUNDS.maxs.z)),
+               NULL,
+               CONTENTS_MASK_CLIP_CORPSE | CONTENTS_MASK_LIQUID);
+    stuck_in_mover = tr.ent
+        && (tr.start_solid || tr.all_solid)
+        && (((g_entity_t *) tr.ent)->s.number != 0
+        && !(tr.contents & CONTENTS_MASK_LIQUID));
 
-      if (!stuck_in_mover) {
-        return true;
-      }
+    if (!stuck_in_mover) {
+      return true;
     }
 
     return false;
@@ -1154,6 +1158,12 @@ typedef struct {
   float priority;
 } ai_node_priority_t;
 
+#define AI_MAX_DROP_HEIGHT 512.f
+#define AI_DROP_PENALTY_START 128.f
+#define AI_DROP_PENALTY_SCALE 0.5f
+#define AI_DROP_HEALTH_MARGIN 8.f
+#define AI_DROP_DAMAGE_PENALTY_SCALE 6.f
+
 static inline float G_Ai_LinkCost(const ai_node_id_t a, const ai_node_id_t b) {
   const ai_node_t *node = &g_array_index(g_ai_nodes, ai_node_t, a);
 
@@ -1172,9 +1182,56 @@ static inline float G_Ai_LinkCost(const ai_node_id_t a, const ai_node_id_t b) {
 }
 
 /**
+ * @brief Returns true if the segment between two nodes intersects lava or slime.
+ */
+static bool G_Ai_LinkPassesHazard(const vec3_t from, const vec3_t to) {
+  const vec3_t delta = Vec3_Subtract(to, from);
+  const float length = Vec3_Length(delta);
+
+  if (length <= 0.f) {
+    return (gi.PointContents(from) & (CONTENTS_LAVA | CONTENTS_SLIME)) != 0;
+  }
+
+  const vec3_t dir = Vec3_Scale(delta, 1.f / length);
+  const float step = 24.f;
+  const int32_t samples = Maxi(1, (int32_t) ceilf(length / step));
+
+  for (int32_t i = 0; i <= samples; i++) {
+    const float dist = Minf(length, i * step);
+    const vec3_t point = Vec3_Fmaf(from, dist, dir);
+
+    if (gi.PointContents(point) & (CONTENTS_LAVA | CONTENTS_SLIME)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * @brief Finds the shortest path between two nodes using the A* algorithm.
  */
-GArray *G_Ai_Node_FindPath(const ai_node_id_t start, const ai_node_id_t end, const G_Ai_NodeCostFunc heuristic, float *length) {
+static float G_Ai_EstimatedFallDamage(const float drop, const int32_t gravity, const int32_t water_level) {
+
+  if (drop <= 0.f || gravity <= 0) {
+    return 0.f;
+  }
+
+  const float impact_velocity = -sqrtf(2.f * gravity * drop);
+  if (impact_velocity > PM_SPEED_FALL) {
+    return 0.f;
+  }
+
+  float damage = -((impact_velocity - PM_SPEED_FALL) * 0.05f);
+
+  if (water_level > 0) {
+    damage /= (float) (1u << Mini(water_level, 3));
+  }
+
+  return Maxf(0.f, damage);
+}
+
+GArray *G_Ai_Node_FindPath(const g_client_t *cl, const ai_node_id_t start, const ai_node_id_t end, const G_Ai_NodeCostFunc heuristic, float *length) {
   
   if (length) {
     *length = 0;
@@ -1217,12 +1274,49 @@ GArray *G_Ai_Node_FindPath(const ai_node_id_t start, const ai_node_id_t end, con
     for (guint i = 0; i < node->links->len; i++) {
       const ai_link_t *link = &g_array_index(node->links, ai_link_t, i);
       ai_node_t *link_node = &g_array_index(g_ai_nodes, ai_node_t, link->id);
+      const float drop = node->position.z - link_node->position.z;
+      const int32_t node_contents = gi.PointContents(node->position);
+      const int32_t link_contents = gi.PointContents(link_node->position);
+      const bool from_hazard = (node_contents & (CONTENTS_LAVA | CONTENTS_SLIME)) != 0;
+      const bool to_hazard = (link_contents & (CONTENTS_LAVA | CONTENTS_SLIME)) != 0;
 
       if (!G_Ai_PlatformAccessible(link_node->position)) {
         continue;
       }
 
-      const float new_cost = node->cost + link->cost;
+      if (from_hazard && to_hazard) {
+        continue;
+      }
+
+      if (!from_hazard && G_Ai_LinkPassesHazard(node->position, link_node->position)) {
+        continue;
+      }
+
+      if (drop > AI_MAX_DROP_HEIGHT) {
+        continue;
+      }
+
+      if (drop > 0.f && (link_contents & (CONTENTS_LAVA | CONTENTS_SLIME))) {
+        continue;
+      }
+
+      float drop_penalty = 0.f;
+      if (drop > AI_DROP_PENALTY_START) {
+        drop_penalty = (drop - AI_DROP_PENALTY_START) * AI_DROP_PENALTY_SCALE;
+      }
+
+      if (cl && cl->entity) {
+        const int32_t water_level = (link_contents & CONTENTS_WATER) ? 1 : 0;
+        const float estimated_damage = G_Ai_EstimatedFallDamage(drop, g_level.gravity, water_level);
+
+        if (estimated_damage + AI_DROP_HEALTH_MARGIN >= cl->entity->health) {
+          continue;
+        }
+
+        drop_penalty += estimated_damage * AI_DROP_DAMAGE_PENALTY_SCALE;
+      }
+
+      const float new_cost = node->cost + link->cost + drop_penalty;
 
       if (!g_hash_table_lookup(costs_started, link_node) || new_cost < link_node->cost) {
 
