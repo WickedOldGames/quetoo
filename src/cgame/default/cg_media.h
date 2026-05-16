@@ -46,6 +46,7 @@ extern s_sample_t *cg_sample_quake_shotgun_fire;
 extern s_sample_t *cg_sample_quake_supershotgun_fire;
 extern s_sample_t *cg_sample_quake_nailgun_fire;
 extern s_sample_t *cg_sample_quake_supernailgun_fire;
+extern s_sample_t *cg_sample_quake_nail_hit;
 extern s_sample_t *cg_sample_quake_grenadelauncher_fire;
 extern s_sample_t *cg_sample_quake_rocketlauncher_fire;
 

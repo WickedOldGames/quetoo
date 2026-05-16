@@ -29,7 +29,7 @@
  * @brief Game protocol version (protocol minor version). To be incremented
  * whenever the game protocol changes.
  */
-#define PROTOCOL_MINOR 1034
+#define PROTOCOL_MINOR 1035
 
 /**
  * @brief Game-specific server protocol commands. These are parsed directly by
@@ -226,6 +226,7 @@ typedef enum {
   TE_GIB,
   TE_RIPPLE,
   TE_HOOK_IMPACT,
+  TE_NAIL,
   TE_AI_NODE,
   TE_AI_NODE_LINK
 } g_temp_entity_t;

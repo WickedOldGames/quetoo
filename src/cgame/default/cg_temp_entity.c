@@ -392,7 +392,6 @@ static void Cg_BulletEffect(const vec3_t org, const vec3_t dir) {
       .lifetime = 650,
       .color = ColorHSV(color_hue_orange, 0.8f, 1.f).vec3,
     });
-
   }
 
   Cg_AddDecal(&(r_decal_t) {
@@ -418,6 +417,96 @@ static void Cg_BulletEffect(const vec3_t org, const vec3_t dir) {
       .pitch = RandomRangei(-8, 9)
     });
   }
+}
+
+/**
+ * @brief Spawns nail impact effects and plays the nail hit sound.
+ */
+static void Cg_NailEffect(const vec3_t org, const vec3_t dir) {
+  if (cgi.PointContents(org) & CONTENTS_MASK_LIQUID) {
+    Cg_BubbleTrail(NULL, org, Vec3_Fmaf(org, 8.f, dir), 2.f);
+  } else {
+
+    float spark_life = 240.f;
+    float spark_size = RandomRangef(35.f, 45.f);
+
+    // spark spikes billboard
+    Cg_AddSprite(&(cg_sprite_t) {
+      .animation = cg_sprite_impact_spark_01,
+      .origin = Vec3_Fmaf(org, 2.f, dir),
+      .rotation = RandomRadian(),
+      .size = spark_size,
+      .lifetime = spark_life,
+      .color = Vec3(1.f, 1.f, 1.f),
+    });
+
+    // spark spikes decal
+    Cg_AddSprite(&(cg_sprite_t) {
+      .animation = cg_sprite_impact_spark_01,
+      .origin = Vec3_Fmaf(org, 2.f, dir),
+      .rotation = RandomRadian(),
+      .size = spark_size,
+      .lifetime = spark_life,
+      .color = Vec3(1.f, 1.f, 1.f),
+      .dir = dir
+    });
+
+    // spark dots
+    vec3_t spark_origin = Vec3_Fmaf(org, 2.f, dir);
+    for (int32_t i = 0; i < 6; i++) {
+      float size = RandomRangef(3.f, 6.f);
+      float lifetime = RandomRangef(400.f, 600.f);
+      Cg_AddSprite(&(cg_sprite_t) {
+        .atlas_image = cg_sprite_impact_spark_01_dot,
+        .origin = spark_origin,
+        .velocity = Vec3_Scale(Vec3_Mix(Vec3_RandomDir(), dir, 0.33f), 55.f),
+        .size = size,
+        .size_velocity = -size * 5.f,
+        .lifetime = lifetime,
+        .color = Vec3(1.f, 1.f, 1.f),
+      });
+    }
+
+    // impact smoke
+    Cg_AddSprite(&(cg_sprite_t) {
+      .atlas_image = cg_sprite_puff_cloud,
+      .origin = Vec3_Fmaf(org, 5.f, dir),
+      .velocity.z = 10.0f,
+      .size = RandomRangef(30.f, 50.f),
+      .rotation = RandomRadian(),
+      .size_velocity = 60.0f,
+      .lifetime = 800.f,
+      .color = Vec3(.125f, .125f, .125f),
+      .lighting = 1.f
+    });
+
+    // impact hotness
+    Cg_AddSprite(&(cg_sprite_t) {
+      .atlas_image = cg_sprite_spark,
+      .origin = Vec3_Fmaf(org, 0.5f, dir),
+      .rotation = RandomRadian(),
+      .dir = dir,
+      .size = 4.f,
+      .lifetime = 650,
+      .color = ColorHSV(color_hue_orange, 0.8f, 1.f).vec3,
+    });
+  }
+
+  Cg_AddDecal(&(r_decal_t) {
+    .image = cg_decal_bullet[Randomi() % lengthof(cg_decal_bullet)],
+    .origin = org,
+    .radius = RandomRangef(1.f, 3.f),
+    .color = color_black,
+    .lifetime = 12000 + Randomf() * 10000,
+    .rotation = RandomRadian()
+  });
+
+  Cg_AddSample(cgi.stage, &(const s_play_sample_t) {
+    .sample = cg_sample_quake_nail_hit,
+    .origin = org,
+    .atten = SOUND_ATTEN_LINEAR,
+    .pitch = RandomRangei(0, 5)
+  });
 }
 
 /**
@@ -1331,6 +1420,12 @@ void Cg_ParseTempEntity(void) {
       pos = cgi.ReadPosition();
       dir = cgi.ReadDir();
       Cg_BulletEffect(pos, dir);
+      break;
+
+    case TE_NAIL: // nail hitting wall
+      pos = cgi.ReadPosition();
+      dir = cgi.ReadDir();
+      Cg_NailEffect(pos, dir);
       break;
 
     case TE_BLOOD: // projectile hitting flesh

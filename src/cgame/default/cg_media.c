@@ -42,6 +42,7 @@ s_sample_t *cg_sample_quake_shotgun_fire;
 s_sample_t *cg_sample_quake_supershotgun_fire;
 s_sample_t *cg_sample_quake_nailgun_fire;
 s_sample_t *cg_sample_quake_supernailgun_fire;
+s_sample_t *cg_sample_quake_nail_hit;
 s_sample_t *cg_sample_quake_grenadelauncher_fire;
 s_sample_t *cg_sample_quake_rocketlauncher_fire;
 
@@ -204,6 +205,7 @@ void Cg_LoadMedia(void) {
   cg_sample_quake_supershotgun_fire = cgi.LoadSample("weapons/quake_supershotgun/fire");
   cg_sample_quake_nailgun_fire = cgi.LoadSample("weapons/quake_nailgun/fire");
   cg_sample_quake_supernailgun_fire = cgi.LoadSample("weapons/quake_supernailgun/fire");
+  cg_sample_quake_nail_hit = cgi.LoadSample("projectiles/quake_nail/hit");
   cg_sample_quake_grenadelauncher_fire = cgi.LoadSample("weapons/quake_grenadelauncher/fire");
   cg_sample_quake_rocketlauncher_fire = cgi.LoadSample("weapons/quake_rocketlauncher/fire");
 

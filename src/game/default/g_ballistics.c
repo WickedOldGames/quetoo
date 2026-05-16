@@ -298,16 +298,8 @@ static void G_NailProjectile_Touch(g_entity_t *ent, g_entity_t *other, const cm_
     });
 
     if (G_IsStructural(trace)) {
-
-      G_MulticastSound(&(const g_play_sound_t) {
-        .index = g_media.sounds.quake_nail_hit,
-        .entity = ent,
-        .atten = SOUND_ATTEN_LINEAR,
-        .pitch = (int8_t) (Randomf() * 5.0)
-      }, MULTICAST_PHS);
-
       gi.WriteByte(SV_CMD_TEMP_ENTITY);
-      gi.WriteByte(TE_BULLET);
+      gi.WriteByte(TE_NAIL);
       gi.WritePosition(ent->s.origin);
       gi.WriteDir(trace->plane.normal);
       gi.Multicast(ent->s.origin, MULTICAST_PHS);
