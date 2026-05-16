@@ -122,6 +122,7 @@ r_animation_t *cg_sprite_electro_01;
 r_animation_t *cg_sprite_fireball_01;
 r_animation_t *cg_sprite_impact_spark_01;
 r_animation_t *cg_sprite_hyperball_01;
+r_animation_t *cg_sprite_fizz_01;
 
 static r_atlas_t *cg_decal_atlas;
 
@@ -300,6 +301,7 @@ void Cg_LoadMedia(void) {
   cg_sprite_fireball_01 = Cg_LoadAnimatedSprite(cg_sprite_atlas, "sprites/fireball_01/fireball_01", "_%02" PRIu32, 0, 63);
   cg_sprite_impact_spark_01 = Cg_LoadAnimatedSprite(cg_sprite_atlas, "sprites/impact_spark_01/impact_spark_01", "_%02" PRIu32, 0, 4);
   cg_sprite_hyperball_01 = Cg_LoadAnimatedSprite(cg_sprite_atlas, "sprites/hyperball_01/hyperball_01", "_%02" PRIu32, 1, 32);
+  cg_sprite_fizz_01 = Cg_LoadAnimatedSprite(cg_sprite_atlas, "sprites/fizz_01/fizz_01", "_%02" PRIu32, 1, 24);
 
   cgi.LoadingProgress(-1, "compiling sprite atlas");
 

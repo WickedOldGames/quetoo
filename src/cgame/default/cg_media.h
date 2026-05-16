@@ -124,6 +124,7 @@ extern r_animation_t *cg_sprite_electro_01;
 extern r_animation_t *cg_sprite_fireball_01;
 extern r_animation_t *cg_sprite_impact_spark_01;
 extern r_animation_t *cg_sprite_hyperball_01;
+extern r_animation_t *cg_sprite_fizz_01;
 
 extern r_atlas_image_t *cg_decal_bullet[3];
 extern r_atlas_image_t *cg_decal_blood[4];

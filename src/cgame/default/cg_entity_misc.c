@@ -101,7 +101,6 @@ static const char *cg_dust_preset_bubbles =
   "\\hz\\10";
 
 static const char *cg_dust_preset_fizz =
-  "sprite\\ripple_0"
   "\\velocity\\0 0 8"
   "\\acceleration\\4 -4 0"
   "\\color\\.6 .6 .6"
@@ -113,7 +112,6 @@ static const char *cg_dust_preset_fizz =
   "\\density\\4"
   "\\hz\\10";
 
-// Sprite is assigned from cg_sprite_flame (atlas image) — no "sprite" key needed.
 static const char *cg_dust_preset_flame =
   "\\velocity\\0 0 5"
   "\\acceleration\\0 0 120"
@@ -128,7 +126,6 @@ static const char *cg_dust_preset_flame =
   "\\density\\.5"
   "\\hz\\10";
 
-// Sprite is assigned from cg_sprite_steam (atlas image) — no "sprite" key needed.
 static const char *cg_dust_preset_steam =
   "\\velocity\\0 0 32"
   "\\acceleration\\0 0 20"
@@ -164,7 +161,9 @@ static void Cg_misc_dust_Init(cg_entity_t *self) {
   cm_entity_t *def = cgi.EntityAssign(self->def, preset);
   cgi.FreeEntity(preset);
 
-  if (!g_strcmp0(type, "flame")) {
+  if (!g_strcmp0(type, "fizz")) {
+    dust->sprite.animation = cg_sprite_fizz_01;
+  } else if (!g_strcmp0(type, "flame")) {
     dust->sprite.atlas_image = cg_sprite_flame;
   } else if (!g_strcmp0(type, "steam")) {
     dust->sprite.atlas_image = cg_sprite_steam;
