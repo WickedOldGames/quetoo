@@ -418,16 +418,19 @@ jobs:
       shell: pwsh
       run: |
         $version = (git rev-list --count HEAD).Trim()
-        msbuild /m /p:Configuration=$env:BUILD_CONFIGURATION "/p:ExtraPreprocessorDefinitions=VERSION=`"$version`"" $env:SOLUTION_FILE_PATH
+        msbuild /m /p:Configuration=$env:BUILD_CONFIGURATION /p:DebugSymbols=true /p:DebugType=full "/p:ExtraPreprocessorDefinitions=VERSION=`"$version`"" $env:SOLUTION_FILE_PATH
 
     - name: Install Quetoo
       working-directory: ${{ github.workspace }}/quetoo
       run: |
         $staging = "windows\target\quetoo"
+        $symbols = "windows\target\symbols"
 
         New-Item -ItemType Directory -Force -Path "$staging\bin" | Out-Null
         New-Item -ItemType Directory -Force -Path "$staging\lib\default\shaders" | Out-Null
         New-Item -ItemType Directory -Force -Path "$staging\lib\default\ui" | Out-Null
+        New-Item -ItemType Directory -Force -Path "$symbols\bin" | Out-Null
+        New-Item -ItemType Directory -Force -Path "$symbols\lib\default" | Out-Null
 
         # Executables
         Copy-Item "Quetoo.vs15\bin\x64Release\quetoo.exe" "$staging\bin\"
@@ -437,10 +440,19 @@ jobs:
         # Game modules
         Copy-Item "Quetoo.vs15\bin\x64Release\cgame.dll" "$staging\lib\default\"
         Copy-Item "Quetoo.vs15\bin\x64Release\game.dll" "$staging\lib\default\"
+        Copy-Item "Quetoo.vs15\bin\x64Release\cgame.pdb" "$symbols\lib\default\"
+        Copy-Item "Quetoo.vs15\bin\x64Release\game.pdb" "$symbols\lib\default\"
 
         # Objectively and ObjectivelyMVC
         Copy-Item "..\Objectively\Objectively.vs15\bin\x64Release\Objectively.dll" "$staging\bin\"
         Copy-Item "..\ObjectivelyMVC\ObjectivelyMVC.vs15\bin\x64Release\ObjectivelyMVC.dll" "$staging\bin\"
+
+        # Symbol files
+        Copy-Item "Quetoo.vs15\bin\x64Release\quetoo.pdb" "$symbols\bin\"
+        Copy-Item "Quetoo.vs15\bin\x64Release\quemap.pdb" "$symbols\bin\"
+        Copy-Item "Quetoo.vs15\bin\x64Release\quetoo-dedicated.pdb" "$symbols\bin\"
+        Copy-Item "..\Objectively\Objectively.vs15\bin\x64Release\Objectively.pdb" "$symbols\bin\"
+        Copy-Item "..\ObjectivelyMVC\ObjectivelyMVC.vs15\bin\x64Release\ObjectivelyMVC.pdb" "$symbols\bin\"
 
         # Dependency DLLs
         Copy-Item "..\Objectively\Objectively.vs15\libs\dlfcn\x64\dlfcn.dll" "$staging\bin\"
@@ -475,12 +487,19 @@ jobs:
       working-directory: ${{ github.workspace }}/quetoo
       run: |
         Compress-Archive -Path windows\target\quetoo\* -DestinationPath quetoo-x86_64-pc-windows.zip
+        Compress-Archive -Path windows\target\symbols\* -DestinationPath quetoo-x86_64-pc-windows-symbols.zip
 
     - name: Upload artifact
       uses: actions/upload-artifact@v7
       with:
         name: quetoo-x86_64-pc-windows
         path: quetoo/quetoo-x86_64-pc-windows.zip
+
+    - name: Upload symbols artifact
+      uses: actions/upload-artifact@v7
+      with:
+        name: quetoo-x86_64-pc-windows-symbols
+        path: quetoo/quetoo-x86_64-pc-windows-symbols.zip
 
   release:
     needs: [lipo-macos, build-linux, build-windows]
@@ -572,6 +591,7 @@ jobs:
         - [quetoo-bundle-x86_64-pc-windows.zip](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/quetoo-bundle-x86_64-pc-windows.zip)
         ### Update from Existing Install
         - [quetoo-x86_64-pc-windows.zip](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/quetoo-x86_64-pc-windows.zip)
+        - [quetoo-x86_64-pc-windows-symbols.zip](https://github.com/${{ github.repository }}/releases/download/${{ github.ref_name }}/quetoo-x86_64-pc-windows-symbols.zip)
 
         For Linux package-managed installs, also install the matching [quetoo-data ${{ github.ref_name }}](https://github.com/jdolan/quetoo-data/releases/tag/${{ github.ref_name }}) release." \
           quetoo-bundle-universal-apple-darwin/quetoo-bundle-universal-apple-darwin.dmg \
@@ -585,7 +605,8 @@ jobs:
           quetoo-aarch64-pc-linux-archive/quetoo-aarch64-pc-linux.tar.gz \
           quetoo-aarch64-pc-linux-deb/quetoo-aarch64-pc-linux.deb \
           quetoo-aarch64-pc-linux-rpm/quetoo-aarch64-pc-linux.rpm \
-          quetoo-x86_64-pc-windows/quetoo-x86_64-pc-windows.zip
+          quetoo-x86_64-pc-windows/quetoo-x86_64-pc-windows.zip \
+          quetoo-x86_64-pc-windows-symbols/quetoo-x86_64-pc-windows-symbols.zip
       env:
         GH_TOKEN: ${{ github.token }}
         GH_REPO: ${{ github.repository }}
