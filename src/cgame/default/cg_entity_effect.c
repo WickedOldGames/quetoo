@@ -203,12 +203,6 @@ void Cg_EntityEffects(cl_entity_t *ent, r_entity_t *e) {
     };
 
     Cg_AddLight(&l);
-
-    // EF_LIGHT originates at the model center, so directionally-lit surfaces can still read dark.
-    // Apply a small emissive tint so lit items visibly "self-light" without full shell treatment.
-    if (!(e->effects & EF_CLIENT)) {
-      e->color = Vec4_Fmaf(e->color, .2f * pulse, Vec3_ToVec4(color.vec3, 0.f));
-    }
   }
 
   if (e->effects & EF_TEAM_TINT) {
