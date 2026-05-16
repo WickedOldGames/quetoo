@@ -65,6 +65,7 @@ static struct {
     GLint scroll;
     GLint scale;
     GLint shell;
+    GLint lighting;
   } stage;
 
   r_media_t *shell;
@@ -91,6 +92,10 @@ static void R_DrawMeshEntityMaterialStage(const r_entity_t *e, const r_mesh_face
 
   if (stage->cm->flags & (STAGE_SCALE_S | STAGE_SCALE_T)) {
     glUniform2f(r_mesh_program.stage.scale, stage->cm->scale.s, stage->cm->scale.t);
+  }
+
+  if (stage->cm->flags & STAGE_LIGHTING) {
+    glUniform1f(r_mesh_program.stage.lighting, stage->cm->lighting.intensity);
   }
 
   if (stage->cm->flags & STAGE_SHELL) {
@@ -135,11 +140,12 @@ static void R_DrawMeshEntityShellEffect(const r_entity_t *e, const r_mesh_face_t
 
   R_DrawMeshEntityMaterialStage(e, face, mesh, &(const r_stage_t) {
     .cm = &(const cm_stage_t) {
-      .flags = STAGE_COLOR | STAGE_SHELL | STAGE_SCROLL_S | STAGE_SCROLL_T,
+      .flags = STAGE_COLOR | STAGE_SHELL | STAGE_SCROLL_S | STAGE_SCROLL_T | STAGE_LIGHTING,
       .color = Color4fv(e->shell),
       .blend = { GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA },
       .scroll = { 0.25f, 0.25f },
-      .shell = { (e->effects & EF_WEAPON) ? .33f : 1.f }
+      .shell = { (e->effects & EF_WEAPON) ? .33f : 1.f },
+      .lighting = { 1.f }
     },
     .media = r_mesh_program.shell
   });
@@ -434,6 +440,7 @@ void R_InitMeshProgram(void) {
   r_mesh_program.stage.pulse = glGetUniformLocation(r_mesh_program.name, "stage.pulse");
   r_mesh_program.stage.scroll = glGetUniformLocation(r_mesh_program.name, "stage.scroll");
   r_mesh_program.stage.scale = glGetUniformLocation(r_mesh_program.name, "stage.scale");
+  r_mesh_program.stage.lighting = glGetUniformLocation(r_mesh_program.name, "stage.lighting");
   r_mesh_program.stage.shell = glGetUniformLocation(r_mesh_program.name, "stage.shell");
 
   r_mesh_program.tint_colors = glGetUniformLocation(r_mesh_program.name, "tint_colors");

@@ -19,13 +19,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
+uniform vec4 tint_colors[3];
+
 in common_vertex_t vertex;
 
 out vec4 out_color;
 
 common_fragment_t fragment;
-
-uniform vec4 tint_colors[3];
 
 /**
  * @brief Calculate lighting and shadows for mesh with distance-based LOD.
@@ -94,6 +94,14 @@ void main(void) {
 
 	  fragment.diffuse_sample = sample_material_stage(vertex.diffusemap) * vertex.color;
 
-	  out_color = fragment.diffuse_sample;
+    out_color = fragment.diffuse_sample;
+
+    if ((stage.flags & STAGE_LIGHTING) == STAGE_LIGHTING) {
+
+      mesh_fragment_lighting();
+
+      out_color.rgb *= mix(vec3(1.0), fragment.ambient + fragment.diffuse, stage.lighting);
+      out_color.rgb += fragment.specular * stage.lighting;
+    }
   }
 }
