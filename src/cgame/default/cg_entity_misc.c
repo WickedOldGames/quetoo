@@ -52,6 +52,21 @@ typedef struct {
   vec3_t acceleration_spread;
 
   /**
+   * @brief Per-particle random initial rotation range normalized to [0, 1], where 1 is pi radians.
+   */
+  float rotation_spread;
+
+  /**
+   * @brief Per-particle random velocity range, applied symmetrically on each axis.
+   */
+  vec3_t velocity_spread;
+
+  /**
+   * @brief Per-particle random size range as a +/- fraction of base size.
+   */
+  float size_spread;
+
+  /**
    * @brief The count of active sprites.
    */
   int32_t num_active;
@@ -66,16 +81,18 @@ typedef struct {
  * @brief Initializes a misc_dust entity by loading its sprite and computing spawn origins from brushes.
  */
 static const char *cg_dust_preset_default =
-  "sprite\\particle"
+  "\\sprite\\particle"
   "\\color\\1 1 1"
   "\\size\\1"
+  "\\velocity_spread\\1 1 1"
+  "\\size_spread\\.1"
   "\\lifetime\\10"
   "\\lighting\\1"
   "\\density\\1"
   "\\hz\\10";
 
 static const char *cg_dust_preset_embers =
-  "sprite\\particle2"
+  "\\sprite\\particle2"
   "\\velocity\\0 0 5"
   "\\acceleration\\8 8 8"
   "\\acceleration_spread\\8 12 8"
@@ -89,7 +106,7 @@ static const char *cg_dust_preset_embers =
   "\\hz\\10";
 
 static const char *cg_dust_preset_bubbles =
-  "sprite\\bubble"
+  "\\sprite\\bubble"
   "\\velocity\\0 0 32"
   "\\acceleration\\.33 .33 .33"
   "\\color\\1 1 1"
@@ -101,15 +118,16 @@ static const char *cg_dust_preset_bubbles =
   "\\hz\\10";
 
 static const char *cg_dust_preset_fizz =
-  "\\velocity\\0 0 8"
-  "\\acceleration\\4 -4 0"
-  "\\color\\.6 .6 .6"
-  "\\size\\.1"
-  "\\size_velocity\\4"
-  "\\size_acceleration\\16"
-  "\\lifetime\\.5"
-  "\\lighting\\1"
-  "\\density\\4"
+  "\\velocity\\0 0 4"
+  "\\acceleration_spread\\4 4 2"
+  "\\rotation_spread\\1"
+  "\\color\\1 1 1"
+  "\\end_color\\.6 .6 .6"
+  "\\size\\2.5"
+  "\\size_spread\\1"
+  "\\lifetime\\.666"
+  "\\lighting\\2"
+  "\\density\\1"
   "\\hz\\10";
 
 static const char *cg_dust_preset_flame =
@@ -172,10 +190,7 @@ static void Cg_misc_dust_Init(cg_entity_t *self) {
     dust->sprite.image = cgi.LoadImage(va("sprites/%s", name), IMG_SPRITE);
     if (dust->sprite.image == NULL) {
       dust->sprite.image = cgi.LoadImage("sprites/particle", IMG_SPRITE);
-      Cg_Warn("%s @ %s failed to load sprite %s\n",
-           self->clazz->classname,
-           vtos(self->origin),
-           name);
+      Cg_Warn("%s @ %s failed to load sprite %s\n", self->clazz->classname, vtos(self->origin), name);
     }
   }
 
@@ -194,8 +209,15 @@ static void Cg_misc_dust_Init(cg_entity_t *self) {
   dust->sprite.bounce = cgi.EntityValue(def, "bounce")->value;
   dust->sprite.lifetime = SECONDS_TO_MILLIS(cgi.EntityValue(def, "lifetime")->value);
   dust->sprite.lighting = cgi.EntityValue(def, "lighting")->value;
-  dust->acceleration_spread = cgi.EntityValue(def, "acceleration_spread")->vec3;
+
   dust->density = cgi.EntityValue(def, "density")->value;
+
+  const cm_entity_t *size_spread = cgi.EntityValue(def, "size_spread");
+  dust->size_spread = (size_spread->parsed & ENTITY_FLOAT) ? size_spread->value : .1f;
+  dust->velocity_spread = cgi.EntityValue(def, "velocity_spread")->vec3;
+  dust->acceleration_spread = cgi.EntityValue(def, "acceleration_spread")->vec3;
+  dust->rotation_spread = Clampf01(cgi.EntityValue(def, "rotation_spread")->value);
+
   self->hz = cgi.EntityValue(def, "hz")->value;
 
   cgi.FreeEntity(def);
@@ -259,14 +281,20 @@ static void Cg_misc_dust_SpriteThink(cg_sprite_t *sprite, float life, float delt
 /**
  * @brief Spawns one dust sprite and optionally backdates it for visibility catch-up.
  */
-static void Cg_misc_dust_SpawnSprite(cg_dust_t *dust, uint32_t age_msec) {
+static cg_sprite_t *Cg_misc_dust_SpawnSprite(cg_dust_t *dust, uint32_t age_msec) {
 
   cg_sprite_t s = dust->sprite;
 
   s.origin = dust->origins[RandomRangei(0, dust->num_origins)];
   s.origin = Vec3_Add(s.origin, Vec3_RandomDir());
-  s.size = RandomRangef(s.size * .9f, s.size * 1.1f);
-  s.velocity = Vec3_Add(s.velocity, Vec3_RandomDir());
+  const float min_size = Maxf(0.f, s.size * (1.f - dust->size_spread));
+  const float max_size = Maxf(min_size, s.size * (1.f + dust->size_spread));
+  s.size = RandomRangef(min_size, max_size);
+  s.velocity = Vec3_Add(s.velocity, Vec3_RandomRanges(
+    -dust->velocity_spread.x, dust->velocity_spread.x,
+    -dust->velocity_spread.y, dust->velocity_spread.y,
+    -dust->velocity_spread.z, dust->velocity_spread.z));
+  s.rotation += RandomRangef(-(float) M_PI * dust->rotation_spread, (float) M_PI * dust->rotation_spread);
   s.acceleration = Vec3_Add(s.acceleration, Vec3_RandomRanges(
     -dust->acceleration_spread.x, dust->acceleration_spread.x,
     -dust->acceleration_spread.y, dust->acceleration_spread.y,
@@ -278,7 +306,7 @@ static void Cg_misc_dust_SpawnSprite(cg_dust_t *dust, uint32_t age_msec) {
 
   cg_sprite_t *emitted = Cg_AddSprite(&s);
   if (!emitted) {
-    return;
+    return NULL;
   }
 
   if (age_msec && emitted->lifetime > 1) {
@@ -288,6 +316,7 @@ static void Cg_misc_dust_SpawnSprite(cg_dust_t *dust, uint32_t age_msec) {
   }
 
   dust->num_active++;
+  return emitted;
 }
 
 /**
@@ -324,7 +353,9 @@ static void Cg_misc_dust_Think(cg_entity_t *self) {
       age_msec = RandomRangeu(min_age, max_age + 1);
     }
 
-    Cg_misc_dust_SpawnSprite(dust, age_msec);
+    if (!Cg_misc_dust_SpawnSprite(dust, age_msec)) {
+      break;
+    }
   }
 
   dust->last_visible = now;
@@ -1030,7 +1061,7 @@ static void Cg_misc_weather_SpriteThink(cg_sprite_t *sprite, float life, float d
 /**
  * @brief Spawns one weather sprite and optionally backdates it for visibility catch-up.
  */
-static void Cg_misc_weather_SpawnSprite(cg_entity_t *self, cg_weather_t *weather, uint32_t age_msec) {
+static cg_sprite_t *Cg_misc_weather_SpawnSprite(cg_entity_t *self, cg_weather_t *weather, uint32_t age_msec) {
 
   const int32_t index = RandomRangei(0, weather->num_origins);
   vec4_t *origin = &weather->origins[index];
@@ -1100,7 +1131,7 @@ static void Cg_misc_weather_SpawnSprite(cg_entity_t *self, cg_weather_t *weather
 
   cg_sprite_t *emitted = Cg_AddSprite(&s);
   if (!emitted) {
-    return;
+    return NULL;
   }
 
   if (age_msec && emitted->lifetime > 1) {
@@ -1110,6 +1141,7 @@ static void Cg_misc_weather_SpawnSprite(cg_entity_t *self, cg_weather_t *weather
   }
 
   weather->num_active++;
+  return emitted;
 }
 
 /**
@@ -1153,7 +1185,9 @@ static void Cg_misc_weather_Think(cg_entity_t *self) {
       age_msec = RandomRangeu(min_age, max_age + 1);
     }
 
-    Cg_misc_weather_SpawnSprite(self, weather, age_msec);
+    if (!Cg_misc_weather_SpawnSprite(self, weather, age_msec)) {
+      break;
+    }
   }
 
   weather->last_visible = now;
