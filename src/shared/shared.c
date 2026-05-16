@@ -523,6 +523,10 @@ const char *InfoString_Next(const char *s, char *key, char *value) {
 
   assert(s);
 
+  while (*s == '\\') {
+    s++;
+  }
+
   if (!*s) {
     return NULL;
   }
@@ -548,6 +552,10 @@ const char *InfoString_Next(const char *s, char *key, char *value) {
   g_strlcpy(value, src, s - src + 1);
 
   if (*s == '\\') {
+    s++;
+  }
+
+  while (*s == '\\') {
     s++;
   }
 
