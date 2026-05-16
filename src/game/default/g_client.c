@@ -89,6 +89,40 @@ static void G_ClientObituary(g_client_t *cl, g_entity_t *attacker, uint32_t mod)
       case MOD_BFG_BLAST:
         msg = "%s was disintegrated by %s's BFG blast :bfg:";
         break;
+      case MOD_QUAKE_SHOTGUN:
+        msg = "%s chewed on %s's boomstick :shotgun:";
+        break;
+      case MOD_QUAKE_SUPER_SHOTGUN:
+        msg = "%s ate 2 loads of %s's buckshot :sshotgun:";
+        break;
+      case MOD_QUAKE_NAILGUN:
+        msg = "%s was nailed by %s :nailgun:";
+        break;
+      case MOD_QUAKE_SUPER_NAILGUN:
+        msg = "%s was punctured by %s :nailgun:";
+        break;
+      case MOD_QUAKE_GRENADE:
+        msg = "%s ate %s's pineapple :grenade:";
+        break;
+      case MOD_QUAKE_GRENADE_SPLASH:
+        msg = "%s was gibbed by %s's grenade :grenade:";
+        break;
+      case MOD_QUAKE_ROCKET:
+        msg = "%s rides %s's rocket :rocket:";
+        break;
+      case MOD_QUAKE_ROCKET_SPLASH:
+        msg = "%s was gibbed by %s's rocket :rocket:";
+        break;
+      case MOD_QUAKE_THUNDERBOLT:
+        if (attacker->water_level > WATER_NONE) {
+          msg = "%s accepts %s's discharge :lightning:";
+        } else {
+          msg = "%s accepts %s's shaft :lightning:";
+        }
+        break;
+      case MOD_QUAKE_THUNDERBOLT_DISCHARGE:
+        msg = "%s accepts %s's discharge :lightning:";
+        break;
       case MOD_TELEFRAG:
         msg = "%s tried to invade %s's personal space :telefrag:";
         break;
@@ -153,6 +187,25 @@ static void G_ClientObituary(g_client_t *cl, g_entity_t *attacker, uint32_t mod)
           break;
         case MOD_ROCKET_SPLASH:
           msg = "%s blew up :explosive:";
+          break;
+        case MOD_QUAKE_GRENADE_SPLASH:
+          msg = "%s tries to put the pin back in :grenade:";
+          break;
+        case MOD_QUAKE_ROCKET_SPLASH:
+          msg = "%s becomes bored with life :rocket:";
+          break;
+        case MOD_QUAKE_THUNDERBOLT_DISCHARGE:
+          switch (cl->entity->water_type) {
+            case CONTENTS_SLIME:
+              msg = "%s discharges into the slime :slime:";
+              break;
+            case CONTENTS_LAVA:
+              msg = "%s discharges into the lava :lava:";
+              break;
+            default:
+              msg = "%s discharges into the water :drown:";
+              break;
+          }
           break;
         case MOD_HYPERBLASTER_CLIMB:
           msg = "%s forgot how to climb :death:";

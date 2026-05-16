@@ -294,7 +294,7 @@ static void G_NailProjectile_Touch(g_entity_t *ent, g_entity_t *other, const cm_
       .normal = trace->plane.normal,
       .damage = ent->damage,
       .knockback = ent->knockback,
-      .mod = MOD_MACHINEGUN
+      .mod = ent->spawn_flags ?: MOD_QUAKE_NAILGUN
     });
 
     if (G_IsStructural(trace)) {
@@ -320,12 +320,13 @@ static void G_NailProjectile_Touch(g_entity_t *ent, g_entity_t *other, const cm_
 /**
  * @brief Fires a nail projectile from the specified entity in the given direction.
  */
-void G_NailProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir, int32_t speed, int32_t damage, int32_t knockback) {
+void G_NailProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir, int32_t speed, int32_t damage, int32_t knockback, int32_t mod) {
 
   const box3_t bounds = Box3f(1.f, 1.f, 1.f);
 
   g_entity_t *projectile = G_AllocEntity(__func__);
   projectile->owner = ent;
+  projectile->spawn_flags = mod;
 
   projectile->s.origin = start;
   projectile->bounds = bounds;
@@ -413,6 +414,7 @@ void G_ShotgunProjectiles(g_entity_t *ent, const vec3_t start, const vec3_t dir,
 
 #define HAND_GRENADE 1
 #define HAND_GRENADE_HELD 2
+#define QUAKE_GRENADE 4
 
 /**
  * @brief Detonates a grenade projectile, dealing direct and splash radius damage.
@@ -422,7 +424,13 @@ static void G_GrenadeProjectile_Explode(g_entity_t *ent) {
 
   if (ent->enemy) { // direct hit
 
-    mod = ent->spawn_flags & HAND_GRENADE ? MOD_HANDGRENADE : MOD_GRENADE;
+    if (ent->spawn_flags & HAND_GRENADE) {
+      mod = MOD_HANDGRENADE;
+    } else if (ent->spawn_flags & QUAKE_GRENADE) {
+      mod = MOD_QUAKE_GRENADE;
+    } else {
+      mod = MOD_GRENADE;
+    }
 
     G_Damage(&(g_damage_t) {
       .target = ent->enemy,
@@ -444,6 +452,8 @@ static void G_GrenadeProjectile_Explode(g_entity_t *ent) {
     } else {
       mod = MOD_HANDGRENADE_SPLASH;
     }
+  } else if (ent->spawn_flags & QUAKE_GRENADE) {
+    mod = MOD_QUAKE_GRENADE_SPLASH;
   } else {
     mod = MOD_GRENADE_SPLASH;
   }
@@ -549,6 +559,7 @@ void G_GrenadeProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir, 
 
   g_entity_t *projectile = G_AllocEntity(__func__);
   projectile->owner = ent;
+  projectile->spawn_flags = QUAKE_GRENADE;
 
   projectile->s.origin = start;
   projectile->bounds = bounds;
@@ -689,7 +700,12 @@ void G_HandGrenadeProjectile(g_entity_t *ent, g_entity_t *projectile, vec3_t con
 /**
  * @brief Touch callback for the rocket projectile; deals direct and radius explosion damage on impact.
  */
+#define QUAKE_ROCKET 1
+
 static void G_RocketProjectile_Touch(g_entity_t *ent, g_entity_t *other, const cm_trace_t *trace) {
+  const bool quake_rocket = (ent->spawn_flags & QUAKE_ROCKET) != 0;
+  const g_means_of_death direct_mod = quake_rocket ? MOD_QUAKE_ROCKET : MOD_ROCKET;
+  const g_means_of_death splash_mod = quake_rocket ? MOD_QUAKE_ROCKET_SPLASH : MOD_ROCKET_SPLASH;
 
   if (other == ent->owner) {
     return;
@@ -717,10 +733,10 @@ static void G_RocketProjectile_Touch(g_entity_t *ent, g_entity_t *other, const c
         .damage = ent->damage,
         .knockback = ent->knockback,
         .flags = 0,
-        .mod = MOD_ROCKET
+        .mod = direct_mod
       });
 
-      G_RadiusDamage(ent, ent->owner, other, ent->damage, ent->knockback, ent->damage_radius, MOD_ROCKET_SPLASH);
+      G_RadiusDamage(ent, ent->owner, other, ent->damage, ent->knockback, ent->damage_radius, splash_mod);
 
       gi.WriteByte(SV_CMD_TEMP_ENTITY);
       gi.WriteByte(TE_EXPLOSION);
@@ -742,6 +758,7 @@ void G_RocketProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir, i
 
   g_entity_t *projectile = G_AllocEntity(__func__);
   projectile->owner = ent;
+  projectile->spawn_flags = QUAKE_ROCKET;
 
   projectile->s.origin = start;
   projectile->bounds = bounds;
@@ -912,6 +929,7 @@ void G_HyperblasterProjectile(g_entity_t *ent, const vec3_t start, const vec3_t 
  * @brief Discharges the lightning gun into water, killing the owner and dealing scaled damage to all nearby entities.
  */
 static void G_LightningProjectile_Discharge(g_entity_t *ent) {
+  const g_means_of_death mod = ent->count ? ent->count : MOD_LIGHTNING_DISCHARGE;
 
   // kill ourselves
   G_Damage(&(g_damage_t) {
@@ -924,7 +942,7 @@ static void G_LightningProjectile_Discharge(g_entity_t *ent) {
     .damage = 9999,
     .knockback = 100,
     .flags = DMG_NO_ARMOR,
-    .mod = MOD_LIGHTNING_DISCHARGE
+    .mod = mod
   });
 
   // and ruin the pool party for everyone else too
@@ -950,11 +968,11 @@ static void G_LightningProjectile_Discharge(g_entity_t *ent) {
         .dir = Vec3_Zero(),
         .point = other->s.origin,
         .normal = Vec3_Zero(),
-        .damage = dmg,
-        .knockback = 100 * atten,
-        .flags = DMG_NO_ARMOR,
-        .mod = MOD_LIGHTNING_DISCHARGE
-      });
+          .damage = dmg,
+          .knockback = 100 * atten,
+          .flags = DMG_NO_ARMOR,
+          .mod = mod
+        });
     }
   });
 
@@ -1057,7 +1075,7 @@ static void G_LightningProjectile_Think(g_entity_t *ent) {
         .damage = ent->damage,
         .knockback = ent->knockback,
         .flags = DMG_ENERGY,
-        .mod = MOD_LIGHTNING
+        .mod = ent->spawn_flags ? ent->spawn_flags : MOD_LIGHTNING
       });
       ent->damage = 0;
     } else { // or leave a mark
@@ -1081,7 +1099,7 @@ static void G_LightningProjectile_Think(g_entity_t *ent) {
 /**
  * @brief Creates or updates the lightning beam projectile entity for the given owner.
  */
-void G_LightningProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir, int32_t damage, int32_t knockback) {
+void G_LightningProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir, int32_t damage, int32_t knockback, int32_t mod, int32_t discharge_mod) {
 
   g_entity_t *projectile = NULL;
 
@@ -1121,6 +1139,8 @@ void G_LightningProjectile(g_entity_t *ent, const vec3_t start, const vec3_t dir
   projectile->next_think = g_level.time + 1;
   projectile->timestamp = g_level.time;
   projectile->water_level = WATER_NONE;
+  projectile->spawn_flags = mod;
+  projectile->count = discharge_mod;
 }
 
 /**

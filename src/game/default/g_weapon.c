@@ -900,7 +900,8 @@ void G_FireLightning(g_client_t *cl) {
 
     G_ClientProjectile(cl, &forward, &right, &up, &org, 1.0);
 
-    G_LightningProjectile(cl->entity, org, forward, g_balance_lightning_damage->integer, g_balance_lightning_knockback->integer);
+    G_LightningProjectile(cl->entity, org, forward, g_balance_lightning_damage->integer,
+      g_balance_lightning_knockback->integer, MOD_LIGHTNING, MOD_LIGHTNING_DISCHARGE);
 
     G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_lightning_refire->value), cl->weapon->def.quantity);
   }
@@ -942,7 +943,7 @@ void G_FireQuakeShotgun(g_client_t *cl) {
     G_ShotgunProjectiles(cl->entity, org, forward, g_balance_quake_shotgun_damage->integer,
       g_balance_quake_shotgun_knockback->integer, g_balance_quake_shotgun_spread_x->integer,
       g_balance_quake_shotgun_spread_y->integer, g_balance_quake_shotgun_pellets->integer,
-      MOD_SHOTGUN);
+      MOD_QUAKE_SHOTGUN);
 
     G_MuzzleFlash(cl->entity, MZ_QUAKE_SHOTGUN);
 
@@ -963,7 +964,7 @@ void G_FireQuakeSuperShotgun(g_client_t *cl) {
     G_ShotgunProjectiles(cl->entity, org, forward, g_balance_quake_supershotgun_damage->integer,
       g_balance_quake_supershotgun_knockback->integer, g_balance_quake_supershotgun_spread_x->integer,
       g_balance_quake_supershotgun_spread_y->integer, g_balance_quake_supershotgun_pellets->integer,
-      MOD_SUPER_SHOTGUN);
+      MOD_QUAKE_SUPER_SHOTGUN);
 
     G_MuzzleFlash(cl->entity, MZ_QUAKE_SUPER_SHOTGUN);
 
@@ -986,7 +987,7 @@ void G_FireQuakeNailgun(g_client_t *cl) {
     cl->quake_nailgun_barrel++;
 
     G_NailProjectile(cl->entity, org, forward, g_balance_quake_nailgun_speed->integer,
-      g_balance_quake_nailgun_damage->integer, g_balance_quake_nailgun_knockback->integer);
+      g_balance_quake_nailgun_damage->integer, g_balance_quake_nailgun_knockback->integer, MOD_QUAKE_NAILGUN);
 
     G_MuzzleFlash(cl->entity, MZ_QUAKE_NAILGUN);
 
@@ -1015,7 +1016,7 @@ void G_FireQuakeSuperNailgun(g_client_t *cl) {
 
     G_NailProjectile(cl->entity, org, forward,
       g_balance_quake_supernailgun_speed->integer, g_balance_quake_supernailgun_damage->integer,
-      g_balance_quake_supernailgun_knockback->integer);
+      g_balance_quake_supernailgun_knockback->integer, MOD_QUAKE_SUPER_NAILGUN);
 
     G_MuzzleFlash(cl->entity, MZ_QUAKE_SUPER_NAILGUN);
 
@@ -1086,7 +1087,7 @@ void G_FireQuakeThunderbolt(g_client_t *cl) {
     G_ClientProjectile(cl, &forward, &right, &up, &org, 0.0);
 
     G_LightningProjectile(cl->entity, org, forward, g_balance_quake_thunderbolt_damage->integer,
-      g_balance_quake_thunderbolt_knockback->integer);
+      g_balance_quake_thunderbolt_knockback->integer, MOD_QUAKE_THUNDERBOLT, MOD_QUAKE_THUNDERBOLT_DISCHARGE);
 
     G_WeaponFired(cl, SECONDS_TO_MILLIS(g_balance_quake_thunderbolt_refire->value), cl->weapon->def.quantity);
   }
