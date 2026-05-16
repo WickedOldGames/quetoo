@@ -25,7 +25,7 @@ s_sample_t *cg_sample_blaster_fire;
 s_sample_t *cg_sample_blaster_hit;
 s_sample_t *cg_sample_shotgun_fire;
 s_sample_t *cg_sample_supershotgun_fire;
-s_sample_t *cg_sample_machinegun_fire[4];
+s_sample_t *cg_sample_machinegun_fire[3];
 s_sample_t *cg_sample_machinegun_hit[3];
 s_sample_t *cg_sample_grenadelauncher_fire;
 s_sample_t *cg_sample_rocketlauncher_fire;

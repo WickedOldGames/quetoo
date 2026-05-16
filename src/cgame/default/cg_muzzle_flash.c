@@ -948,7 +948,7 @@ void Cg_ParseMuzzleFlash(void) {
       pitch = 3;
       break;
     case MZ_MACHINEGUN:
-      sample = cg_sample_machinegun_fire[RandomRangeu(0, 4)];
+      sample = cg_sample_machinegun_fire[RandomRangeu(0, lengthof(cg_sample_machinegun_fire))];
       Cg_MachinegunFlash(ent);
       pitch = 5;
       break;

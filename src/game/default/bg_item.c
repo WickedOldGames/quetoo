@@ -91,7 +91,7 @@ const g_item_def_t bg_item_defs[] = {
     .flags = WF_HITSCAN | WF_SHORT_RANGE | WF_MED_RANGE,
     .priority = 0.30,
     .precaches = "weapons/machinegun/fire_1.wav weapons/machinegun/fire_2.wav "
-    "weapons/machinegun/fire_3.wav weapons/machinegun/fire_4.wav"
+    "weapons/machinegun/fire_3.wav"
   },
 
   {

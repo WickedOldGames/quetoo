@@ -28,7 +28,7 @@ extern s_sample_t *cg_sample_blaster_fire;
 extern s_sample_t *cg_sample_blaster_hit;
 extern s_sample_t *cg_sample_shotgun_fire;
 extern s_sample_t *cg_sample_supershotgun_fire;
-extern s_sample_t *cg_sample_machinegun_fire[4];
+extern s_sample_t *cg_sample_machinegun_fire[3];
 extern s_sample_t *cg_sample_machinegun_hit[3];
 extern s_sample_t *cg_sample_grenadelauncher_fire;
 extern s_sample_t *cg_sample_rocketlauncher_fire;
