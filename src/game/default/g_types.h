@@ -29,7 +29,7 @@
  * @brief Game protocol version (protocol minor version). To be incremented
  * whenever the game protocol changes.
  */
-#define PROTOCOL_MINOR 1035
+#define PROTOCOL_MINOR 1036
 
 /**
  * @brief Game-specific server protocol commands. These are parsed directly by
@@ -343,23 +343,23 @@ typedef enum {
 /**
  * @brief Game-specific entity state effects.
  */
-#define EF_ROTATE     (EF_GAME << 0) // rotate on z
-#define EF_BOB        (EF_GAME << 1) // bob on z
-#define EF_INACTIVE   (EF_GAME << 2) // inactive icon for when input is not going to game
-#define EF_BEAM       (EF_GAME << 3) // overloads old_origin for endpoint
-#define EF_CORPSE     (EF_GAME << 4) // to differentiate own corpse from self
-#define EF_RESPAWN    (EF_GAME << 5) // yellow shell
-#define EF_QUAD       (EF_GAME << 6) // blue-green shell
-#define EF_CTF_RED    (EF_GAME << 7) // carrying the red flag
-#define EF_CTF_BLUE   (EF_GAME << 8) // carrying the blue flag
-#define EF_CTF_GREEN  (EF_GAME << 9) // carrying the green flag
-#define EF_CTF_YELLOW (EF_GAME << 10) // carrying the yellow flag
-#define EF_DESPAWN    (EF_GAME << 11) // translucent
-#define EF_LIGHT      (EF_GAME << 12) // colored light
-#define EF_TEAM_TINT  (EF_GAME << 13) // tint by the team color provided
-#define EF_INVISIBILITY (EF_GAME << 14) // ring of shadows (invisible shell)
-#define EF_INVULNERABILITY   (EF_GAME << 15) // invulnerability shell
-#define EF_LIGHT_PULSE (EF_GAME << 16) // pulse EF_LIGHT radius
+#define EF_ROTATE          (EF_GAME << 0) // rotate on z
+#define EF_BOB             (EF_GAME << 1) // bob on z
+#define EF_INACTIVE        (EF_GAME << 2) // inactive icon for when input is not going to game
+#define EF_BEAM            (EF_GAME << 3) // overloads old_origin for endpoint
+#define EF_CORPSE          (EF_GAME << 4) // to differentiate own corpse from self
+#define EF_RESPAWN         (EF_GAME << 5) // yellow shell
+#define EF_QUAD            (EF_GAME << 6) // blue-green shell
+#define EF_CTF_RED         (EF_GAME << 7) // carrying the red flag
+#define EF_CTF_BLUE        (EF_GAME << 8) // carrying the blue flag
+#define EF_CTF_GREEN       (EF_GAME << 9) // carrying the green flag
+#define EF_CTF_YELLOW      (EF_GAME << 10) // carrying the yellow flag
+#define EF_DESPAWN         (EF_GAME << 11) // translucent
+#define EF_LIGHT           (EF_GAME << 12) // colored light
+#define EF_LIGHT_PULSE     (EF_GAME << 13) // pulse EF_LIGHT radius
+#define EF_TEAM_TINT       (EF_GAME << 14) // tint by the team color provided
+#define EF_INVISIBILITY    (EF_GAME << 15) // ring of shadows (invisible shell)
+#define EF_INVULNERABILITY (EF_GAME << 16) // invulnerability shell
 
 #define EF_CTF_MASK   (EF_CTF_RED | EF_CTF_BLUE | EF_CTF_YELLOW | EF_CTF_GREEN)
 
