@@ -179,7 +179,7 @@ static void Cg_DrawVitals(const player_state_t *ps) {
 /**
  * @brief Draws the powerup and the time remaining
  */
-static void Cg_DrawPowerup(GLint y, const int16_t value, const r_image_t *icon) {
+static GLint Cg_DrawPowerup(GLint y, const int16_t value, const r_image_t *icon, const GLint ch) {
   GLint x;
 
   color_t color = HUD_COLOR_STAT;
@@ -196,37 +196,35 @@ static void Cg_DrawPowerup(GLint y, const int16_t value, const r_image_t *icon) 
     x += HUD_PIC_HEIGHT;
     cgi.Draw2DString(x, y, va("%d", value), color);
   }
+
+  return y + Maxf(icon->height, ch);
 }
 
 /**
  * @brief Draws health, ammo and armor numerics and icons.
  */
 static void Cg_DrawPowerups(const player_state_t *ps) {
-  GLint x, y, ch;
+  GLint y, ch;
 
   cgi.BindFont("large", &ch, NULL);
 
-  x = HUD_PIC_HEIGHT / 2;
   y = cgi.context->h / 2;
 
   if (ps->stats[STAT_QUAD_TIME] > 0) {
-    Cg_DrawPowerup(y, ps->stats[STAT_QUAD_TIME], cg_items[POWERUP_QUAD].icon);
-    y += ch;
+    y = Cg_DrawPowerup(y, ps->stats[STAT_QUAD_TIME], cg_items[POWERUP_QUAD].icon, ch);
   }
 
   if (ps->stats[STAT_INVULNERABILITY_TIME] > 0) {
-    Cg_DrawPowerup(y, ps->stats[STAT_INVULNERABILITY_TIME], cg_items[POWERUP_INVULNERABILITY].icon);
-    y += ch;
+    y = Cg_DrawPowerup(y, ps->stats[STAT_INVULNERABILITY_TIME], cg_items[POWERUP_INVULNERABILITY].icon, ch);
   }
 
   if (ps->stats[STAT_INVISIBILITY_TIME] > 0) {
-    Cg_DrawPowerup(y, ps->stats[STAT_INVISIBILITY_TIME], cg_items[POWERUP_INVISIBILITY].icon);
-    y += ch;
+    y = Cg_DrawPowerup(y, ps->stats[STAT_INVISIBILITY_TIME], cg_items[POWERUP_INVISIBILITY].icon, ch);
   }
 
   const int16_t tech = ps->stats[STAT_TECH];
   if (tech) {
-    Cg_DrawPowerup(y, 0, cg_items[tech].icon);
+    y = Cg_DrawPowerup(y, 0, cg_items[tech].icon, ch);
   }
 
   cgi.BindFont(NULL, NULL, NULL);
