@@ -25,6 +25,7 @@
 
 #include "HudViewController.h"
 #include "CrosshairView.h"
+#include "ScoreboardView.h"
 
 #define _Class _HudViewController
 
@@ -55,6 +56,11 @@ static void dealloc(Object *self) {
   }
 
   release(this->hud);
+  release(this->scoreboard);
+  release(this->navEdit);
+  release(this->notify);
+  release(this->chat);
+  release(this->diagnostics);
   release(this->images);
 
   super(Object, self, dealloc);
@@ -63,7 +69,7 @@ static void dealloc(Object *self) {
 #pragma mark - ViewController
 
 /**
- * @see View::init(View *)
+ * @see ViewController::init(ViewController *)
  */
 static ViewController *init(ViewController *self) {
 
@@ -92,6 +98,43 @@ static void loadView(ViewController *self) {
 
   $(self, setView, view);
   release(view);
+
+  // The scoreboard is not part of a variant, but a module MAY name a subclass of it here
+  View *scoreboard = $$(View, viewWithResourceName, "ui/hud/scoreboard.json", NULL);
+  if (scoreboard == NULL || !$((Object *) scoreboard, isKindOfClass, _ScoreboardView())) {
+    Cg_Warn("ui/hud/scoreboard.json did not yield a ScoreboardView\n");
+    release(scoreboard);
+    scoreboard = $((View *) alloc(ScoreboardView), init);
+  }
+
+  scoreboard->stylesheet = $$(Stylesheet, stylesheetWithResourceName, "ui/hud/scoreboard.css");
+  if (scoreboard->stylesheet == NULL) {
+    Cg_Warn("Failed to load ui/hud/scoreboard.css\n");
+  }
+
+  scoreboard->autoresizingMask = ViewAutoresizingFill;
+
+  this->scoreboard = (ScoreboardView *) scoreboard;
+
+  $(view, addSubview, scoreboard);
+
+  this->navEdit = (NavEditView *) $((View *) alloc(NavEditView), init);
+  assert(this->navEdit);
+
+  $(view, addSubview, (View *) this->navEdit);
+
+  this->notify = (NotifyView *) $((View *) alloc(NotifyView), init);
+  assert(this->notify);
+
+  $(view, addSubview, (View *) this->notify);
+
+  this->chat = (ChatView *) $((View *) alloc(ChatView), init);
+  assert(this->chat);
+
+  $(view, addSubview, (View *) this->chat);
+
+  this->diagnostics = (DiagnosticsView *) $((View *) alloc(DiagnosticsView), init);
+  assert(this->diagnostics);
 
   $(this, reload);
 }
@@ -122,11 +165,8 @@ static AtlasImage *image(HudViewController *self, const char *name) {
   Object *cached = $(self->images, objectForKeyPath, name);
   if (cached == NULL) {
 
-    SDL_Surface *surface = cgi.LoadSurface(name);
-    if (surface) {
-      Image *loaded = $$(Image, imageWithSurface, surface);
-      SDL_DestroySurface(surface);
-
+    Image *loaded = Cg_LoadImage(name);
+    if (loaded) {
       cached = (Object *) $($(theme, icons), addImageWithName, name, loaded);
       release(loaded);
 
@@ -187,10 +227,17 @@ static void reload(HudViewController *self) {
 
   hud->autoresizingMask = ViewAutoresizingFill;
 
-  Cg_ConfigureHud(hud);
-
+  // beneath the notify lines, the chat, the scoreboard and the nav edit
   $(self->viewController.view, addSubview, hud);
+  $(self->viewController.view, bringSubviewToFront, (View *) self->notify);
+  $(self->viewController.view, bringSubviewToFront, (View *) self->chat);
+  $(self->viewController.view, bringSubviewToFront, (View *) self->scoreboard);
+  $(self->viewController.view, bringSubviewToFront, (View *) self->navEdit);
   self->hud = hud;
+
+  // The diagnostics join the variant's layout so that its stylesheet and inset apply to them
+  View *layout = $(hud, descendantWithIdentifier, "layout") ?: hud;
+  $(layout, addSubview, (View *) self->diagnostics);
 
   $(self, warm);
 
@@ -199,17 +246,20 @@ static void reload(HudViewController *self) {
 
 /**
  * @brief ViewEnumerator for updateWithFrame: in the editor, only the crosshair shows. Runs
- * before the hierarchy updates, so an element that hides itself still can.
+ * before the hierarchy updates, so an element that hides itself still can. The layout wrapper
+ * is looked through, not hidden, since the crosshair lives in it.
  */
 static void hideForEditor(View *view, ident data) {
+
+  if (view->identifier && strcmp(view->identifier, "layout") == 0) {
+    $(view, enumerateSubviews, hideForEditor, data);
+    return;
+  }
+
   const bool crosshair = $((Object *) view, isKindOfClass, _CrosshairView());
   $(view, setHidden, editor->value && !crosshair);
 }
 
-/**
- * @fn void HudViewController::updateWithFrame(HudViewController *self, const cl_frame_t *frame)
- * @memberof HudViewController
- */
 /**
  * @fn void HudViewController::warm(HudViewController *self)
  * @memberof HudViewController
@@ -223,7 +273,7 @@ static void warm(HudViewController *self) {
   }
 
   const char *pics[] = {
-    "pics/i_health_large", "pics/i_health_medium", "pics/i_health", "pics/i_health_mega", "pics/w_select"
+    "pics/health_large", "pics/health_medium", "pics/health", "pics/health_mega"
   };
 
   for (size_t i = 0; i < lengthof(pics); i++) {
@@ -240,6 +290,10 @@ static void warm(HudViewController *self) {
   }
 }
 
+/**
+ * @fn void HudViewController::updateWithFrame(HudViewController *self, const cl_frame_t *frame)
+ * @memberof HudViewController
+ */
 static void updateWithFrame(HudViewController *self, const cl_frame_t *frame) {
 
   assert(frame);
@@ -249,21 +303,32 @@ static void updateWithFrame(HudViewController *self, const cl_frame_t *frame) {
     $(self, reload);
   }
 
-  View *view = self->viewController.view;
-
   const player_state_t *ps = &frame->ps;
+
+  $((View *) self->navEdit, updateBindings, (ident) frame);
+  $((View *) self->notify, updateBindings, (ident) frame);
+  $((View *) self->chat, updateBindings, (ident) frame);
+
+  // The scoreboard outlives the HUD: it shows through the intermission, and with the HUD off.
+  // Only what shows takes the frame, since some elements trace the world to fill themselves in.
+  const bool scores = ps->stats[STAT_SCORES] && !cg_state.nav_edit;
+
+  $((View *) self->scoreboard, setHidden, !scores);
+
+  if (scores) {
+    $((View *) self->scoreboard, updateBindings, (ident) frame);
+  }
 
   const bool hidden = !cg_draw_hud->integer || !ps->stats[STAT_TIME] || cg_state.nav_edit;
 
-  $(view, setHidden, hidden);
+  if (self->hud) {
+    $(self->hud, setHidden, hidden);
 
-  if (hidden || self->hud == NULL) {
-    return;
+    if (!hidden) {
+      $(self->hud, enumerateSubviews, hideForEditor, NULL);
+      $(self->hud, updateBindings, (ident) frame);
+    }
   }
-
-  $(self->hud, enumerateSubviews, hideForEditor, NULL);
-
-  $(view, updateBindings, (ident) frame);
 
   if (self->atlasDirty) {
     $(self, warm);

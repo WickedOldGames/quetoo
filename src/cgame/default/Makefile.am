@@ -65,9 +65,12 @@ cguifontsdir = \
 	@PKGLIBDIR@/default/ui/fonts
 
 cguifonts_DATA = \
-	$(CGUI_DIR)/fonts/large.png \
-	$(CGUI_DIR)/fonts/medium.png \
-	$(CGUI_DIR)/fonts/small.png
+	$(CGUI_DIR)/fonts/BarlowCondensed-OFL.txt \
+	$(CGUI_DIR)/fonts/BarlowCondensed-SemiBold.ttf \
+	$(CGUI_DIR)/fonts/MPlusU-Bold.ttf \
+	$(CGUI_DIR)/fonts/MPlusU-OFL.txt \
+	$(CGUI_DIR)/fonts/Rajdhani-Bold.ttf \
+	$(CGUI_DIR)/fonts/Rajdhani-OFL.txt
 
 cguicontrolsdir = \
 	@PKGLIBDIR@/default/ui/controls
@@ -105,7 +108,9 @@ cguihuddir = \
 
 cguihud_DATA = \
 	$(CGUI_DIR)/hud/classic.css \
-	$(CGUI_DIR)/hud/classic.json
+	$(CGUI_DIR)/hud/classic.json \
+	$(CGUI_DIR)/hud/scoreboard.css \
+	$(CGUI_DIR)/hud/scoreboard.json
 
 cguihomedir = \
 	@PKGLIBDIR@/default/ui/home
@@ -224,14 +229,30 @@ cgame_la_SOURCES = \
 	ui/home/HomeViewController.c \
 	ui/home/LeaderboardViewController.c \
 	ui/home/StatsViewController.c \
+	ui/hud/BlendView.c \
+	ui/hud/CenterPrintView.c \
+	ui/hud/ChatView.c \
+	ui/hud/ConsoleText.c \
+	ui/hud/ChaseView.c \
 	ui/hud/CounterView.c \
 	ui/hud/CrosshairView.c \
+	ui/hud/DiagnosticsView.c \
+	ui/hud/FpsView.c \
 	ui/hud/HudViewController.c \
+	ui/hud/NavEditView.c \
+	ui/hud/NotifyView.c \
+	ui/hud/OverlayText.c \
 	ui/hud/PickupView.c \
+	ui/hud/PingView.c \
 	ui/hud/PowerupView.c \
+	ui/hud/ScoreView.c \
+	ui/hud/ScoreboardView.c \
+	ui/hud/SpectatorView.c \
 	ui/hud/StatView.c \
+	ui/hud/TargetNameView.c \
 	ui/hud/TeamBannerView.c \
 	ui/hud/TimeView.c \
+	ui/hud/VoteView.c \
 	ui/hud/WeaponBarView.c \
 	ui/main/LoadingViewController.c \
 	ui/main/MainView.c \

@@ -34,6 +34,13 @@ AM_CFLAGS = \
 	@SDL3_CFLAGS@ \
 	@SNDFILE_CFLAGS@
 
+cguihuddir = \
+	@PKGLIBDIR@/race/ui/hud
+
+cguihud_DATA = \
+	ui/hud/classic.json \
+	ui/hud/scoreboard.json
+
 cgamelibdir = \
 	@PKGLIBDIR@/race
 
@@ -98,14 +105,30 @@ cgame_la_SOURCES = \
 	ui/home/HomeViewController.c \
 	ui/home/LeaderboardViewController.c \
 	ui/home/StatsViewController.c \
+	ui/hud/BlendView.c \
+	ui/hud/CenterPrintView.c \
+	ui/hud/ChatView.c \
+	ui/hud/ConsoleText.c \
+	ui/hud/ChaseView.c \
 	ui/hud/CounterView.c \
 	ui/hud/CrosshairView.c \
+	ui/hud/DiagnosticsView.c \
+	ui/hud/FpsView.c \
 	ui/hud/HudViewController.c \
+	ui/hud/NavEditView.c \
+	ui/hud/NotifyView.c \
+	ui/hud/OverlayText.c \
 	ui/hud/PickupView.c \
+	ui/hud/PingView.c \
 	ui/hud/PowerupView.c \
+	ui/hud/ScoreView.c \
+	ui/hud/ScoreboardView.c \
+	ui/hud/SpectatorView.c \
 	ui/hud/StatView.c \
+	ui/hud/TargetNameView.c \
 	ui/hud/TeamBannerView.c \
 	ui/hud/TimeView.c \
+	ui/hud/VoteView.c \
 	ui/hud/WeaponBarView.c \
 	ui/main/LoadingViewController.c \
 	ui/main/MainView.c \

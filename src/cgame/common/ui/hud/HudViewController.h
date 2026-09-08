@@ -24,17 +24,29 @@
 #include <ObjectivelyMVC/AtlasImage.h>
 #include <ObjectivelyMVC/ViewController.h>
 
+#include "ChatView.h"
+#include "DiagnosticsView.h"
+#include "NavEditView.h"
+#include "NotifyView.h"
+#include "ScoreboardView.h"
+
 #include "cg_types.h"
 
 /**
  * @file
- * @brief The in-game HUD: a View hierarchy loaded from `ui/hud/<cg_hud>.json`, handed each
- * frame through View::updateBindings, and drawn beneath the menus by the client.
+ * @brief The in-game HUD: a View hierarchy loaded from `ui/hud/<cg_hud>.json`, plus the
+ * scoreboard, handed each frame through View::updateBindings and drawn beneath the menus by
+ * the client.
  */
 
 typedef struct HudViewController HudViewController;
 typedef struct HudViewControllerInterface HudViewControllerInterface;
 
+/**
+ * @brief The HUD: the variant's View tree beneath the scoreboard, the notify lines, the chat
+ * and the nav edit card, all fed the frame each Cg_UpdateScreen.
+ * @extends ViewController
+ */
 struct HudViewController {
 
   /**
@@ -60,6 +72,29 @@ struct HudViewController {
   View *hud;
 
   /**
+   * @brief The scoreboard, a subview of `view` above `hud`, and not part of the variant.
+   */
+  ScoreboardView *scoreboard;
+
+  /**
+   * @brief The navigation edit instructions, shown in place of `hud` while editing.
+   */
+  NavEditView *navEdit;
+
+  /**
+   * @brief The notify lines and the chat, siblings of `hud` so that they outlive it through the
+   * intermission and with the HUD off, as the scoreboard does.
+   */
+  NotifyView *notify;
+  ChatView *chat;
+
+  /**
+   * @brief The diagnostics table, added to each variant's layout and shown while
+   * `cg_draw_diagnostics` is set.
+   */
+  DiagnosticsView *diagnostics;
+
+  /**
    * @brief AtlasImages by resource name.
    */
   Dictionary *images;
@@ -80,7 +115,7 @@ struct HudViewControllerInterface {
    * either merge. They are registered under their resource names, which a slash keeps from
    * ever matching an escape.
    * @param self The HudViewController.
-   * @param name The image name, e.g. `pics/i_health`.
+   * @param name The image name, e.g. `pics/health`.
    * @return The AtlasImage, owned by the Theme's icon atlas, or `NULL` if the image was not
    * found.
    * @memberof HudViewController
@@ -89,8 +124,8 @@ struct HudViewControllerInterface {
 
   /**
    * @fn void HudViewController::reload(HudViewController *self)
-   * @brief Loads the variant named by `cg_hud`, falling back to `classic`, and lets each
-   * module configure it through Cg_ConfigureHud.
+   * @brief Loads the variant named by `cg_hud`, falling back to `classic`. A module arranging
+   * its HUD differently ships its own `ui/hud/<variant>.json` in its game directory.
    * @param self The HudViewController.
    * @memberof HudViewController
    */

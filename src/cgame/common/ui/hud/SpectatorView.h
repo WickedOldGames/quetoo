@@ -19,33 +19,42 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-#version 450
+#pragma once
 
-/*
- * Self-contained 2D program (console, HUD, menus). The per-frame orthographic
- * projection is the only uniform, pushed to vertex uniform slot 0.
- */
-
-layout (location = 0) in vec2 in_position;
-layout (location = 1) in vec2 in_diffusemap;
-layout (location = 2) in vec4 in_color;
-
-layout (std140, set = 1, binding = 0) uniform locals_block {
-  mat4 projection2D;
-};
-
-layout (location = 0) out vertex_data {
-  vec2 diffusemap;
-  vec4 color;
-} vertex;
+#include "OverlayText.h"
 
 /**
- * @brief Transforms 2D vertices and forwards color and texcoords.
+ * @file
+ * @brief Says "Spectating" while spectating without a chase target.
  */
-void main(void) {
 
-  gl_Position = projection2D * vec4(in_position, 0.0, 1.0);
+typedef struct SpectatorView SpectatorView;
+typedef struct SpectatorViewInterface SpectatorViewInterface;
 
-  vertex.diffusemap = in_diffusemap;
-  vertex.color = in_color;
-}
+/**
+ * @brief Says "Spectating" while spectating without a chase target.
+ * @extends OverlayText
+ */
+struct SpectatorView {
+
+  /**
+   * @brief The superclass.
+   */
+  OverlayText overlayText;
+
+  /**
+   * @brief The interface type.
+   * @protected
+   */
+  SpectatorViewInterface *interface[0];
+};
+
+struct SpectatorViewInterface {
+
+  /**
+   * @brief The superclass interface.
+   */
+  OverlayTextInterface overlayTextInterface;
+};
+
+CGAME_EXPORT Class *_SpectatorView(void);

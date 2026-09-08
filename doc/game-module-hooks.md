@@ -358,7 +358,6 @@ and make the block additive instead.
 
 | hook | tail lives in | installed by |
 | --- | --- | --- |
-| `DrawHudElements` | `cg_hud.c` | ctf, techs, race |
 | `ListGameplayModes` | `cg_main.c` | ctf |
 | `ClipEntity` | `cg_predict.c` | race |
 | `UsePrediction` | `cg_predict.c` | — |
@@ -376,18 +375,16 @@ and make the block additive instead.
 | `ClientInfo` | `cg_client.c` | race |
 | `EntityEffects` | `cg_entity_effect.c` | race |
 | `DescribeGameMode` | `cg_discord.c` | — |
-| `DrawScores` | `cg_score.c` | race |
 | `ListVoteTypes` | `cg_vote.c` | — |
 
-`cg_hud_layout_t.draw_time` lets a module that arranges the whole HUD keep the
-clock or place it itself, where it used to have to push `stat_y` off screen.
+The HUD and the scoreboard are not hooks at all any more; see
+[The HUD is JSON, not a hook](#the-hud-is-json-not-a-hook).
 
 ### The client side
 
 `cg_hud.c` and `cg_score.c` were the same fork on the client, and moved the same
-way, on `G_CTF` and `G_TECH` guards. `cg_hud.c`'s have since become the
-`DrawHudElements` chain and the two cgame feature files - see
-[The client game](#the-client-game). The team modes a mod offers used to be a
+way, on `G_CTF` and `G_TECH` guards. Both have since become ObjectivelyMVC Views a
+module arranges in JSON - see [The client game](#the-client-game). The team modes a mod offers used to be a
 per-module manifest in `cg_team_mode.c`; that file is gone now that team play is
 a bit on `g_gameplay_t` (`GAME_TEAMS`) rather than a mode a menu had to enumerate.
 
@@ -687,47 +684,52 @@ both mattered:
    hold its own types because `g_types.h` must embed them first. The cgame has not
    needed a `bg_`-style split yet, because `hook_pull_speed` is a plain float.
 
-### The HUD, and why it is one fat hook
+### The HUD is JSON, not a hook
 
-`DrawHudElements` is a single chainable hook for the whole arrangement rather than
-one hook per element, and the elements it arranges - `Cg_DrawFrags`,
-`Cg_DrawPowerups`, `Cg_DrawTime` and the rest - are **public in `cg_hud.h`** so
-that a module may arrange all of it rather than only insert into the arrangement
-common ships. A feature calls previous and draws after it; a module that arranges the
-HUD itself does not defer to previous at all, and then owns every element it declines
-to call.
+The HUD was a chainable `DrawHudElements` hook for a while, with a cursor per
+stacking column (`cg_hud_layout_t`) so that a feature's row did not have to be paid
+for by an element that did not know the feature existed. That design is gone, along
+with `r_draw_2d` itself: since #1027 every element is an ObjectivelyMVC View,
+and the arrangement is a resource, `ui/hud/<cg_hud>.json` with a stylesheet beside it.
+Stacking is what a `StackView` does; a spectator's reserved row is a blank value in a
+`CounterView` that keeps its size.
 
-The layout was the interesting part, and it is *not* the shape an earlier draft of
-this document claimed. It is not a value several features adjust, like
-`ModifyDamage`. The stat rows addressed their slot arithmetically - frags at one
-row, deaths at two, captures at three - so an element a feature drew had to be paid
-for by an element that did not know the feature existed:
+A module that differs does not hook anything. It ships its own `ui/hud/classic.json`
+in its game directory, which the search path finds ahead of default's, and names its
+own View classes in it:
 
-```c
-/* the old Cg_DrawTime */
-y = 3 * (HUD_PIC_HEIGHT + ch);
-#if defined(G_CTF)
-y += HUD_PIC_HEIGHT + ch; // the capture count sits where this would
-#endif
-```
-
-A chained hook alone would have retired that guard and *kept* the coupling, with
-nothing left to name it. The fix is that each stacking element takes the y of its
-slot and returns the next - which is `Cg_DrawPowerup`'s existing shape, already
-right one column over - and `cg_hud_layout_t` carries a cursor per stacking column
-through the chain. Only the elements that stack take a position; the overlays place
-themselves, because a coordinate an element would ignore is a signature that lies.
+- ctf adds a `HeldFlagView`, a Captures `CounterView` and the `TechView`;
+- lithium adds the `TechView`;
+- race adds a `RaceRunView` and swaps the frags and deaths for `SpeedView` and
+  `RunsView`, and ships a `ui/hud/scoreboard.json` naming `RaceScoreboardView`.
 
 Two rules fell out:
 
-- **A stat row is reserved whether or not it draws**, so a spectator sees the rows
-  below it where a player would. The old arithmetic got this for free; a cursor has
-  to say it.
-- **The framing is not part of the arrangement.** The `cg_draw_hud` cvar, the
-  intermission, the crosshair, the editor, the clock below the stat column and the
-  overlays stay in `Cg_DrawHud`, so a module cannot lose the damage blend or the
-  hit sound by forgetting to draw them. The cost is that a module wanting the clock
-  elsewhere overrides `cg_hud.c` outright, which vpath has always allowed.
+- **A module's View classes MUST be exported.** `View::viewWithDictionary` resolves an
+  unfamiliar `"class"` through `classForName`, which `dlsym`s `_Name` from the module
+  image, so `static Class *_SpeedView(void)` never resolves. Declare them in a header
+  with `CGAME_EXPORT`.
+- **Defines that only one module's `g_types.h` has stay behind guards in common
+  Views.** The Views compile once per module, so `CounterView` knows `captures` only
+  under `G_CTF`, and `ScoreView` draws the flag badge there. A default build never
+  sees the symbol, and a default `classic.json` never names it.
+
+The cost is that each differing module carries a copy of `classic.json` to keep in
+step with default's. That is the modding story working as intended - a modder does
+exactly this - and the copies are data, not code.
+
+The framing is still not part of the arrangement: `cg_draw_hud`, the intermission,
+the editor and nav edit decide visibility in `HudViewController`, and the scoreboard is
+a sibling of the variant tree so that it shows through the intermission when the HUD
+does not.
+
+Everything drawn during play is a HUD View, including what used to be the engine's:
+`NotifyView` and `ChatView` tail the console through `cgi.Tail`, `ChatView` also owns the
+chat input (`cg_message_mode`, `cg_message_mode_2`), `PingView` shows the round trip the
+client records on `cl_client_t`, and `DiagnosticsView` tables the counters the renderer
+keeps on `r_view_t` and the mixer on `s_stage_t`. A variant MAY place, restyle or omit
+any of them. Only the drop-down console stays in the client, because it MUST outlive a
+client game that fails to load.
 
 ### The hooks left to extract
 
@@ -736,7 +738,7 @@ In descending order of how much guard they retire:
 | candidate | retires | notes |
 | --- | --- | --- |
 | `AddEntityTrail` | `cg_entity_trail.c`'s 7 | the largest remaining cluster. Four of the seven are whole static functions that move into `cg_hook.c` and `cg_ctf.c` untouched; the switch case on `s->trail` and the `EF_CTF_MASK` tail become the chain. The eighth thing in that file, the grapple's beam start, runs *before* dispatch and stays a guard |
-| `DrawScore` | `cg_score.c`'s 3 | **not one hook.** Two of the three are one to four line insertions inside a ninety line function, so a wholesale hook would have ctf carry an eighty-nine line copy to add four lines - the `G_ClientObituary` mistake. Only the `"%d captures"` against `"%d frags"` line is a replacement, and it wants a small not-chained `FormatTeamScore`; the carrier icon and the per-player captures stay guards |
+| scoreboard | `ScoreboardView.c`'s 2, `CounterView.c`'s 1 | **not one hook.** The `"%d captures"` against `"%d frags"` team line and the captures counter are one-line insertions inside Views that compile once per module, so they stay guards; see [The HUD is JSON, not a hook](#the-hud-is-json-not-a-hook) |
 | `FormatGameName` | `cg_discord.c`'s 1 | **the same hook already exists on the game side.** Give it the same name; a mod naming its mode should say so once |
 | `AddEntityEffects` | `cg_entity_effect.c`'s 1 | small, but pairs with the trail hook |
 | `InitMedia` | `cg_media.{c,h}`'s 3 | the game side already has this hook, installed by all three features. Now that `cg_ctf.c` and `cg_tech.c` exist, `cg_sample_hook_hit` and its `LoadSample` can move into the feature that wants them, which an earlier draft of this document filed under "stays a guard" for want of anywhere to put them |
@@ -798,10 +800,10 @@ a dedicated server holding the same port:
 
 then read `$WRITE_DIR/screenshots/`. Enough `wait` lines to get past the map load,
 or the screenshot is of the console. What the three modules should show, and did:
-`default` draws frags and deaths with the clock at the third row, `ctf` adds the
-capture count and pushes the clock to the fourth, and `lithium` - the combination
-that had never been looked at, and the one the layout could break - draws the tech
-icon below the quad in the powerup column with the clock back at the third row.
+`default` shows frags and deaths with the clock beneath them, `ctf` adds the captures
+counter and the held flag, and `lithium` - the combination that had never been looked at -
+shows the tech beneath the quad in the powerup column. Each is its module's
+`ui/hud/classic.json` naming the Views listed above; nothing stacks in code any more.
 
 Some paths need a state the map does not hand you:
 
@@ -811,9 +813,9 @@ Some paths need a state the map does not hand you:
 - **The held flag resisted every attempt.** `give` spawns the item entity and
   touches it, and the flag pickup declines a synthetic one; all four flags are also
   named "Enemy Flag", so the name resolves to the first, which is your own team's
-  unless you `team Blue` first. Neither is enough. `Cg_DrawHeldFlag` is therefore
-  the one moved function this document cannot claim was seen working - it needs a
-  real capture, or a bot chased in `cg_third_person_chasecam`.
+  unless you `team Blue` first. Neither is enough. `HeldFlagView` is therefore the one
+  View this document cannot claim was seen working - it needs a real capture, or a bot
+  chased in `cg_third_person_chasecam`.
 
 The bundle the runtime needs is described under [Verifying](#verifying); for the
 client specifically, `Contents/Resources` is a symlink to `quetoo-data/target` and
