@@ -33,21 +33,6 @@ static const EnumName CounterViewStatNames[] = MakeEnumNames(
 #endif
 );
 
-#pragma mark - Object
-
-/**
- * @see Object::dealloc(Object *)
- */
-static void dealloc(Object *self) {
-
-  CounterView *this = (CounterView *) self;
-
-  release(this->caption);
-  release(this->value);
-
-  super(Object, self, dealloc);
-}
-
 #pragma mark - View
 
 /**
@@ -110,18 +95,18 @@ static CounterView *initWithCaption(CounterView *self, const char *caption, int3
   if (self) {
     self->stat = stat;
 
-    self->caption = $(alloc(Text), initWithText, caption, NULL);
-    assert(self->caption);
+    Outlet outlets[] = MakeOutlets(
+      MakeOutlet("caption", &self->caption),
+      MakeOutlet("value", &self->value)
+    );
 
-    $((View *) self->caption, addClassName, "caption");
-    $((View *) self, addSubview, (View *) self->caption);
+    View *this = (View *) self;
 
-    self->value = $(alloc(Text), initWithText, " ", NULL);
-    assert(self->value);
+    $(this, awakeWithResourceName, "ui/hud/CounterView.json");
+    $(this, resolve, outlets);
 
-    $((View *) self->value, addClassName, "value");
-    $((View *) self->value, addClassName, "number");
-    $((View *) self, addSubview, (View *) self->value);
+    $(self->caption, setText, caption);
+    $(self->value, setText, " ");
   }
 
   return self;
@@ -160,8 +145,6 @@ static const char *textForFrame(CounterView *self, const cl_frame_t *frame) {
 #pragma mark - Class lifecycle
 
 static void initialize(Class *clazz) {
-
-  ((ObjectInterface *) clazz->interface)->dealloc = dealloc;
 
   ((ViewInterface *) clazz->interface)->awakeWithDictionary = awakeWithDictionary;
   ((ViewInterface *) clazz->interface)->init = init;

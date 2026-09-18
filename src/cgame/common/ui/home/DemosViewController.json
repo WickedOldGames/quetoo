@@ -1,0 +1,64 @@
+{
+  "identifier": "Demos",
+  "subviews": [
+    {
+      "class": "StackView",
+      "classNames": [
+        "container"
+      ],
+      "subviews": [
+        {
+          "class": "Box",
+          "label": {
+            "text": {
+              "text": "Demos"
+            }
+          },
+          "contentView": {
+            "subviews": [
+              {
+                "class": "DemosCollectionView",
+                "identifier": "demosList",
+                "selection": "single"
+              },
+              {
+                "class": "Label",
+                "identifier": "demosEmpty",
+                "text": {
+                  "text": "No demos available. Type ^2record^7 in game to record your first demo."
+                }
+              }
+            ]
+          }
+        },
+        {
+          "class": "StackView",
+          "classNames": [
+            "accessoryView"
+          ],
+          "subviews": [
+            {
+              "class": "Input",
+              "label": {
+                "text": {
+                  "text": "Map"
+                }
+              },
+              "control": {
+                "class": "TextView",
+                "identifier": "filter"
+              }
+            },
+            {
+              "class": "Button",
+              "identifier": "play",
+              "title": {
+                "text": "Play"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

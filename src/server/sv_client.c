@@ -35,8 +35,13 @@ static void Sv_New_f(void) {
     return;
   }
 
-  // demo servers will send the demo file's server info packet
+  // demo servers have no per-map baselines to send: Sv_SendDemoSetup replays the demo's own
+  // recorded server data, config strings and baselines instead, whatever point the shared
+  // playback cursor has already reached. Duration and pause state aren't part of that recording,
+  // so Sv_SendDemoInfo covers those separately, here and on every later change
   if (svs.state == SV_ACTIVE_DEMO) {
+    Sv_SendDemoInfo();
+    Sv_SendDemoSetup(sv_client);
     return;
   }
 
@@ -237,6 +242,9 @@ static sv_user_string_cmd_t sv_user_string_cmds[] = { // mapping command names t
   { "begin", Sv_Begin_f },
   { "disconnect", Sv_Disconnect_f },
   { "info", Sv_Info_f },
+  { "demo_seek", Sv_DemoSeek_f },
+  { "demo_seek_relative", Sv_DemoSeekRelative_f },
+  { "demo_pause", Sv_DemoPause_f },
   { NULL, NULL }
 };
 

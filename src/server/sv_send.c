@@ -279,96 +279,41 @@ static void Sv_SendClientDatagram(sv_client_t *cl) {
 }
 
 /**
- * @brief Advances to the next demo in the playlist or restarts from the beginning.
- */
-static void Sv_DemoCompleted(void) {
-
-  if (sv_demo_list->string[0]) {
-
-    const char *current_demo = sv.name;
-    const char *next_demo = q_strstr(sv_demo_list->string, current_demo);
-    char demo_token[MAX_QPATH];
-
-    if (!next_demo) {
-
-      next_demo = sv_demo_list->string;
-    } else {
-
-      next_demo += q_strlen(current_demo);
-
-      if (next_demo[0] == ' ') {
-        next_demo++;
-      } else if (!next_demo[0]) {
-        next_demo = sv_demo_list->string;
-      }
-    }
-
-    const char *space = q_strchr(next_demo, ' ') ? : (next_demo + q_strlen(next_demo));
-    size_t len = space - next_demo;
-
-    q_strlcpy(demo_token, next_demo, len + 1);
-
-    if (demo_token[0]) {
-      Sv_InitServer(demo_token, NULL, SV_ACTIVE_DEMO);
-    } else {
-      Sv_ShutdownServer("Demo complete\n");
-    }
-  } else {
-    Sv_ShutdownServer("Demo complete\n");
-  }
-}
-
-/**
- * @brief Reads the next frame from the current demo file into the specified buffer,
- * returning the size of the frame in bytes.
- *
- * FIXME: This doesn't work with the new packetized overflow avoidance. Multiple
- * messages can constitute a frame. We need a mechanism to indicate frame
- * completion, or we need a timecode in our demos.
- */
-static size_t Sv_GetDemoMessage(byte *buffer) {
-  int32_t size;
-  int64_t r;
-
-  r = Fs_Read(sv.demo_file, &size, sizeof(size), 1);
-
-  if (r != 1) { // improperly terminated demo file
-    Com_Warn("Failed to read demo file\n");
-    Sv_DemoCompleted();
-    return 0;
-  }
-
-  size = LittleLong(size);
-
-  if (size == -1) { // properly terminated demo file
-    Sv_DemoCompleted();
-    return 0;
-  }
-
-  if (size > MAX_MSG_SIZE) { // corrupt demo file
-    Com_Warn("%d > MAX_MSG_SIZE\n", size);
-    Sv_DemoCompleted();
-    return 0;
-  }
-
-  r = Fs_Read(sv.demo_file, buffer, size, 1);
-
-  if (r != 1) {
-    Com_Warn("Incomplete or corrupt demo file\n");
-    Sv_DemoCompleted();
-    return 0;
-  }
-
-  return size;
-}
-
-/**
  * @brief Send the frame and all pending datagram messages since the last frame.
  */
 void Sv_SendClientPackets(void) {
 
   if (svs.state == SV_UNINITIALIZED) {
     return;
+  }
+
+  // for demo playback, this tick's frame is read once and shared by every client, rather than
+  // each client consuming its own chunk from the demo file
+  byte demo_buffer[MAX_MSG_SIZE];
+  size_t demo_size = 0;
+
+  if (svs.state == SV_ACTIVE_DEMO) {
+
+    // an unwatched demo server shouldn't burn through its recording, or advance a playlist,
+    // with nobody connected to see it
+    bool demo_watched = false;
+    const sv_client_t *c = svs.clients;
+    for (int32_t i = 0; i < sv_max_clients->integer; i++, c++) {
+      if (c->state != SV_CLIENT_FREE && !svs.clients[i].gclient->ai) {
+        demo_watched = true;
+        break;
+      }
+    }
+
+    if (demo_watched) {
+      demo_size = Sv_GetDemoFrame(demo_buffer);
+
+      // reaching EOF with no next demo, or an invalid one, shuts the server down and frees
+      // svs.clients from underneath us
+      if (svs.state == SV_UNINITIALIZED) {
+        return;
+      }
+    }
   }
 
   // send a message to each connected client
@@ -384,13 +329,8 @@ void Sv_SendClientPackets(void) {
     }
 
     if (svs.state == SV_ACTIVE_DEMO) { // send the demo packet
-      byte buffer[MAX_MSG_SIZE];
-      size_t size;
-
-      if ((size = Sv_GetDemoMessage(buffer))) {
-        Netchan_Transmit(&cl->net_chan, buffer, size);
-      } else {
-        break;    // recording is done, so we're done
+      if (!Sv_SendDemoPacket(cl, demo_buffer, demo_size)) {
+        break; // recording is done, so we're done
       }
     } else if (cl->state == SV_CLIENT_ACTIVE) { // send the game packet
 

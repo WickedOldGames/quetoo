@@ -27,21 +27,6 @@
 
 #define CHAT_MAX_LINES 16
 
-#pragma mark - Object
-
-/**
- * @see Object::dealloc(Object *)
- */
-static void dealloc(Object *self) {
-
-  ChatView *this = (ChatView *) self;
-
-  release(this->history);
-  release(this->input);
-
-  super(Object, self, dealloc);
-}
-
 #pragma mark - TextViewDelegate
 
 /**
@@ -79,22 +64,20 @@ static View *init(View *self) {
   if (self) {
     ChatView *this = (ChatView *) self;
 
-    this->history = (ConsoleText *) $((View *) alloc(ConsoleText), init);
-    assert(this->history);
+    Outlet outlets[] = MakeOutlets(
+      MakeOutlet("history", &this->history),
+      MakeOutlet("input", &this->input)
+    );
+
+    $(self, awakeWithResourceName, "ui/hud/ChatView.json");
+    $(self, resolve, outlets);
 
     this->history->console.level = PRINT_CHAT | PRINT_TEAM_CHAT;
-
-    $(self, addSubview, (View *) this->history);
-
-    this->input = $(alloc(TextView), initWithFrame, NULL);
-    assert(this->input);
 
     this->input->delegate.self = this;
     this->input->delegate.didEndEditing = didEndEditing;
 
     $((View *) this->input, setVisibility, ViewVisibilityHidden);
-
-    $(self, addSubview, (View *) this->input);
   }
 
   return self;
@@ -165,8 +148,6 @@ static void updateBindings(View *self, ident data) {
 #pragma mark - Class lifecycle
 
 static void initialize(Class *clazz) {
-
-  ((ObjectInterface *) clazz->interface)->dealloc = dealloc;
 
   ((ViewInterface *) clazz->interface)->init = init;
   ((ViewInterface *) clazz->interface)->updateBindings = updateBindings;

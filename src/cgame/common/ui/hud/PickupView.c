@@ -26,21 +26,6 @@
 
 #define _Class _PickupView
 
-#pragma mark - Object
-
-/**
- * @see Object::dealloc(Object *)
- */
-static void dealloc(Object *self) {
-
-  PickupView *this = (PickupView *) self;
-
-  release(this->icon);
-  release(this->name);
-
-  super(Object, self, dealloc);
-}
-
 #pragma mark - View
 
 /**
@@ -54,15 +39,15 @@ static View *init(View *self) {
 
     this->item = ITEM_NONE;
 
-    this->icon = $(alloc(ImageView), initWithFrame, &MakeRect(0, 0, HUD_PIC_HEIGHT, HUD_PIC_HEIGHT));
-    assert(this->icon);
+    Outlet outlets[] = MakeOutlets(
+      MakeOutlet("icon", &this->icon),
+      MakeOutlet("name", &this->name)
+    );
 
-    $(self, addSubview, (View *) this->icon);
+    $(self, awakeWithResourceName, "ui/hud/PickupView.json");
+    $(self, resolve, outlets);
 
-    this->name = $(alloc(Text), initWithText, NULL, NULL);
-    assert(this->name);
-
-    $(self, addSubview, (View *) this->name);
+    this->icon->view.frame = MakeRect(0, 0, HUD_PIC_HEIGHT, HUD_PIC_HEIGHT);
   }
 
   return self;
@@ -100,8 +85,6 @@ static void updateBindings(View *self, ident data) {
 #pragma mark - Class lifecycle
 
 static void initialize(Class *clazz) {
-
-  ((ObjectInterface *) clazz->interface)->dealloc = dealloc;
 
   ((ViewInterface *) clazz->interface)->init = init;
   ((ViewInterface *) clazz->interface)->updateBindings = updateBindings;
